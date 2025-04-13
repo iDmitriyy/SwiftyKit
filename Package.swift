@@ -8,6 +8,9 @@ let package = Package(
   products: [
     // Products define the executables and libraries a package produces, making them visible to other packages.
     .library(name: "SwiftyKit", targets: ["SwiftyKit"]),
+    
+    .library(name: "StdLibExtensions", targets: ["StdLibExtensions"]),
+    .library(name: "FoundationExtensions", targets: ["FoundationExtensions"]),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.1.4")),
@@ -23,11 +26,25 @@ let package = Package(
                                               .product(name: "Collections", package: "swift-collections"),
                                               .product(name: "Algorithms", package: "swift-algorithms"),
                                               .product(name: "NonEmpty", package: "swift-nonempty")]),
-    .target(name: "StdLibExtensions"),
-    .target(name: "FoundationExtensions"),
+    .target(name: "IndependentDeclarations"),
+    .target(name: "StdLibExtensions", dependencies: [.target(name: "IndependentDeclarations")]),
+    .target(name: "FoundationExtensions", dependencies: [.target(name: "IndependentDeclarations"),
+                                                         .target(name: "StdLibExtensions")]),
     
     // MARK: - Test Targets
     
-    .testTarget(name: "SwiftyKitTests", dependencies: ["SwiftyKit"]),
+    .testTarget(name: "SwiftyKitTests", dependencies: [.target(name: "SwiftyKit")]),
+    .testTarget(name: "IndependentDeclarationsTests", dependencies: ["IndependentDeclarations"]),
+    .testTarget(name: "StdLibExtensionsTests", dependencies: ["StdLibExtensions"]),
+    .testTarget(name: "FoundationExtensionsTests", dependencies: ["FoundationExtensions",
+                                                                  .product(name: "NonEmpty", package: "swift-nonempty")]),
   ]
 )
+
+for target: PackageDescription.Target in package.targets {
+  {
+    var settings: [PackageDescription.SwiftSetting] = $0 ?? []
+    settings.append(.enableUpcomingFeature("InternalImportsByDefault"))
+    $0 = settings
+  }(&target.swiftSettings)
+}
