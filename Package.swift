@@ -11,6 +11,7 @@ let package = Package(
     
     .library(name: "StdLibExtensions", targets: ["StdLibExtensions"]),
     .library(name: "FoundationExtensions", targets: ["FoundationExtensions"]),
+    .library(name: "FunctionalTypes", targets: ["FunctionalTypes"]),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.1.4")),
@@ -26,6 +27,7 @@ let package = Package(
                                               .product(name: "Collections", package: "swift-collections"),
                                               .product(name: "Algorithms", package: "swift-algorithms"),
                                               .product(name: "NonEmpty", package: "swift-nonempty")]),
+    .target(name: "FunctionalTypes"),
     .target(name: "IndependentDeclarations"),
     .target(name: "StdLibExtensions", dependencies: [.target(name: "IndependentDeclarations")]),
     .target(name: "FoundationExtensions", dependencies: [.target(name: "IndependentDeclarations"),
