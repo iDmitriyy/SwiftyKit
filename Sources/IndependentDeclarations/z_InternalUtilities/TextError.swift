@@ -6,14 +6,14 @@
 //
 
 @_spi(SwiftyKitBuiltinTypes)
-@usableFromInline package struct TextError: Error, CustomStringConvertible, CustomDebugStringConvertible {
-  @usableFromInline package var description: String { text }
-  @usableFromInline package var debugDescription: String { text }
+public struct TextError: Error, CustomStringConvertible, CustomDebugStringConvertible {
+  public var description: String { text }
+  public var debugDescription: String { text }
   
   package let text: String
   package let source: StaticFileLine
   
-  @usableFromInline package init(text: String, source: StaticFileLine = .this()) {
+  public init(text: String, source: StaticFileLine = .this()) {
     self.text = text
     self.source = source
   }
