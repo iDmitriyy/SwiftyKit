@@ -27,7 +27,7 @@ let package = Package(
                                               .product(name: "Collections", package: "swift-collections"),
                                               .product(name: "Algorithms", package: "swift-algorithms"),
                                               .product(name: "NonEmpty", package: "swift-nonempty")]),
-    .target(name: "FunctionalTypes"),
+    .target(name: "FunctionalTypes", dependencies: [.target(name: "IndependentDeclarations")]),
     .target(name: "IndependentDeclarations"),
     .target(name: "StdLibExtensions", dependencies: [.target(name: "IndependentDeclarations")]),
     .target(name: "FoundationExtensions", dependencies: [.target(name: "IndependentDeclarations"),
