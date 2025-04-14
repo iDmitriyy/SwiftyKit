@@ -10,7 +10,8 @@ fileprivate func _swift_getEnumCaseName<T>(_ value: T) -> UnsafePointer<CChar>?
 
 /// Returns the case name of enum.
 /// https://forums.swift.org/t/getting-the-name-of-a-swift-enum-value/35654/17
-@_spi(SwiftyKitBuiltinFuncs) public func _getEnumCaseName<T>(for value: T) -> String? {
+@_spi(SwiftyKitBuiltinFuncs)
+public func _getEnumCaseName<T>(for value: T) -> String? {
   guard let stringPtr = _swift_getEnumCaseName(value) else { return nil }
   return String(validatingCString: stringPtr)
 }
