@@ -7,7 +7,7 @@
 
 // MARK: - OneOf 3
 
-public enum OneOf2<A: ~Copyable, B: ~Copyable, C: ~Copyable>: ~Copyable {
+public enum OneOf2<A: ~Copyable, B: ~Copyable>: ~Copyable {
   case first(A)
   case second(B)
 }

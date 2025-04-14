@@ -11,6 +11,16 @@ public enum Either<L: ~Copyable, R: ~Copyable>: ~Copyable {
   case right(R)
 }
 
+extension Either: Copyable where L: Copyable, R: Copyable {}
+
+extension Either: BitwiseCopyable where L: BitwiseCopyable, R: BitwiseCopyable {}
+
+extension Either: Equatable where L: Equatable, R: Equatable {}
+
+extension Either: Hashable where L: Hashable, R: Hashable {}
+
+extension Either: Sendable where L: Sendable, R: Sendable {}
+
 extension Either {
   public var leftValue: L? {
     switch self {
@@ -221,16 +231,6 @@ extension Result {
     }
   }
 }
-
-extension Either: Copyable where L: Copyable, R: Copyable {}
-
-extension Either: BitwiseCopyable where L: BitwiseCopyable, R: BitwiseCopyable {}
-
-extension Either: Equatable where L: Equatable, R: Equatable {}
-
-extension Either: Hashable where L: Hashable, R: Hashable {}
-
-extension Either: Sendable where L: Sendable, R: Sendable {}
 
 //extension Either: Decodable where L: Decodable, R: Decodable {
 //  public init(from decoder: any Decoder) throws {
