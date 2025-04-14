@@ -18,6 +18,9 @@ public protocol ErrorInfoProtocol: Sendable, CustomStringConvertible, CustomDebu
   
   var count: Int { get }
   
+//  func merge(with other: Self)
+  
+  /// e.g. Later it can be decided to keep reference types as is, but interoplate value-types at the moment of passing them to ErrorInfo subscript.
 //  subscript(_: String, _: UInt) -> (any ValueType)? { get set }
   
 //  static func merged(_ infos: Self...) -> Self
@@ -417,8 +420,18 @@ public struct ErronInfoKey: Hashable, Sendable, CustomStringConvertible {
   fileprivate let string: String
   
   public init(_ string: String) {
+    // TODO: - decide what to do if "", " " is passed.
     self.string = string
   }
+  
+  public init(_ string: NonEmptyString) {
+    self.init(string.rawValue)
+  }
+}
+
+extension ErronInfoKey {
+  public static let id = ErronInfoKey("id")
+  public static let status = ErronInfoKey("status")
 }
 
 // ⚠️ @iDmitriyy
