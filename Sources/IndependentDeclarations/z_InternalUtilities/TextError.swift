@@ -5,6 +5,7 @@
 //  Created by Dmitriy Ignatyev on 15.12.2024.
 //
 
+@_spi(SwiftyKitBuiltinTypes)
 @usableFromInline package struct TextError: Error, CustomStringConvertible, CustomDebugStringConvertible {
   @usableFromInline package var description: String { text }
   @usableFromInline package var debugDescription: String { text }

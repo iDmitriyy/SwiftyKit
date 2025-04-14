@@ -432,6 +432,10 @@ public struct ErronInfoKey: Hashable, Sendable, CustomStringConvertible {
 extension ErronInfoKey {
   public static let id = ErronInfoKey("id")
   public static let status = ErronInfoKey("status")
+  
+//  public static let file = ErronInfoKey("file")
+//  public static let line = ErronInfoKey("line")
+//  public static let fileLine = ErronInfoKey("file_line")
 }
 
 // ⚠️ @iDmitriyy
