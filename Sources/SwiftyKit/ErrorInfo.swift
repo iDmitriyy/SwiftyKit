@@ -9,16 +9,19 @@ public import struct OrderedCollections.OrderedDictionary
 
 // MARK: - Error Info
 
-public protocol ErrorInfoProtocol: Sendable {
+public typealias ErrorInfoValueType = CustomStringConvertible & Equatable & Sendable
+
+public protocol ErrorInfoProtocol: Sendable, CustomStringConvertible, CustomDebugStringConvertible {
   typealias ValueType = CustomStringConvertible & Equatable & Sendable
   
   var isEmpty: Bool { get }
   
-//  var count: Int { get }
+  var count: Int { get }
   
-  subscript(_: String, _: UInt) -> (any ValueType)? { get set }
+//  subscript(_: String, _: UInt) -> (any ValueType)? { get set }
   
 //  static func merged(_ infos: Self...) -> Self
+//  func asLegacyDictionary() -> [String: Any]
 }
 
 // extension ErrorInfoProtocol {
@@ -29,14 +32,23 @@ public protocol ErrorInfoProtocol: Sendable {
 //  }
 // }
 
-public struct ErrorInfo: Sendable { // TODO: - add custom CustomStringConvertible.
-  public typealias ValueType = CustomStringConvertible & Equatable & Sendable
-  
-  internal private(set) var storage: [String: any ValueType]
-  
+public struct ErrorInfo: ErrorInfoProtocol {
   public var _asStringDict: [String: String] { storage.mapValues { String(describing: $0) } }
   
-  internal init(storage: [String: any ValueType]) {
+  public var isEmpty: Bool { storage.isEmpty }
+  
+  public var isNotEmpty: Bool { !isEmpty }
+  
+  public var count: Int { storage.count }
+  
+  // TODO: - add tests for elements ordering stability
+  public var description: String { String(describing: storage) }
+  
+  public var debugDescription: String { String(reflecting: storage) }
+  
+  fileprivate private(set) var storage: [String: any ValueType]
+  
+  fileprivate init(storage: [String: any ValueType]) {
     self.storage = storage
   }
   
@@ -47,9 +59,6 @@ public struct ErrorInfo: Sendable { // TODO: - add custom CustomStringConvertibl
   public init(legacyUserInfo: [String: Any]) {
     self.init(storage: legacyUserInfo.mapValues { prettyDescription(any: $0) })
   }
-  
-  public var isEmpty: Bool { storage.isEmpty }
-  public var isNotEmpty: Bool { !isEmpty }
   
   /// set-only subscript, always returns nil trying get value
   /// Future improvements: make real set-only subscript when it becomes available in future Swift versions
