@@ -6,6 +6,7 @@
 //
 
 import StdLibExtensions
+@_spiOnly @_spi(SwiftyKitBuiltinTypes) private import struct IndependentDeclarations.TextError
 
 // swiftlint:disable force_unwrapping
 extension Bundle {
