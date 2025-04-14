@@ -5,7 +5,11 @@
 //  Created by Dmitriy Ignatyev on 14.12.2024.
 //
 
-extension Dictionary: DictionaryUnifyingProtocol {}
+extension Dictionary: DictionaryUnifyingProtocol {
+//  public func mapValues<T, E>(_ transform: (Value) throws(E) -> T) throws(E) -> Dictionary<Key, Value> where E : Error {
+//    
+//  }
+}
 
 // MARK: - Dictionary Unifying RootProtocol
 
@@ -43,7 +47,8 @@ public protocol DictionaryUnifyingNonEmptyProtocol<Key, Value>: DictionaryUnifyi
   func filter(_ isIncluded: (Self.Element) throws -> Bool) rethrows -> FilterResultType
   
   // todo
-//  func mapValues<T>(_ transform: (Value) throws -> T) rethrows -> SelfType<Key, T>
+//  func remapValues<T, E>(_ transform: (Value) throws(E) -> T) throws(E) -> Self
+//  func remapValues<T>(_ transform: (Value) throws -> T) rethrows -> SelfType<Key, T>
 //  func compactMapValues<T>(_ transform: (Value) throws -> T?) rethrows -> SelfType<Key, T>
   
   mutating func merge(_ keysAndValues: some Sequence<(Key, Value)>,

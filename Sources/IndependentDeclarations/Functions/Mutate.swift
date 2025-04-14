@@ -19,4 +19,5 @@ public func mutate<T: AnyObject, E>(value: consuming T, mutation: (inout T) thro
 
 // TODO: - check new signatire on existing codebases
 // make available for value types only
+// make unavailable instead of deprecated
 // ~Copyable classes

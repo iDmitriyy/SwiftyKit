@@ -14,9 +14,11 @@ public protocol ErrorInfoProtocol: Sendable {
   
   var isEmpty: Bool { get }
   
+//  var count: Int { get }
+  
   subscript(_: String, _: UInt) -> (any ValueType)? { get set }
   
-  static func merged(_ infos: Self...) -> Self
+//  static func merged(_ infos: Self...) -> Self
 }
 
 // extension ErrorInfoProtocol {
@@ -27,7 +29,7 @@ public protocol ErrorInfoProtocol: Sendable {
 //  }
 // }
 
-public struct ErrorInfo: Sendable {
+public struct ErrorInfo: Sendable { // TODO: - add custom CustomStringConvertible.
   public typealias ValueType = CustomStringConvertible & Equatable & Sendable
   
   internal private(set) var storage: [String: any ValueType]
@@ -52,12 +54,18 @@ public struct ErrorInfo: Sendable {
   /// set-only subscript, always returns nil trying get value
   /// Future improvements: make real set-only subscript when it becomes available in future Swift versions
   /// https://forums.swift.org/t/set-only-subscripts/32858
+  @_disfavoredOverload
   public subscript(key: String, line: UInt = #line) -> (any ValueType)? {
-    get { storage[key] }
+    @available(*, unavailable, message: "This is a set only subscript")
+    get { nil }
     set(maybeValue) {
       let value = maybeValue ?? prettyDescription(any: maybeValue)
       _addValue(value, forKey: key, line: line)
     }
+  }
+  
+  public subscript(key: String, line: UInt = #line) -> String? {
+    get { storage[key] as? String }
   }
   
   public mutating func add(key: String, optionalValue: (any ValueType)?, line: UInt = #line) {
@@ -92,6 +100,8 @@ public struct ErrorInfo: Sendable {
   }
   
   // MARK: Static Funcs
+  
+  // TODO: - merge method with consuming generics instead of variadic ...
   
   public static func merge(_ otherInfos: Self..., to errorInfo: inout Self, line: UInt = #line) {
     _mergeErrorInfo(&errorInfo.storage, with: otherInfos.map { $0.storage }, line: line)
@@ -214,12 +224,18 @@ public struct ErrorOrderedInfo: Sendable {
   /// set-only subscript, always returns nil trying get value
   /// Future improvements: make real set-only subscript when it becomes available in future Swift versions
   /// https://forums.swift.org/t/set-only-subscripts/32858
+  @_disfavoredOverload
   public subscript(key: String, line: UInt = #line) -> (any ValueType)? {
+    @available(*, unavailable, message: "This is a set only subscript")
     get { nil }
     set(maybeValue) {
       let value = maybeValue ?? prettyDescription(any: maybeValue)
       _addValue(value, forKey: key, line: line)
     }
+  }
+  
+  public subscript(key: String, line: UInt = #line) -> String? {
+    get { storage[key] as? String }
   }
   
   public mutating func add(key: String, optionalValue: (any ValueType)?, line: UInt = #line) {
@@ -252,6 +268,21 @@ extension ErrorOrderedInfo: ExpressibleByDictionaryLiteral {
     elements.forEach { key, value in
       self[key] = value
     }
+  }
+}
+
+fileprivate struct _ErrorInfoGeneric<Key, Value, DictType: DictionaryUnifyingProtocol>: Sendable
+where DictType.Key == Key, DictType.Value == Value, DictType: Sendable {
+  typealias ValueType = ErrorInfo.ValueType
+  
+  fileprivate private(set) var storage: DictType
+  
+  // TODO: - imp
+  // - may be make current ErrorInfo ordedred & delete ErrorOrderedInfo.
+//  public var _asStringDict: DictType { storage.mapValues { String(describing: $0) } }
+  
+  fileprivate init(storage: DictType) {
+    self.storage = storage
   }
 }
 
