@@ -9,8 +9,8 @@
 @_exported public import struct Foundation.CharacterSet
 @_exported public import protocol Foundation.LocalizedError
 
-@_exported import IndependentDeclarations
-
-extension TextError: LocalizedError {
-  @usableFromInline package var errorDescription: String? { text }
-}
+//@_exported import IndependentDeclarations
+//
+//extension TextError: LocalizedError { // lead to compiler error in another package: Cannot find type 'TextError' in scope
+//  @usableFromInline package var errorDescription: String? { text }
+//}
