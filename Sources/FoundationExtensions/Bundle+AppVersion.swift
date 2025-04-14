@@ -9,7 +9,7 @@ import StdLibExtensions
 
 // swiftlint:disable force_unwrapping
 extension Bundle {
-  public enum Key: Namespacing {
+  public enum Key { // :Namespacing TODO: - compiler error in another package when StdLibExtensions imported with internal ACL
     public static let appVersion = "CFBundleShortVersionString"
     public static let appBuildNumber = "CFBundleVersion"
   }
@@ -24,7 +24,6 @@ extension Bundle {
   public static let mainAppBuildNumber = Int(mainAppBuildNumberString)!
 }
 
-/// Например версия 3.6.11
 public struct SemVerAppVersion: Sendable, LosslessStringConvertible, BitwiseCopyable {
   public let major: UInt16
   public let minor: UInt16
