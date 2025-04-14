@@ -22,7 +22,7 @@ struct TextErrorTests {
     #expect(String(describing: anyError) == text)
     #expect(String(reflecting: anyError) == text)
     #expect("\(anyError)" == text)
-    
+    // TODO: - add file line to desccription & debug desccription
     let nsError: NSError = error as NSError
     #expect(String(describing: nsError) == text)
     #expect(String(reflecting: nsError) == text)
