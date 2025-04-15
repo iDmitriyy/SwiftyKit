@@ -8,7 +8,6 @@
 import StdLibExtensions
 @_spiOnly @_spi(SwiftyKitBuiltinTypes) private import struct IndependentDeclarations.TextError
 
-// swiftlint:disable force_unwrapping
 extension Bundle {
   public enum Key { // :Namespacing TODO: - compiler error in another package when StdLibExtensions imported with internal ACL
     public static let appVersion = "CFBundleShortVersionString"
@@ -72,8 +71,6 @@ public struct SemVerAppVersion: Sendable, LosslessStringConvertible, BitwiseCopy
     return numberComponents
   }
 }
-
-// swiftlint:enable force_unwrapping
 
 extension SemVerAppVersion: Comparable {
   public static func < (lhs: Self, rhs: Self) -> Bool {

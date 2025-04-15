@@ -5,7 +5,6 @@
 //  Created by Dmitriy Ignatyev on 14.12.2024.
 //
 
-// swiftlint:disable force_unwrapping
 extension Bundle {
   public var bundleId: String { bundleIdentifier! }
   
@@ -19,4 +18,4 @@ extension Bundle {
     let components = bundle.bundleId.components(separatedBy: ".").prefix(2)
     return components.joined(separator: ".")
   }
-} // swiftlint:enable force_unwrapping
+}

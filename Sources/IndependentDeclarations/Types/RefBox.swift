@@ -5,8 +5,6 @@
 //  Created by Dmitriy Ignatyev on 14.12.2024.
 //
 
-// swiftlint:disable force_cast
-
 public struct UnownedRef<E> {
   private unowned let _instance: AnyObject
   
