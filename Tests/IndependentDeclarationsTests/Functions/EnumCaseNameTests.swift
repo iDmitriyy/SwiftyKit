@@ -6,7 +6,7 @@
 //
 
 import Testing
-@testable import Functions
+@_spi(SwiftyKitBuiltinFuncs) @testable import IndependentDeclarations
 
 struct EnumCaseNameTests {
   // swiftlint:disable duplicate_enum_cases

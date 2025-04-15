@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@testable import IndependentDeclarations
+@_spi(SwiftyKitBuiltinTypes) @testable import IndependentDeclarations
 import Testing
 
 struct TextErrorTests {
