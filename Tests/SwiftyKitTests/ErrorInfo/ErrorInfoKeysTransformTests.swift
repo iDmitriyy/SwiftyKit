@@ -24,7 +24,7 @@ struct ErrorInfoKeysTransformTests {
     "PascalCaseKey",
     "____many___underscores__",
     "----many---hyphens--",
-    "RepetedUPPERCASE"
+    "RepeatedUPPERCASE"
   ] + expectedToBeUnmodified
   
   @Test func fromAnyStyleToCamelCased() throws {
@@ -37,7 +37,7 @@ struct ErrorInfoKeysTransformTests {
       "pascalCaseKey",
       "manyUnderscores",
       "manyHyphens",
-      "repetedUPPERCASE"
+      "repeatedUPPERCASE"
     ] + Self.expectedToBeUnmodified
     
     #expect(camelCased == expected)
