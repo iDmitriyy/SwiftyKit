@@ -57,7 +57,7 @@ struct ErrorInfoKeysTransformTests {
     ] + Self.expectedToStayUnmodified + Self.expectedModifiedForPascalOnly
     
     let diff = Set(camelCased).symmetricDifference(expected)
-    #expect(diff.isEmpty, "\(diff)")
+    #expect(diff.isEmpty)
   }
   
   @Test func fromAnyStyleToPascalCased() throws {
