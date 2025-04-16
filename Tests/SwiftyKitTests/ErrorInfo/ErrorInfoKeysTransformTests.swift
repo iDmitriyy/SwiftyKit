@@ -5,6 +5,7 @@
 //  Created by Dmitriy Ignatyev on 16.04.2025.
 //
 
+import Foundation
 @testable import SwiftyKit
 import Testing
 
@@ -21,6 +22,9 @@ struct ErrorInfoKeysTransformTests {
     "camelCaseKey",
     "kebab-case-key",
     "PascalCaseKey",
+    "____many___underscores__",
+    "----many---hyphens--",
+    "RepetedUPPERCASE"
   ] + expectedToBeUnmodified
   
   @Test func fromAnyStyleToCamelCased() throws {
@@ -31,6 +35,9 @@ struct ErrorInfoKeysTransformTests {
       "camelCaseKey",
       "kebabCaseKey",
       "pascalCaseKey",
+      "manyUnderscores",
+      "manyHyphens",
+      "repetedUPPERCASE"
     ] + Self.expectedToBeUnmodified
     
     #expect(camelCased == expected)

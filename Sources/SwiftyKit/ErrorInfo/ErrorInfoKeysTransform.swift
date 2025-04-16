@@ -46,12 +46,13 @@ extension DictionaryUnifyingRootProtocol {}
 extension ErronInfoKey {
   internal static func fromAnyStyleToCamelCased(string: String) -> String {
     var result = ""
-    var shouldCapitalizeNext = false
+    var hadNonSepratorBefore = false
+    var previousWasSeprator = false
     for (intIndex, character) in string.enumerated() {
       if character == "_" {
-        shouldCapitalizeNext = true
+        previousWasSeprator = true
       } else if character == "-" {
-        shouldCapitalizeNext = true
+        previousWasSeprator = true
       } else {
         // TODO: If no transform was made, then self can be returned without making a copy to result.
         // save a flag to remeber if any trnasforms were made, save only current index and make actual transform
@@ -63,13 +64,14 @@ extension ErronInfoKey {
             result.append(character) // all uppercased letters (except first letter in kebab style) copied as is
           }
         } else {
-          if !shouldCapitalizeNext {
-            result.append(character)
-          } else {
+          if previousWasSeprator, hadNonSepratorBefore {
             result.append(character.uppercased())
+          } else {
+            result.append(character)
           }
         }
-        shouldCapitalizeNext = false
+        hadNonSepratorBefore = true
+        previousWasSeprator = false
       } // end if
     } // end for
     return result
