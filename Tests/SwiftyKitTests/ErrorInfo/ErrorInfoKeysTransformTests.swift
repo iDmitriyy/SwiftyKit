@@ -26,6 +26,7 @@ struct ErrorInfoKeysTransformTests {
     "----many---hyphens--",
     "RepeatedUPPERCASE"
   ] + expectedToBeUnmodified
+  // TODO: Add not only english capitalized
   
   @Test func fromAnyStyleToCamelCased() throws {
     let camelCased = keys.map(ErronInfoKey.fromAnyStyleToCamelCased(string:))
