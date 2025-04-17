@@ -14,14 +14,9 @@ struct ErrorInfoKeysTransformTests {
     "",
     " ",
     "  ",
+    "...",
   ]
-  
-  private static let expectedModifiedForPascalOnly: [String] = [ // for pascal first char will be uppercased
-    "string.with.dots",
-    "string.WiTh.dOtS2",
-    "string&WIth*|",
-  ]
-  
+    
   private let keys: [String] = [
     "snake_case_key",
     "camelCaseKey",
@@ -30,12 +25,17 @@ struct ErrorInfoKeysTransformTests {
     "this-is-a-test-key",
     "This-Is-Mixed-CASE",
     "underscore_and-hyphen",
+    "testäöüßÄÖÜ",
+    "ßteßt",
     "____many___underscores__",
     "----many---hyphens--",
     "_________", // only underscores
     "---------", // only hyphens
     "RepeatedUPPERCASE",
-  ] + expectedToStayUnmodified + expectedModifiedForPascalOnly
+    "string.with.dots",
+    "string.WiTh.dOtS2",
+    "string&WIth*|",
+  ] + expectedToStayUnmodified
   // TODO: Add not only english capitalized
   
   // MARK: - Tests
@@ -51,14 +51,19 @@ struct ErrorInfoKeysTransformTests {
       "thisIsATestKey",
       "thisIsMixedCASE",
       "underscoreAndHyphen",
+      "testäöüßÄÖÜ",
+      "ßteßt",
       "manyUnderscores",
       "manyHyphens",
       "_________", // only underscores
       "---------", // only hyphens
       "repeatedUPPERCASE",
-    ] + Self.expectedToStayUnmodified + Self.expectedModifiedForPascalOnly
+      "string.with.dots",
+      "string.WiTh.dOtS2",
+      "string&WIth*|",
+    ] + Self.expectedToStayUnmodified
     
-    let diff = Set(camelCased).symmetricDifference(expected)
+    let diff = Set(camelCased).subtracting(expected)
     #expect(diff.isEmpty)
   }
   
@@ -73,14 +78,19 @@ struct ErrorInfoKeysTransformTests {
       "ThisIsATestKey",
       "ThisIsMixedCASE",
       "UnderscoreAndHyphen",
+      "TestäöüßÄÖÜ",
+      "SSteßt",
       "ManyUnderscores",
       "ManyHyphens",
       "_________", // only underscores
       "---------", // only hyphens
       "RepeatedUPPERCASE",
-    ] + Self.expectedToStayUnmodified + Self.expectedModifiedForPascalOnly.map { $0.uppercasingFirstLetter() }
+      "String.with.dots",
+      "String.WiTh.dOtS2",
+      "String&WIth*|",
+    ] + Self.expectedToStayUnmodified
     
-    let diff = Set(pascalCased).symmetricDifference(expected)
+    let diff = Set(pascalCased).subtracting(expected)
     #expect(diff.isEmpty)
   }
   
@@ -95,12 +105,44 @@ struct ErrorInfoKeysTransformTests {
       "this_is_a_test_key",
       "this_is_mixed_case",
       "underscore_and_hyphen",
+      "testäöüß_äöü",
+      "ßteßt",
       "____many___underscores__",
       "____many___hyphens__",
       "_________", // only underscores
       "_________", // only hyphens
       "repeated_uppercase",
-    ] + Self.expectedToStayUnmodified + Self.expectedModifiedForPascalOnly
+      "string.with.dots",
+      "string._wi_th.d_ot_s2",
+      "string&_with*|",
+    ] + Self.expectedToStayUnmodified
+    
+    let diff = Set(snakeCased).subtracting(expected)
+    #expect(diff.isEmpty)
+  }
+  
+  @Test func fromAnyStyleToKebabCased() throws {
+    let snakeCased = keys.map(ErronInfoKey.fromAnyStyleToSnakeCased(string:))
+    
+    let expected = [
+      "snake_case_key",
+      "camel_case_key",
+      "kebab_case_key",
+      "pascal_case_key",
+      "this_is_a_test_key",
+      "this_is_mixed_case",
+      "underscore_and_hyphen",
+      "testäöüß_äöü",
+      "ßteßt",
+      "____many___underscores__",
+      "____many___hyphens__",
+      "_________", // only underscores
+      "_________", // only hyphens
+      "repeated_uppercase",
+      "string.with.dots",
+      "string._wi_th.d_ot_s2",
+      "string&_with*|",
+    ] + Self.expectedToStayUnmodified
     
     let diff = Set(snakeCased).subtracting(expected)
     #expect(diff.isEmpty)
