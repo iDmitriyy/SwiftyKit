@@ -113,7 +113,8 @@ extension ErronInfoKey {
       } else { // normal (non-separator) character:
         if character.isUppercase {
           if let previousKind, !(previousKind == .separator), !(previousKind == .uppercase) {
-            // append separator only for first Capitalised char in each word execpt first word
+            // append separator only before first Capitalised char in each word execpt first word, only if previous char
+            // was not a separator.
             result.append(separator)
           }
           previousKind = .uppercase

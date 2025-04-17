@@ -10,7 +10,7 @@ import Foundation
 import Testing
 
 struct ErrorInfoKeysTransformTests {
-  private static let expectedToStayUnmodified: [String] = [
+  private static let expectedAlwaysStayUnmodified: [String] = [
     "",
     " ",
     "  ",
@@ -22,7 +22,7 @@ struct ErrorInfoKeysTransformTests {
     "camelCaseKey",
     "kebab-case-key",
     "PascalCaseKey",
-    "this-is-a-test-key",
+    "this-is-a-test-Key",
     "This-Is-Mixed-CASE",
     "underscore_and-hyphen",
     "testäöüßÄÖÜ",
@@ -35,7 +35,7 @@ struct ErrorInfoKeysTransformTests {
     "string.with.dots",
     "string.WiTh.dOtS2",
     "string&WIth*|",
-  ] + expectedToStayUnmodified
+  ] + expectedAlwaysStayUnmodified
   // TODO: Add not only english capitalized
   
   // MARK: - Tests
@@ -48,7 +48,7 @@ struct ErrorInfoKeysTransformTests {
       "camelCaseKey",
       "kebabCaseKey",
       "pascalCaseKey",
-      "thisIsATestKey", // TODO: fix this case "thisIsATestKey" should make "is-a-test" instead of "is-atest"
+      "thisIsATestKey",
       "thisIsMixedCASE",
       "underscoreAndHyphen",
       "testäöüßÄÖÜ",
@@ -61,7 +61,7 @@ struct ErrorInfoKeysTransformTests {
       "string.with.dots",
       "string.WiTh.dOtS2",
       "string&WIth*|",
-    ] + Self.expectedToStayUnmodified
+    ] + Self.expectedAlwaysStayUnmodified
     
     let diff = Set(camelCased).subtracting(expected)
     #expect(diff.isEmpty)
@@ -88,7 +88,7 @@ struct ErrorInfoKeysTransformTests {
       "String.with.dots",
       "String.WiTh.dOtS2",
       "String&WIth*|",
-    ] + Self.expectedToStayUnmodified
+    ] + Self.expectedAlwaysStayUnmodified
     
     let diff = Set(pascalCased).subtracting(expected)
     #expect(diff.isEmpty)
@@ -115,7 +115,7 @@ struct ErrorInfoKeysTransformTests {
       "string.with.dots",
       "string._wi_th.d_ot_s2",
       "string&_with*|",
-    ] + Self.expectedToStayUnmodified
+    ] + Self.expectedAlwaysStayUnmodified
     
     let diff = Set(snakeCased).subtracting(expected)
     #expect(diff.isEmpty)
@@ -142,7 +142,7 @@ struct ErrorInfoKeysTransformTests {
       "string.with.dots",
       "string._wi_th.d_ot_s2",
       "string&_with*|",
-    ] + Self.expectedToStayUnmodified
+    ] + Self.expectedAlwaysStayUnmodified
     
     let diff = Set(snakeCased).subtracting(expected)
     #expect(diff.isEmpty)
