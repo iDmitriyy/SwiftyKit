@@ -38,6 +38,8 @@ struct ErrorInfoKeysTransformTests {
   ] + expectedToStayUnmodified + expectedModifiedForPascalOnly
   // TODO: Add not only english capitalized
   
+  // MARK: - Tests
+  
   @Test func fromAnyStyleToCamelCased() throws {
     let camelCased = keys.map(ErronInfoKey.fromAnyStyleToCamelCased(string:))
     
@@ -79,6 +81,28 @@ struct ErrorInfoKeysTransformTests {
     ] + Self.expectedToStayUnmodified + Self.expectedModifiedForPascalOnly.map { $0.uppercasingFirstLetter() }
     
     let diff = Set(pascalCased).symmetricDifference(expected)
-    #expect(diff.isEmpty, "\(diff)")
+    #expect(diff.isEmpty)
+  }
+  
+  @Test func fromAnyStyleToSnakeCased() throws {
+    let snakeCased = keys.map(ErronInfoKey.fromAnyStyleToSnakeCased(string:))
+    
+    let expected = [
+      "snake_case_key",
+      "camel_case_key",
+      "kebab_case_key",
+      "pascal_case_key",
+      "this_is_a_test_key",
+      "this_is_mixed_case",
+      "underscore_and_hyphen",
+      "____many___underscores__",
+      "____many___hyphens__",
+      "_________", // only underscores
+      "_________", // only hyphens
+      "repeated_uppercase",
+    ] + Self.expectedToStayUnmodified + Self.expectedModifiedForPascalOnly
+    
+    let diff = Set(snakeCased).subtracting(expected)
+    #expect(diff.isEmpty)
   }
 }
