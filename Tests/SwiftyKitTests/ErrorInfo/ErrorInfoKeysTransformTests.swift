@@ -48,7 +48,7 @@ struct ErrorInfoKeysTransformTests {
       "camelCaseKey",
       "kebabCaseKey",
       "pascalCaseKey",
-      "thisIsATestKey",
+      "thisIsATestKey", // TODO: fix this case "thisIsATestKey" should make "is-a-test" instead of "is-atest"
       "thisIsMixedCASE",
       "underscoreAndHyphen",
       "testäöüßÄÖÜ",
