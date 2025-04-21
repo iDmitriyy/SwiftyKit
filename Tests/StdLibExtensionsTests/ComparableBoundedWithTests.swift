@@ -1,5 +1,5 @@
 //
-//  BoundedWithTests.swift
+//  ComparableBoundedWithTests.swift
 //  swifty-kit
 //
 //  Created by Dmitriy Ignatyev on 15.12.2024.
@@ -8,7 +8,7 @@
 import Testing
 @testable import StdLibExtensions
 
-struct BoundedWithTests {
+struct ComparableBoundedWithTests {
   @Test func testBounded() throws {
     // --- Normal Cases ---
 
