@@ -9,10 +9,16 @@ import struct OrderedCollections.OrderedDictionary
 
 // MARK: - Error Info
 
+public protocol InformativeError: Error {
+  associatedtype ErrorInfoType: ErrorInfoProtocol
+  
+  var info: ErrorInfoType { get }
+}
+
 public typealias ErrorInfoValueType = CustomStringConvertible & Equatable & Sendable
 
-public protocol ErrorInfoProtocol: Sendable, CustomStringConvertible, CustomDebugStringConvertible {
-  typealias ValueType = CustomStringConvertible & Equatable & Sendable
+public protocol ErrorInfoProtocol: Collection, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
+  typealias ValueType = Sendable
   
   var isEmpty: Bool { get }
   
@@ -36,9 +42,21 @@ public protocol ErrorInfoProtocol: Sendable, CustomStringConvertible, CustomDebu
 // }
 
 public struct ErrorInfo: ErrorInfoProtocol {
+  public subscript(position: Int) -> Slice<ErrorInfo> {
+    _read {
+      fatalError()
+    }
+  }
+  
   public var isEmpty: Bool { storage.isEmpty }
   
   public var count: Int { storage.count }
+  
+  public func index(after i: Int) -> Int { storage.keys.index(after: i) }
+  
+  public var startIndex: Int { storage.keys.startIndex }
+  
+  public var endIndex: Int { storage.keys.endIndex }
   
   // TODO: - add tests for elements ordering stability
   public var description: String { String(describing: storage) }
@@ -60,12 +78,12 @@ public struct ErrorInfo: ErrorInfoProtocol {
     self.init(storage: OrderedDictionary<String, any ValueType>())
   }
   
-//  public init(legacyUserInfo: [String: Any]) {
-//    self.init()
-//    legacyUserInfo.forEach { key, value in
-//      storage[key] = prettyDescription(any: value)
-//    }
-//  }
+  public init(legacyUserInfo: [String: Any]) {
+    self.init()
+    legacyUserInfo.forEach { key, value in
+      storage[key] = prettyDescription(any: value)
+    }
+  }
   
   @_disfavoredOverload
   public subscript(key: String, line: UInt = #line) -> (any ValueType)? {
@@ -79,6 +97,7 @@ public struct ErrorInfo: ErrorInfoProtocol {
   
   // TODO: - think about design of such using of ErronInfoKey.
   // Subscript duplicated, check if cimpiler hamdle when root subscript getter become available or not
+  // - add ability to add NonSendable values via sending and wrapping them into a Sendable wrapper
 
   @_disfavoredOverload
   public subscript(key: ErronInfoKey, _: UInt = #line) -> (any ValueType)? {
