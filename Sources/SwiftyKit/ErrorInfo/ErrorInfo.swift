@@ -15,6 +15,10 @@ public protocol InformativeError: Error {
   var info: ErrorInfoType { get }
 }
 
+/// This approach addresses several important concerns:
+/// - Thread Safety: The Sendable requirement is essential to prevent data races and ensure safe concurrent access.
+/// - String Representation: Requiring CustomStringConvertible forces developers to provide meaningful string representations for stored values, which is invaluable for debugging and logging. It also prevents unexpected behavior when converting values to strings.
+/// - Collision Resolution: The Equatable requirement allows to detect and potentially resolve collisions if different values are associated with the same key. This adds a layer of robustness.
 public typealias ErrorInfoValueType = CustomStringConvertible & Equatable & Sendable
 
 public protocol ErrorInfoProtocol: Collection, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
