@@ -10,6 +10,8 @@ import Testing
 
 struct ComparableBoundedWithTests {
   @Test func testBounded() throws {
+    let ff = String(describing: Void())
+    
     // --- Normal Cases ---
 
     // Positive Bounds

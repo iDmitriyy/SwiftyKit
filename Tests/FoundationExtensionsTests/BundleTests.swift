@@ -7,6 +7,7 @@
 
 import Testing
 @testable import FoundationExtensions
+import Foundation
 
 struct BundleExtensionTests {
   @Test func mainAppVersionString() {
@@ -35,30 +36,29 @@ struct SemVerAppVersionTests {
     let appVersionString = "1.0.0"
     
     let appVersion = try #require(SemVerAppVersion(appVersionString))
-    XCTAssertNoThrow(try SemVerAppVersion(description: appVersionString))
     
     let description = String(describing: appVersion)
-    XCTAssertEqual(appVersionString, description)
+    #expect(appVersionString == description)
   }
     
   @Test func initFromInvalidString() {
     let appVersionInvalidString = "invalid version string"
-    XCTAssertNil(SemVerAppVersion(appVersionInvalidString))
-    XCTAssertThrowsError(try SemVerAppVersion(description: appVersionInvalidString))
+    #expect(SemVerAppVersion(appVersionInvalidString) == nil)
+    #expect(throws: (any Error).self) { try SemVerAppVersion(description: appVersionInvalidString) }
   }
     
   @Test func equality() {
     let appVersion1 = SemVerAppVersion(major: 1, minor: 2, patch: 3)
     let appVersion2 = SemVerAppVersion(major: 1, minor: 2, patch: 3)
-    XCTAssertEqual(appVersion1, appVersion2)
+    #expect(appVersion1 == appVersion2)
   }
     
   @Test func lessThan() {
     let appVersion1 = SemVerAppVersion(major: 1, minor: 2, patch: 3)
     let appVersion2 = SemVerAppVersion(major: 1, minor: 3, patch: 0)
     let appVersion3 = SemVerAppVersion(major: 1, minor: 11, patch: 0)
-    XCTAssertTrue(appVersion1 < appVersion2)
-    XCTAssertTrue(appVersion2 < appVersion3)
+    #expect(appVersion1 < appVersion2)
+    #expect(appVersion2 < appVersion3)
   }
     
   @Test func decoding() throws {
@@ -70,9 +70,9 @@ struct SemVerAppVersionTests {
     let decoder = JSONDecoder()
     let appVersion = try decoder.decode(SemVerAppVersion.self, from: data)
         
-    XCTAssertEqual(appVersion.major, 1)
-    XCTAssertEqual(appVersion.minor, 2)
-    XCTAssertEqual(appVersion.patch, 3)
+    #expect(appVersion.major == 1)
+    #expect(appVersion.minor == 2)
+    #expect(appVersion.patch == 3)
   }
     
   @Test func ncoding() throws {
@@ -83,6 +83,6 @@ struct SemVerAppVersionTests {
     
     let json = String(decoding: data, as: UTF8.self)
     let expectedJson = "[1,2,3]"
-    XCTAssertEqual(json, expectedJson)
+    #expect(json == expectedJson)
   }
 }
