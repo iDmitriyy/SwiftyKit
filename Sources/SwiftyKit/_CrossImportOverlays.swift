@@ -10,3 +10,5 @@ extension OrderedDictionary: DictionaryUnifyingProtocol {
     self.init(minimumCapacity: minimumCapacity, persistent: false)
   }
 }
+
+// + #nonEmptyString macro

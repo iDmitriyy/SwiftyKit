@@ -5,23 +5,23 @@
 //  Created by Dmitriy Ignatyev on 16.04.2025.
 //
 
-extension ErronInfoKey {
-  public func camelCased() -> Self {
-    Self(Self.fromAnyStyleToCamelCased(string: string))
-  }
-  
-  public func pascalCased() -> Self {
-    Self(Self.fromAnyStyleToPascalCased(string: string))
-  }
-  
-  public func snakeCased() -> Self {
-    Self(Self.fromAnyStyleToSnakeCased(string: string))
-  }
-  
-  public func kebabCased() -> Self {
-    Self(Self.fromAnyStyleToKebabCased(string: string))
-  }
-}
+//extension ErronInfoKey {
+//  public func camelCased() -> Self {
+//    Self(uncheckedString: Self.fromAnyStyleToCamelCased(string: rawValue))
+//  }
+//  
+//  public func pascalCased() -> Self {
+//    Self(uncheckedString: Self.fromAnyStyleToPascalCased(string: rawValue))
+//  }
+//  
+//  public func snakeCased() -> Self {
+//    Self(uncheckedString: Self.fromAnyStyleToSnakeCased(string: rawValue))
+//  }
+//  
+//  public func kebabCased() -> Self {
+//    Self(uncheckedString: Self.fromAnyStyleToKebabCased(string: rawValue))
+//  }
+//}
 
 // extension ErrorInfoProtocol {
 //  public func camelCasingKeys() -> String {

@@ -5,53 +5,40 @@
 //  Created by Dmitriy Ignatyev on 16.04.2025.
 //
 
-public struct ErronInfoKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
-  public var description: String { string }
+public struct ErronInfoKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible, RawRepresentable {
+  public typealias RawValue = String
   
-  public var debugDescription: String { string }
+  /// A new instance initialized with `rawValue` will be equivalent to this instance.
+  public let rawValue: String
   
-  internal let string: String
+  public var description: String { rawValue }
   
-  public init(_ string: String) {
-    self.string = string
+  public var debugDescription: String { rawValue }
+  
+  /// Creates a new instance with the specified raw value.
+  ///
+  /// - Parameter rawValue: The raw value to use for the new instance.
+  ///
+  /// Rationale: error info keys are used to be read by humans, so there 2 minimal requirements:
+  /// 1. no new-line symbols
+  /// 2. contains at least one symbol except whitespaces
+  public init?(rawValue: String) {
+    guard rawValue.containsCharacters(except: .whitespaces),
+          !rawValue.containsCharacters(in: .newlines) else { return nil }
+    self.init(uncheckedString: rawValue)
   }
   
-  public init(_ string: NonEmptyString) {
-    self.init(string.rawValue)
+  internal init(uncheckedString: String) {
+    self.rawValue = uncheckedString
   }
 }
 
 extension ErronInfoKey {
-  // By default names are given with snake_case, which can ba transformed to camelCase, kebab-case or PascalCase
-  // formats when logging.
-  // TODO: - inspet Swift codebases for styles
+  public func withPrefix(_ prefix: String) -> Self {
+    Self(uncheckedString: prefix + rawValue)
+  }
   
-  public static let id = ErronInfoKey("id")
-  public static let instanceID = ErronInfoKey("instance_id")
-  public static let status = ErronInfoKey("status")
-  public static let rawStatus = ErronInfoKey("raw_status")
-  public static let statusID = ErronInfoKey("status_id")
-  public static let state = ErronInfoKey("state")
-  
-  public static let requestURL = ErronInfoKey("request_url")
-  public static let responseURL = ErronInfoKey("response_url")
-  public static let responseData = ErronInfoKey("response_data")
-  public static let responseJson = ErronInfoKey("response_json")
-  public static let dataString = ErronInfoKey("data_string")
-  public static let dataBytesCount = ErronInfoKey("data_bytes_count")
-  
-  public static let index = ErronInfoKey("index")
-  public static let indices = ErronInfoKey("indices")
-  
-  public static let errorCode = ErronInfoKey("error_code")
-  public static let errorDomain = ErronInfoKey("error_domain")
-  
-  public static let file = ErronInfoKey("file")
-  public static let line = ErronInfoKey("line")
-  public static let fileLine = ErronInfoKey("file_line")
-  
-  public static let message = ErronInfoKey("message")
-  public static let debugMessage = ErronInfoKey("debug_message")
-  public static let description = ErronInfoKey("description")
-  public static let debugDescription = ErronInfoKey("debug_description")
+  public func withSuffix(_ suffix: String) -> Self {
+    Self(uncheckedString: rawValue + suffix)
+  }
 }

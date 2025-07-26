@@ -46,6 +46,8 @@ public protocol ErrorInfoProtocol: Collection, Sendable, CustomStringConvertible
 // }
 
 public struct ErrorInfo: ErrorInfoProtocol {
+  public static let empty: Self = Self()
+  
   public subscript(position: Int) -> Slice<ErrorInfo> {
     _read {
       fatalError()
@@ -72,7 +74,7 @@ public struct ErrorInfo: ErrorInfoProtocol {
     fatalError()
   }
   
-  fileprivate private(set) var storage: OrderedDictionary<String, any ValueType>
+  internal private(set) var storage: OrderedDictionary<String, any ValueType>
   
   fileprivate init(storage: OrderedDictionary<String, any ValueType>) {
     self.storage = storage
@@ -82,13 +84,16 @@ public struct ErrorInfo: ErrorInfoProtocol {
     self.init(storage: OrderedDictionary<String, any ValueType>())
   }
   
-  public init(legacyUserInfo: [String: Any]) {
+  public init(legacyUserInfo: [String: Any],
+              valueInterpolation: (Any) -> String = { prettyDescription(any: $0) }) {
     self.init()
-    legacyUserInfo.forEach { key, value in
-      storage[key] = prettyDescription(any: value)
-    }
+    legacyUserInfo.forEach { key, value in storage[key] = valueInterpolation(value) }
   }
-  
+}
+
+// MARK: Get / Set
+
+extension ErrorInfo {
   @_disfavoredOverload
   public subscript(key: String, line: UInt = #line) -> (any ValueType)? {
     @available(*, unavailable, message: "This is a set only subscript")
@@ -105,11 +110,11 @@ public struct ErrorInfo: ErrorInfoProtocol {
 
   @_disfavoredOverload
   public subscript(key: ErronInfoKey, _: UInt = #line) -> (any ValueType)? {
-    get { storage[key.string] }
-    set { self[key.string] = newValue }
+    get { storage[key.rawValue] }
+    set { self[key.rawValue] = newValue }
   }
   
-  public subscript(key: ErronInfoKey) -> String? { self[key.string] }
+  public subscript(key: ErronInfoKey) -> String? { self[key.rawValue] }
   
   public subscript(key: String) -> String? { storage[key] as? String }
   
@@ -135,7 +140,11 @@ public struct ErrorInfo: ErrorInfoProtocol {
       ErrorInfoFunctions._mergeErrorInfo(&storage, with: [dict], line: line)
     }
   }
-  
+}
+
+// MARK: Prefix & Suffix
+
+extension ErrorInfo {
   public func addingKeyPrefix(_ keyPrefix: String,
                               uppercasingFirstLetter uppercasing: Bool = true,
                               line: UInt = #line) -> Self {
@@ -143,9 +152,11 @@ public struct ErrorInfo: ErrorInfoProtocol {
     let prefixed = ErrorInfoFunctions.addKeyPrefix(keyPrefix, toKeysOf: storageCopy, uppercasingFirstLetter: uppercasing, line: line)
     return Self(storage: prefixed)
   }
-  
-  // MARK: Static Funcs
-  
+}
+
+// MARK: Merge
+
+extension ErrorInfo {
   // TODO: - merge method with consuming generics instead of variadic ...
   
   public static func merge(_ otherInfos: Self..., to errorInfo: inout Self, line: UInt = #line) {
@@ -169,24 +180,9 @@ public struct ErrorInfo: ErrorInfoProtocol {
     ErrorInfoFunctions._mergeErrorInfo(&errorInfoRaw, with: otherInfos.map { $0.storage }, line: line)
     return Self(storage: errorInfoRaw)
   }
-  
-  public static let empty: Self = Self()
 }
 
-extension ErrorInfo: ExpressibleByDictionaryLiteral {
-  public typealias Value = any ValueType
-  public typealias Key = String
-  
-  public init(dictionaryLiteral elements: (String, Value)...) {
-    guard !elements.isEmpty else {
-      self = .empty
-      return
-    }
-    
-    self.init()
-    elements.forEach { key, value in self[key] = value }
-  }
-}
+// MARK: collect values from KeyPath
 
 extension ErrorInfo {
   @inlinable
