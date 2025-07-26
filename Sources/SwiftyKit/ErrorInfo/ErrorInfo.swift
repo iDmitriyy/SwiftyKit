@@ -10,7 +10,7 @@ import struct OrderedCollections.OrderedDictionary
 // MARK: - Error Info
 
 public protocol InformativeError: Error {
-  associatedtype ErrorInfoType: ErrorInfoProtocol
+  associatedtype ErrorInfoType: ErrorInfoCollection
   
   var info: ErrorInfoType { get }
 }
@@ -21,7 +21,7 @@ public protocol InformativeError: Error {
 /// - Collision Resolution: The Equatable requirement allows to detect and potentially resolve collisions if different values are associated with the same key. This adds a layer of robustness.
 public typealias ErrorInfoValueType = CustomStringConvertible & Equatable & Sendable
 
-public protocol ErrorInfoProtocol: Collection, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
+public protocol ErrorInfoCollection: Collection, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
   typealias ValueType = Sendable
   
   var isEmpty: Bool { get }
@@ -31,10 +31,14 @@ public protocol ErrorInfoProtocol: Collection, Sendable, CustomStringConvertible
 //  func merge(with other: Self)
   
   /// e.g. Later it can be decided to keep reference types as is, but interoplate value-types at the moment of passing them to ErrorInfo subscript.
-  @_disfavoredOverload subscript(_: String, _: UInt) -> (any ValueType)? { get set }
+//  @_disfavoredOverload subscript(_: String, _: UInt) -> (any ValueType)? { get set }
   
 //  static func merged(_ infos: Self...) -> Self
 //  func asLegacyDictionary() -> [String: Any]
+}
+
+public protocol ErrorInfoType: ErrorInfoCollection {
+  
 }
 
 // extension ErrorInfoProtocol {
@@ -45,7 +49,7 @@ public protocol ErrorInfoProtocol: Collection, Sendable, CustomStringConvertible
 //  }
 // }
 
-public struct ErrorInfo: ErrorInfoProtocol {
+public struct ErrorInfo: ErrorInfoCollection {
   public static let empty: Self = Self()
   
   public subscript(position: Int) -> Slice<ErrorInfo> {
