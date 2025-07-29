@@ -2,9 +2,11 @@
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
+import CompilerPluginSupport
 
 let package = Package(
   name: "swifty-kit",
+  platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
   products: [
     // Products define the executables and libraries a package produces, making them visible to other packages.
     .library(name: "SwiftyKit", targets: ["SwiftyKit"]),
@@ -13,11 +15,13 @@ let package = Package(
     .library(name: "FoundationExtensions", targets: ["FoundationExtensions"]),
     .library(name: "FunctionalTypes", targets: ["FunctionalTypes"]),
     .library(name: "ErrorInfo", targets: ["ErrorInfo"]),
+    .library(name: "SwiftyKitMacros", targets: ["Macros"]),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.2.1")),
     .package(url: "https://github.com/apple/swift-algorithms.git", .upToNextMajor(from: "1.2.1")),
     .package(url: "https://github.com/pointfreeco/swift-nonempty.git", .upToNextMajor(from: "0.5.0")),
+    .package(url: "https://github.com/apple/swift-syntax.git", from: "601.0.1"),
   ],
   targets: [
     // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -26,6 +30,7 @@ let package = Package(
                                               .target(name: "StdLibExtensions"),
                                               .target(name: "FoundationExtensions"),
                                               .target(name: "ErrorInfo"),
+                                              .target(name: "Macros"),
                                               .product(name: "Collections", package: "swift-collections"),
                                               .product(name: "Algorithms", package: "swift-algorithms"),
                                               .product(name: "NonEmpty", package: "swift-nonempty")]),
@@ -41,7 +46,12 @@ let package = Package(
                                               .target(name: "CrossImportOverlays")]),
     .target(name: "CrossImportOverlays", dependencies: [.target(name: "IndependentDeclarations"),
                                                         .product(name: "Collections", package: "swift-collections")]),
+            
+      .target(name: "Macros", dependencies: ["MacroImps"]),
     
+      .macro(name: "MacroImps",dependencies: [.target(name: "IndependentDeclarations"),
+                                              .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                                              .product(name: "SwiftCompilerPlugin", package: "swift-syntax")]),
     // MARK: - Test Targets
     
     .testTarget(name: "SwiftyKitTests", dependencies: [.target(name: "SwiftyKit")]),
@@ -49,7 +59,8 @@ let package = Package(
     .testTarget(name: "StdLibExtensionsTests", dependencies: ["StdLibExtensions"]),
     .testTarget(name: "FoundationExtensionsTests", dependencies: ["FoundationExtensions",
                                                                   .product(name: "NonEmpty", package: "swift-nonempty")]),
-  ]
+  ],
+  swiftLanguageModes: [.v6]
 )
 
 for target: PackageDescription.Target in package.targets {

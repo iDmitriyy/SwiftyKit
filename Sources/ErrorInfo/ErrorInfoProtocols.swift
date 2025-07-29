@@ -21,7 +21,7 @@ public typealias ErrorInfoValueType = CustomStringConvertible & Equatable & Send
 
 public protocol ErrorInfoCollection: Collection, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
   typealias ValueType = Sendable
-    
+//  associatedtype ValueType: Sendable = ErrorInfoValueType
 //  func merging(with other: some ErrorInfoCollection) -> Self
   
   /// e.g. Later it can be decided to keep reference types as is, but interoplate value-types at the moment of passing them to ErrorInfo subscript.

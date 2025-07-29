@@ -12,3 +12,11 @@
 @_exported public import StdLibExtensions
 @_exported public import FoundationExtensions
 @_exported public import ErrorInfo
+
+import Macros
+//import Foundation
+
+let ff = #stringify(4 + 4)
+let col1 = #colorValues(hex: "#0011AAFF")
+//let url = #URL("https://github.com")
+

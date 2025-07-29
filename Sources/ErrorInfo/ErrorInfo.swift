@@ -162,6 +162,7 @@ extension ErrorInfo {
 // MARK: collect values from KeyPath
 
 extension ErrorInfo {
+//public static func fromKeys<T, each V: ErrorInfo.ValueType>(of instance: T,
   @inlinable
   public static func collect<T, each V: ErrorInfo.ValueType>(from instance: T,
                                                              keys key: repeat KeyPath<T, each V>) -> Self {

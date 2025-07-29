@@ -17,4 +17,8 @@ public struct TextError: Error, CustomStringConvertible, CustomDebugStringConver
     self.text = text
     self.source = source
   }
+  
+  public static func message(_ message: String, source: StaticFileLine = .this()) -> Self {
+    Self(text: message, source: source)
+  }
 }
