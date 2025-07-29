@@ -10,4 +10,5 @@
 @_exported public import enum IndependentDeclarations.OneOf2
 @_exported public import enum IndependentDeclarations.OneOf3
 @_exported public import enum IndependentDeclarations.OneOf4
+@_exported public import enum IndependentDeclarations.OneOf5
 @_exported public import struct IndependentDeclarations.PreviousAndCurrent

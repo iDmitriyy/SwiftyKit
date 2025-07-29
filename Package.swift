@@ -12,10 +12,11 @@ let package = Package(
     .library(name: "StdLibExtensions", targets: ["StdLibExtensions"]),
     .library(name: "FoundationExtensions", targets: ["FoundationExtensions"]),
     .library(name: "FunctionalTypes", targets: ["FunctionalTypes"]),
+    .library(name: "ErrorInfo", targets: ["ErrorInfo"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.1.4")),
-    .package(url: "https://github.com/apple/swift-algorithms.git", .upToNextMajor(from: "1.2.0")),
+    .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.2.1")),
+    .package(url: "https://github.com/apple/swift-algorithms.git", .upToNextMajor(from: "1.2.1")),
     .package(url: "https://github.com/pointfreeco/swift-nonempty.git", .upToNextMajor(from: "0.5.0")),
   ],
   targets: [
@@ -24,6 +25,7 @@ let package = Package(
     .target(name: "SwiftyKit", dependencies: [.target(name: "IndependentDeclarations"),
                                               .target(name: "StdLibExtensions"),
                                               .target(name: "FoundationExtensions"),
+                                              .target(name: "ErrorInfo"),
                                               .product(name: "Collections", package: "swift-collections"),
                                               .product(name: "Algorithms", package: "swift-algorithms"),
                                               .product(name: "NonEmpty", package: "swift-nonempty")]),
@@ -31,7 +33,14 @@ let package = Package(
     .target(name: "IndependentDeclarations"),
     .target(name: "StdLibExtensions", dependencies: [.target(name: "IndependentDeclarations")]),
     .target(name: "FoundationExtensions", dependencies: [.target(name: "IndependentDeclarations"),
-                                                         .target(name: "StdLibExtensions")]),
+                                                         .target(name: "StdLibExtensions"),
+                                                         .product(name: "NonEmpty", package: "swift-nonempty")]),
+    .target(name: "ErrorInfo", dependencies: [.target(name: "IndependentDeclarations"),
+                                              .target(name: "StdLibExtensions"),
+                                              .target(name: "FoundationExtensions"),
+                                              .target(name: "CrossImportOverlays")]),
+    .target(name: "CrossImportOverlays", dependencies: [.target(name: "IndependentDeclarations"),
+                                                        .product(name: "Collections", package: "swift-collections")]),
     
     // MARK: - Test Targets
     

@@ -5,6 +5,8 @@
 //  Created by Dmitriy Ignatyev on 16.04.2025.
 //
 
+private import FoundationExtensions
+
 public struct ErronInfoKey: Hashable, Sendable, CustomStringConvertible, CustomDebugStringConvertible, RawRepresentable {
   public typealias RawValue = String
   
@@ -42,3 +44,19 @@ extension ErronInfoKey {
     Self(uncheckedString: rawValue + suffix)
   }
 }
+
+//extension ErronInfoKey {
+//  public struct Separator: Sendable, Hashable, CustomStringConvertible { // RawRepresentable
+//    private let rawValue: String
+//    
+//    public var description: String { rawValue }
+//    
+//    init(uncheckedString: String) {
+//      self.rawValue = uncheckedString
+//    }
+//  }
+//}
+//
+//extension ErronInfoKey.Separator {
+//  public static let dash = Self(uncheckedString: "-")
+//}

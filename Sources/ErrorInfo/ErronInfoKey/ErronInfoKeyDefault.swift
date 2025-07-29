@@ -2,7 +2,7 @@
 //  ErronInfoKeyDefault.swift
 //  swifty-kit
 //
-//  Created by tmp on 26/07/2025.
+//  Created by Dmitriy Ignatyev on 26/07/2025.
 //
 
 extension ErronInfoKey {
@@ -53,4 +53,9 @@ extension ErronInfoKey {
   public static let debugMessage = ErronInfoKey(uncheckedString: "debug_message")
   public static let description = ErronInfoKey(uncheckedString: "description")
   public static let debugDescription = ErronInfoKey(uncheckedString: "debug_description")
+  
+  public static let decodingDate = ErronInfoKey(uncheckedString: "decoding_date")
+  
+  public static let timestamp = ErronInfoKey(uncheckedString: "timestamp")
+  public static let decodingTimestamp = ErronInfoKey(uncheckedString: "decoding_timestamp")
 }

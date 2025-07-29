@@ -6,74 +6,16 @@
 //
 
 import struct OrderedCollections.OrderedDictionary
-
-// MARK: - Error Info
-
-public protocol InformativeError: Error {
-  associatedtype ErrorInfoType: ErrorInfoCollection
-  
-  var info: ErrorInfoType { get }
-}
-
-/// This approach addresses several important concerns:
-/// - Thread Safety: The Sendable requirement is essential to prevent data races and ensure safe concurrent access.
-/// - String Representation: Requiring CustomStringConvertible forces developers to provide meaningful string representations for stored values, which is invaluable for debugging and logging. It also prevents unexpected behavior when converting values to strings.
-/// - Collision Resolution: The Equatable requirement allows to detect and potentially resolve collisions if different values are associated with the same key. This adds a layer of robustness.
-public typealias ErrorInfoValueType = CustomStringConvertible & Equatable & Sendable
-
-public protocol ErrorInfoCollection: Collection, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
-  typealias ValueType = Sendable
-  
-  var isEmpty: Bool { get }
-  
-  var count: Int { get }
-  
-//  func merge(with other: Self)
-  
-  /// e.g. Later it can be decided to keep reference types as is, but interoplate value-types at the moment of passing them to ErrorInfo subscript.
-//  @_disfavoredOverload subscript(_: String, _: UInt) -> (any ValueType)? { get set }
-  
-//  static func merged(_ infos: Self...) -> Self
-//  func asLegacyDictionary() -> [String: Any]
-}
-
-public protocol ErrorInfoType: ErrorInfoCollection {
-  
-}
-
-// extension ErrorInfoProtocol {
-//  public init(dictionaryLiteral elements: (String, (any ValueType)?)..., line: UInt = #line) {
-//    elements.forEach { key, value in
-//      self[key, line] = value
-//    }
-//  }
-// }
+public import func IndependentDeclarations.prettyDescription // for default valueInterpolation with prettyDescription
+import IndependentDeclarations
+import CrossImportOverlays
 
 public struct ErrorInfo: ErrorInfoCollection {
   public static let empty: Self = Self()
   
-  public subscript(position: Int) -> Slice<ErrorInfo> {
-    _read {
-      fatalError()
-    }
-  }
-  
-  public var isEmpty: Bool { storage.isEmpty }
-  
-  public var count: Int { storage.count }
-  
-  public func index(after i: Int) -> Int { storage.keys.index(after: i) }
-  
-  public var startIndex: Int { storage.keys.startIndex }
-  
-  public var endIndex: Int { storage.keys.endIndex }
-  
   // TODO: - add tests for elements ordering stability
-  public var description: String { String(describing: storage) }
   
-  public var debugDescription: String { String(reflecting: storage) }
-  
-  public var asStringDict: [String: String] {
+  public func asStringDict() -> [String: String] {
 //    storage.mapValues { String(describing: $0) }
     fatalError()
   }
@@ -87,12 +29,42 @@ public struct ErrorInfo: ErrorInfoCollection {
   public init() {
     self.init(storage: OrderedDictionary<String, any ValueType>())
   }
-  
+    
   public init(legacyUserInfo: [String: Any],
-              valueInterpolation: (Any) -> String = { prettyDescription(any: $0) }) {
+              valueInterpolation: @Sendable (Any) -> String = { prettyDescription(any: $0) }) {
     self.init()
     legacyUserInfo.forEach { key, value in storage[key] = valueInterpolation(value) }
   }
+}
+
+// MARK: Collection IMP
+
+extension ErrorInfo {
+  public typealias Index = Int
+  
+  public typealias Element = (key: String, value: any ValueType)
+  
+  public var isEmpty: Bool { storage.isEmpty }
+  
+  public var count: Int { storage.count }
+  
+  public var startIndex: Index { storage.keys.startIndex }
+  
+  public var endIndex: Index { storage.keys.endIndex }
+  
+  public subscript(position: Index) -> Element {
+    storage.elements[position]
+  }
+  
+  public func index(after i: Index) -> Index { storage.keys.index(after: i) }
+}
+
+// MARK: CustomStringConvertible IMP
+
+extension ErrorInfo {
+  public var description: String { String(describing: storage) }
+  
+  public var debugDescription: String { String(reflecting: storage) }
 }
 
 // MARK: Get / Set
@@ -103,19 +75,20 @@ extension ErrorInfo {
     @available(*, unavailable, message: "This is a set only subscript")
     get { storage[key] }
     set(maybeValue) {
+      // TODO: when nil then T.Type is unknown but should be known
       let value = maybeValue ?? prettyDescription(any: maybeValue)
       _addValue(value, forKey: key, line: line)
     }
   }
   
   // TODO: - think about design of such using of ErronInfoKey.
-  // Subscript duplicated, check if cimpiler hamdle when root subscript getter become available or not
+  // Subscript duplicated, check if compiler hamdle when root subscript getter become available or not
   // - add ability to add NonSendable values via sending and wrapping them into a Sendable wrapper
 
   @_disfavoredOverload
-  public subscript(key: ErronInfoKey, _: UInt = #line) -> (any ValueType)? {
+  public subscript(key: ErronInfoKey, line: UInt = #line) -> (any ValueType)? {
     get { storage[key.rawValue] }
-    set { self[key.rawValue] = newValue }
+    set { self[key.rawValue, line] = newValue }
   }
   
   public subscript(key: ErronInfoKey) -> String? { self[key.rawValue] }

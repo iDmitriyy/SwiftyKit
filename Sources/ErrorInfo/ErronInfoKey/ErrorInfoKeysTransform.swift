@@ -104,10 +104,7 @@ extension ErronInfoKey {
     var normalCharsCount: UInt = 0
     var previousKind: PreviousCharKind?
     for character in string {
-      if character == "_" {
-        result.append(separator)
-        previousKind = .separator
-      } else if character == "-" {
+      if character == "_" || character == "-" {
         result.append(separator)
         previousKind = .separator
       } else { // normal (non-separator) character:

@@ -2,7 +2,7 @@
 //  ErrorInfo+DictionaryLiteral.swift
 //  swifty-kit
 //
-//  Created by tmp on 26/07/2025.
+//  Created by Dmitriy Ignatyev on 26/07/2025.
 //
 
 // MARK: Expressible By Dictionary Literal

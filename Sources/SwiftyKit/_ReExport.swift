@@ -11,3 +11,4 @@
 @_exported public import IndependentDeclarations
 @_exported public import StdLibExtensions
 @_exported public import FoundationExtensions
+@_exported public import ErrorInfo

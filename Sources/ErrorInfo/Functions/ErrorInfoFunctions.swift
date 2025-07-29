@@ -6,6 +6,7 @@
 //
 
 public import protocol IndependentDeclarations.DictionaryUnifyingProtocol
+private import FoundationExtensions
 
 // MARK: - Merge ErrorInfo
 
@@ -120,27 +121,5 @@ public enum ErrorInfoFunctions: Namespacing {
     }
     
     return prefixedKeysDict
-  }
-}
-
-// MARK: - is ApproximatelycEqual
-
-extension ErrorInfoFunctions {
-  // TODO: - add constraint T: CustomStringConvertible & Equatable & Sendable
-  public static func isApproximatelyEqual<T>(_ lhs: T, _ rhs: T) -> Bool {
-    if let lhs = lhs as? (any Hashable), let rhs = rhs as? (any Hashable) {
-      AnyHashable(lhs) == AnyHashable(rhs) // use AnyHashable logic for equality comparison
-    } else {
-      String(describing: lhs) == String(describing: rhs)
-    }
-  }
-}
-
-// MARK: Random Suffix
-
-extension ErrorInfoFunctions {
-  fileprivate static func randomSuffix() -> String {
-    String([String.englishAlphabetUppercasedString.randomElement(),
-            String.englishAlphabetUppercasedString.randomElement()]) + "\(UInt.random(in: 1...9))"
   }
 }

@@ -64,3 +64,25 @@ extension OneOf4: Hashable where A: Hashable, B: Hashable, C: Hashable, D: Hasha
 extension OneOf4: Comparable where A: Comparable, B: Comparable, C: Comparable, D: Comparable {}
 
 extension OneOf4: Sendable where A: Sendable, B: Sendable, C: Sendable, D: Sendable {}
+
+// MARK: - OneOf 5
+
+public enum OneOf5<A: ~Copyable, B: ~Copyable, C: ~Copyable, D: ~Copyable, E: ~Copyable>: ~Copyable {
+  case first(A)
+  case second(B)
+  case third(C)
+  case fourth(D)
+  case fifth(E)
+}
+
+extension OneOf5: Copyable where A: Copyable, B: Copyable, C: Copyable, D: Copyable, E: Copyable {}
+
+extension OneOf5: BitwiseCopyable where A: BitwiseCopyable, B: BitwiseCopyable, C: BitwiseCopyable, D: BitwiseCopyable, E: BitwiseCopyable {}
+
+extension OneOf5: Equatable where A: Equatable, B: Equatable, C: Equatable, D: Equatable, E: Equatable {}
+
+extension OneOf5: Hashable where A: Hashable, B: Hashable, C: Hashable, D: Hashable, E: Hashable {}
+
+extension OneOf5: Comparable where A: Comparable, B: Comparable, C: Comparable, D: Comparable, E: Comparable {}
+
+extension OneOf5: Sendable where A: Sendable, B: Sendable, C: Sendable, D: Sendable, E: Sendable {}

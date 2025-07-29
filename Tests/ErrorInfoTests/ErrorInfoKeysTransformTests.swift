@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@testable import SwiftyKit
+@testable import ErrorInfo
 import Testing
 
 struct ErrorInfoKeysTransformTests {
