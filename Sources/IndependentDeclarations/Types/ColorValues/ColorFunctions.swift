@@ -5,30 +5,80 @@
 //  Created by Dmitriy Ignatyev on 29/07/2025.
 //
 
-private import Foundation // FIXME: remove Foundation
+private import Foundation  // FIXME: remove Foundation
 
-package func rgbaUInt8(hexString string: String) throws -> (UInt8, UInt8, UInt8, UInt8){
-    guard string.hasPrefix("#") else {
-      throw TextError.message("stringLiteralMustStartWithHashtag")
+//package func argbUInt8(argbHexString string: String) throws -> (a: UInt8, r: UInt8, g: UInt8, b: UInt8) {
+//  let (a, r, g, b) = try rgbaUInt8(rgbaHexString: string)
+//  return (a, r, g, b)
+//}
+
+package func rgbaUInt8(rgbaHexString string: String) throws -> (r: UInt8, g: UInt8, b: UInt8, a: UInt8) {
+  let (uint64, hexDigits) = try _validatedUInt64(hexString: string)
+
+  let r, g, b, a: UInt64
+  switch hexDigits.count { // 4 possible lengths after removing the #
+  case 3:  // RGB (12-bit)
+    let r_ = (uint64 & 0xf00) >> 8
+    r = (r_ * 16) + r_
+
+    let g_ = (uint64 & 0x0f0) >> 4
+    g = (g_ * 16) + g_
+
+    let b_ = uint64 & 0x00f
+    b = (b_ * 16) + b_
+
+    a = 16
+  case 4:  // RGBA (16-bit)
+    let r_ = (uint64 & 0xf000) >> 12
+    r = (r_ * 16) + r_
+
+    let g_ = (uint64 & 0x0f00) >> 8
+    g = (g_ * 16) + g_
+
+    let b_ = (uint64 & 0x00f0) >> 4
+    b = (b_ * 16) + b_
+
+    let a_ = uint64 & 0x000f
+    a = (a_ * 16) + a_
+  case 6:  // RRGGBB (24-bit)
+    r = (uint64 & 0x00ff_0000) >> 16
+    g = (uint64 & 0x0000_ff00) >> 8
+    b = uint64 & 0x0000_00ff
+    a = 255
+  case 8:  // RRGGBBAA (32-bit)
+    r = (uint64 & 0xff00_0000) >> 24
+    g = (uint64 & 0x00ff_0000) >> 16
+    b = (uint64 & 0x0000_ff00) >> 8
+    a = uint64 & 0x0000_00ff
+  default:
+    throw TextError.message("Hex color string has invalid length")
+  }
+
+  let output = (UInt8(r), UInt8(g), UInt8(b), UInt8(a))
+  return output
+}
+
+internal func _validatedUInt64(hexString string: String) throws -> (UInt64, hexDigits: String) {
+  guard string.hasPrefix("#") else {
+    throw TextError.message("Color hex string must start with # symbol")
+  }
+
+  let startAfterHashtag = string.index(string.startIndex, offsetBy: 1)
+  let stringWithoutHashtag = String(string[startAfterHashtag...])
+
+  let hexCharacters: Set<Character> = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"]
+  for char in stringWithoutHashtag.lowercased() {
+    guard hexCharacters.contains(char) else {
+      throw TextError.message("invalidCharacters")
     }
-    
-    let startAfterHashtag = string.index(string.startIndex, offsetBy: 1)
-    let stringWithoutHashtag = String(string[startAfterHashtag...])
-    
-    let hexCharacters: Set<Character> = [ "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" ]
-    for char in stringWithoutHashtag.lowercased() {
-        guard hexCharacters.contains(char) else {
-          throw TextError.message("invalidCharacters")
-        }
-    }
-    
-    guard stringWithoutHashtag.count > 0 else {
-      throw TextError.message("hexColorStringCanNotBeEmpty")
-    }
-    
-    let scanner = Scanner(string: stringWithoutHashtag)
-    var uint64: UInt64 = 0
-  
+  }
+
+  guard stringWithoutHashtag.count > 0 else {
+    throw TextError.message("hexColorStringCanNotBeEmpty")
+  }
+
+  var uint64: UInt64 = 0
+
   try withUnsafeMutablePointer(to: &uint64) {
     if Scanner(string: stringWithoutHashtag).scanHexInt64($0) {
       // ⚠️ @iDmitriyy
@@ -45,56 +95,5 @@ package func rgbaUInt8(hexString string: String) throws -> (UInt8, UInt8, UInt8,
     }
   }
   
-    let r, g, b, a: UInt64
-    // 4 diffrent lengths after removing the #
-    switch stringWithoutHashtag.count {
-//    case 3: // RGB
-//        let R = Double((hexNumber & 0xf00) >> 8 )
-//        r = (( R * 16 ) + R ) /  255
-//
-//        let G = Double((hexNumber & 0x0f0) >> 4 )
-//        g = (( G * 16 ) + G ) / 255
-//
-//        let B = Double(hexNumber & 0x00f)
-//        b = (( B * 16 ) + B ) / 255
-//
-//        a = 1
-//    case 4: // RGBA
-//        let R = Double((hexNumber & 0xf000) >> 12 )
-//        r = (( R * 16 ) + R ) /  255
-//
-//        let G = Double((hexNumber & 0x0f00) >> 8 )
-//        g = (( G * 16 ) + G ) / 255
-//
-//        let B = Double((hexNumber & 0x00f0) >> 4 )
-//        b = (( B * 16 ) + B ) / 255
-//
-//        let A = Double(hexNumber & 0x000f)
-//        a = (( A * 16 ) + A ) / 255
-//    case 6: // RRGGBB ( alpha -> 100% )
-//        r = Double((hexNumber & 0xff0000) >> 16 ) / 255
-//        g = Double((hexNumber & 0x00ff00) >> 8 ) / 255
-//        b = Double(hexNumber & 0x0000ff) / 255
-//        a = 1
-//    case 8: // RRGGBBAA
-//        r = Double((hexNumber & 0xff000000) >> 24) / 255
-//        g = Double((hexNumber & 0x00ff0000) >> 16) / 255
-//        b = Double((hexNumber & 0x0000ff00) >> 8) / 255
-//        a = Double(hexNumber & 0x000000ff) / 255
-    case 6: // RGB (24-bit)
-      r = uint64 >> 16
-      g = uint64 >> 8 & 0xFF
-      b = uint64 & 0xFF
-      a = 255
-    case 8: // ARGB (32-bit)
-      r = uint64 >> 16 & 0xFF
-      g = uint64 >> 8 & 0xFF
-      b = uint64 & 0xFF
-      a = uint64 >> 24
-    default:
-      throw TextError.message("Hex color string has invalid length")
-    }
-  
-  let output = (UInt8(r), UInt8(g), UInt8(b), UInt8(a))
-  return output
+  return (uint64, stringWithoutHashtag)
 }

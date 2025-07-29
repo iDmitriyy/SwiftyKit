@@ -6,17 +6,20 @@
 //
 
 @_exported public import Collections
-@_exported public import NonEmpty
-
-@_exported public import IndependentDeclarations
-@_exported public import StdLibExtensions
-@_exported public import FoundationExtensions
 @_exported public import ErrorInfo
+@_exported public import FoundationExtensions
+@_exported public import IndependentDeclarations
+@_exported public import NonEmpty
+@_exported public import StdLibExtensions
 
-import Macros
+/// SPI:
+/// @_spi(SwiftyKitBuiltinTypes)
+/// @_spi(SwiftyKitBuiltinFuncs)
+
 //import Foundation
+import Macros
 
 let ff = #stringify(4 + 4)
 let col1 = #colorValues(hex: "#0011AAFF")
+let col2 = #colorValues(hex: 0x0011_AAFF)
 //let url = #URL("https://github.com")
-

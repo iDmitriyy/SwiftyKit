@@ -21,8 +21,9 @@ public macro stringify<T>(_ value: T) -> (T, String) = #externalMacro(module: "M
  
  #URL
  #HexColors 
- #Equatable #Hashable  | usage: Hashable(only:) Hashable(allExcept:)
+ #Equatable #Hashable  | usage: Hashable(includingOnly:) Hashable(allExcept:)
  @OptionSet
+ @PrivateEnumInitializers | for structs with private backing enum, generate static-func initializers with cases names.
  
  #NewEnumWithoutAssociatedValues  | #NewEnum(name: String? = nil, accessLevel: A? = nil)
  

@@ -12,7 +12,7 @@ import SwiftSyntaxMacros
 struct MacroPlugin: CompilerPlugin {
   let providingMacros: [any Macro.Type] = [
         StringifyMacro.self,
-        ColorValuesFromHexMacro.self,
+        ColorValuesFromRGBAHexMacro.self,
 //        URLMacro.self,
     ]
 }
