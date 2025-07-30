@@ -47,11 +47,15 @@ let package = Package(
     .target(name: "CrossImportOverlays", dependencies: [.target(name: "IndependentDeclarations"),
                                                         .product(name: "Collections", package: "swift-collections")]),
             
-      .target(name: "Macros", dependencies: ["MacroImps"]),
+      .target(name: "Macros",
+              dependencies: ["MacroImps"],
+              path: "Sources/Macros/Declarations"),
     
-      .macro(name: "MacroImps",dependencies: [.target(name: "IndependentDeclarations"),
-                                              .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-                                              .product(name: "SwiftCompilerPlugin", package: "swift-syntax")]),
+      .macro(name: "MacroImps",
+             dependencies: [.target(name: "IndependentDeclarations"),
+                            .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+                            .product(name: "SwiftCompilerPlugin", package: "swift-syntax")],
+             path: "Sources/Macros/MacroImps"),
     // MARK: - Test Targets
     
     .testTarget(name: "SwiftyKitTests", dependencies: [.target(name: "SwiftyKit")]),
