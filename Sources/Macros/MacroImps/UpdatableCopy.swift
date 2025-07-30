@@ -36,6 +36,7 @@ public enum UpdatableCopyMacro: MemberMacro {
         guard let name = patternBinding.pattern.as(IdentifierPatternSyntax.self)?.identifier else { return nil }
         // ...and then the property's type...
         guard let typeAnnotation: TypeAnnotationSyntax = patternBinding.typeAnnotation else { return nil }
+      
         let type = typeAnnotation.trimmed.description.replacingOccurrences(of: "?", with: "")
 
         return (name: name.text, type: type)
@@ -51,9 +52,14 @@ public enum UpdatableCopyMacro: MemberMacro {
       return id.text
     }.apply(transform: Set.init)
     
+    let funcInterfaceArgsList = funcArguments.map {
+      print("____________ UpdatableCopyMacro", $0.type)
+      return "\($0.name)\($0.type)? = nil"
+    }.joined(separator: ",\n")
+    
     let funcInterfaceString = """
         \(accessLevel) func \(funcName)(
-          \(funcArguments.map { "\($0.name)\($0.type)? = nil" }.joined(separator: ",\n"))
+          \(funcInterfaceArgsList)
         ) -> \(selfType)
         """
     
@@ -61,7 +67,7 @@ public enum UpdatableCopyMacro: MemberMacro {
     
     let funcBody: ExprSyntax = """
       \(raw: selfType)(
-      \(raw: funcArguments.map {arg in
+      \(raw: funcArguments.map { arg in
               if optionalNames.contains(arg.name) {
                 return "\(arg.name): \(arg.name)"
               } else {
