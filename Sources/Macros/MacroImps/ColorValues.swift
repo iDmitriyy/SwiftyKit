@@ -5,12 +5,7 @@
 //  Created by tmp on 29/07/2025.
 //
 
-import Foundation
-private import IndependentDeclarations
-import SwiftDiagnostics
-public import SwiftSyntax
-import SwiftSyntaxBuilder
-public import SwiftSyntaxMacros
+private import SwiftDiagnostics
 @_spi(SwiftyKitBuiltinTypes) private import struct IndependentDeclarations.TextError
 
 public struct ColorValuesFromRGBAHexMacro: HexExpressionMacro {

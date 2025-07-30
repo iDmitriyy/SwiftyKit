@@ -5,10 +5,6 @@
 //  Created by Dmitriy Ignatyev on 30/07/2025.
 //
 
-public import SwiftSyntax
-import SwiftSyntaxBuilder
-public import SwiftSyntaxMacros
-import Foundation
 @_spi(SwiftyKitBuiltinTypes) import struct IndependentDeclarations.TextError
 
 public enum UpdatableCopyMacro: MemberMacro {
@@ -17,9 +13,7 @@ public enum UpdatableCopyMacro: MemberMacro {
     providingMembersOf declaration: some DeclGroupSyntax,
     conformingTo protocols: [TypeSyntax],
     in context: some MacroExpansionContext
-  ) throws -> [DeclSyntax] {
-    _ = protocols
-    
+  ) throws -> [DeclSyntax] {    
     // Extract the properties from the type. Only struct Types are supported for now.
     guard let structDeclaration = declaration.as(StructDeclSyntax.self) else {
       throw TextError.message("UpdatableCopy Macro can only be applied to structs yet")
@@ -27,11 +21,13 @@ public enum UpdatableCopyMacro: MemberMacro {
     
     let storedProperties = structDeclaration.storedProperties()
     let accessLevel = "public" // TODO: .
-    let copyFuncName = "copyUpdating" // The same should be spicified in macro declaration file
+    let funcName = "copyUpdating" // The same name must be spicified in macro declaration file
     let selfType = "Self"
     
+    let emptyArgsFuncString = "func \(funcName)() -> \(selfType)"
+    
     guard !storedProperties.isEmpty else {
-      throw TextError.message("Declaration has no stored properties, generation of `func \(copyFuncName)()` doesn't make sense")
+      throw TextError.message("Declaration has no stored properties, generation of `\(emptyArgsFuncString)` doesn't make sense")
     }
 
     let funcArguments = storedProperties.compactMap { property -> (name: String, type: String)? in
@@ -44,21 +40,26 @@ public enum UpdatableCopyMacro: MemberMacro {
 
         return (name: name.text, type: type)
     }
-
-    let optionalNames: Set<String> = Set(
-      storedProperties.compactMap { property in
-        guard
-          let binding = property.bindings.first,
-          let id = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier,
-          binding.typeAnnotation?.type.as(OptionalTypeSyntax.self) != nil
-        else {
-          return nil
-        }
-        return id.text
+    
+    let optionalNames = storedProperties.compactMap { property -> String? in
+      guard let binding = property.bindings.first,
+        let id = binding.pattern.as(IdentifierPatternSyntax.self)?.identifier,
+        binding.typeAnnotation?.type.as(OptionalTypeSyntax.self) != nil
+      else {
+        return nil
       }
-    )
-
-    let copyFuncBody: ExprSyntax = """
+      return id.text
+    }.apply(transform: Set.init)
+    
+    let funcInterfaceString = """
+        \(accessLevel) func \(funcName)(
+          \(funcArguments.map { "\($0.name)\($0.type)? = nil" }.joined(separator: ",\n"))
+        ) -> \(selfType)
+        """
+    
+    let funcInterface = SyntaxNodeString(stringLiteral: funcInterfaceString)
+    
+    let funcBody: ExprSyntax = """
       \(raw: selfType)(
       \(raw: funcArguments.map {arg in
               if optionalNames.contains(arg.name) {
@@ -66,43 +67,39 @@ public enum UpdatableCopyMacro: MemberMacro {
               } else {
                 return "\(arg.name): \(arg.name) ?? self.\(arg.name)"
               }
-          }.joined(separator: ", \n"))
+          }.joined(separator: ",\n"))
       )
       """
     
-    let copyFuncSyntaxNode =
-      SyntaxNodeString(stringLiteral: """
-        \(accessLevel) func \(copyFuncName)(
-          \(funcArguments.map { "\($0.name)\($0.type)? = nil" }.joined(separator: ", \n"))
-        ) -> \(selfType)
-        """.trimmingCharacters(in: .whitespacesAndNewlines))
+    let funcDecl = try FunctionDeclSyntax(funcInterface, bodyBuilder: { funcBody })
     
-    let copyFuncDeclSyntax = try FunctionDeclSyntax(copyFuncSyntaxNode, bodyBuilder: { copyFuncBody })
-    
-    guard let copyFuncDeclaration = DeclSyntax(copyFuncDeclSyntax) else {
-      throw TextError.message("`func \(copyFuncName)(...) -> \(selfType)` FunctionDeclSyntax was created, but DeclSyntax failed to init")
+    guard let funcDeclaration = DeclSyntax(funcDecl) else {
+      throw TextError.message("`func \(funcName)(...) -> \(selfType)` FunctionDeclSyntax was created, but DeclSyntax failed to init")
     }
     
-    // Make function overload with no arguments to warn users when they don't specify any arguments
-    let emptyArgsFuncString = "func \(copyFuncName)() -> \(selfType)"
-    let emptyArgsMessage = "\"Using \(emptyArgsFuncString) without passing at least one argument make no sense\""
+    let emptyArgsFuncDeclaration = try makeEmptyArgsFuncDecl(emptyArgsFuncString: emptyArgsFuncString, accessLevel: accessLevel)
+    
+    return [funcDeclaration, emptyArgsFuncDeclaration]
+  }
+  
+  /// Make function overload with no arguments to warn users when they don't specify at least 1 argument
+  private static func makeEmptyArgsFuncDecl(emptyArgsFuncString: String, accessLevel: String) throws -> DeclSyntax {
+    let emptyArgsMessage = "\"Using `\(emptyArgsFuncString)` without passing at least one argument make no sense\""
     let emptyArgsWarning = "@available(*, deprecated, message: \(emptyArgsMessage))"
     
     let emptyArgsFunc = emptyArgsWarning + "\n\(accessLevel) " + emptyArgsFuncString
-    
     let emptyArgsFuncSyntaxNode = SyntaxNodeString(stringLiteral: emptyArgsFunc)
     let emptyArgsFuncDeclSyntax = try FunctionDeclSyntax(emptyArgsFuncSyntaxNode, bodyBuilder: { "return self" })
     guard let emptyArgsFuncDeclaration = DeclSyntax(emptyArgsFuncDeclSyntax) else {
       throw TextError.message("`\(emptyArgsFunc)` FunctionDeclSyntax was created, but DeclSyntax failed to init")
     }
-    
-    return [copyFuncDeclaration, emptyArgsFuncDeclaration]
+    return emptyArgsFuncDeclaration
   }
 }
 
 extension VariableDeclSyntax {
   /// Check this variable is a stored property
-  var isStoredProperty: Bool {
+  fileprivate var isStoredProperty: Bool {
     guard let binding = bindings.first,
       bindings.count == 1,
       modifiers.contains(where: {
@@ -118,7 +115,7 @@ extension VariableDeclSyntax {
       for accessor in node {
         switch accessor.accessorSpecifier.tokenKind {
         case .keyword(.willSet), .keyword(.didSet): break // stored properties can have observers
-        default: return false // everything else makes it a computed property
+        default: return false // everything else mean it is a computed property
         }
       }
       return true

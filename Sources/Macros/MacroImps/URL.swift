@@ -5,11 +5,7 @@
 //  Created by Dmitriy Ignatyev on 29/07/2025.
 //
 
-public import SwiftSyntax
-public import SwiftSyntaxMacros
-import Foundation
-import SwiftSyntaxBuilder
-@_spi(SwiftyKitBuiltinTypes) import struct IndependentDeclarations.TextError
+@_spi(SwiftyKitBuiltinTypes) private import struct IndependentDeclarations.TextError
 
 /// Creates a non-optional URL from a static string. The string is checked to
 /// be valid during compile time.
