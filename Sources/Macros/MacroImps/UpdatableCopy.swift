@@ -13,7 +13,7 @@ public enum UpdatableCopyMacro: MemberMacro {
     providingMembersOf declaration: some DeclGroupSyntax,
     conformingTo protocols: [TypeSyntax],
     in context: some MacroExpansionContext
-  ) throws -> [DeclSyntax] {    
+  ) throws -> [DeclSyntax] {
     // Extract the properties from the type. Only struct Types are supported for now.
     guard let structDeclaration = declaration.as(StructDeclSyntax.self) else {
       throw TextError.message("UpdatableCopy Macro can only be applied to structs yet")
@@ -24,10 +24,10 @@ public enum UpdatableCopyMacro: MemberMacro {
     let funcName = "copyUpdating" // The same name must be spicified in macro declaration file
     let selfType = "Self"
     
-    let emptyArgsFuncString = "func \(funcName)() -> \(selfType)"
+    let emptyArgsFuncInterfaceString = "func \(funcName)() -> \(selfType)"
     
     guard !storedProperties.isEmpty else {
-      throw TextError.message("Declaration has no stored properties, generation of `\(emptyArgsFuncString)` doesn't make sense")
+      throw TextError.message("Declaration has no stored properties, generation of `\(emptyArgsFuncInterfaceString)` doesn't make sense")
     }
 
     let funcArguments = storedProperties.compactMap { property -> (name: String, type: String)? in
@@ -77,17 +77,17 @@ public enum UpdatableCopyMacro: MemberMacro {
       throw TextError.message("`func \(funcName)(...) -> \(selfType)` FunctionDeclSyntax was created, but DeclSyntax failed to init")
     }
     
-    let emptyArgsFuncDeclaration = try makeEmptyArgsFuncDecl(emptyArgsFuncString: emptyArgsFuncString, accessLevel: accessLevel)
-    
+    let emptyArgsFuncDeclaration = try makeEmptyArgsFuncDecl(emptyArgsFuncInterface: emptyArgsFuncInterfaceString,
+                                                             accessLevel: accessLevel)
     return [funcDeclaration, emptyArgsFuncDeclaration]
   }
   
   /// Make function overload with no arguments to warn users when they don't specify at least 1 argument
-  private static func makeEmptyArgsFuncDecl(emptyArgsFuncString: String, accessLevel: String) throws -> DeclSyntax {
-    let emptyArgsMessage = "\"Using `\(emptyArgsFuncString)` without passing at least one argument make no sense\""
+  private static func makeEmptyArgsFuncDecl(emptyArgsFuncInterface: String, accessLevel: String) throws -> DeclSyntax {
+    let emptyArgsMessage = "\"Using `\(emptyArgsFuncInterface)` without passing at least one argument make no sense\""
     let emptyArgsWarning = "@available(*, deprecated, message: \(emptyArgsMessage))"
     
-    let emptyArgsFunc = emptyArgsWarning + "\n\(accessLevel) " + emptyArgsFuncString
+    let emptyArgsFunc = emptyArgsWarning + "\n\(accessLevel) " + emptyArgsFuncInterface
     let emptyArgsFuncSyntaxNode = SyntaxNodeString(stringLiteral: emptyArgsFunc)
     let emptyArgsFuncDeclSyntax = try FunctionDeclSyntax(emptyArgsFuncSyntaxNode, bodyBuilder: { "return self" })
     guard let emptyArgsFuncDeclaration = DeclSyntax(emptyArgsFuncDeclSyntax) else {
