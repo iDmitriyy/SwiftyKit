@@ -57,6 +57,7 @@ let package = Package(
     .testTarget(name: "SwiftyKitTests", dependencies: [.target(name: "SwiftyKit")]),
     .testTarget(name: "IndependentDeclarationsTests", dependencies: ["IndependentDeclarations"]),
     .testTarget(name: "StdLibExtensionsTests", dependencies: ["StdLibExtensions"]),
+    .testTarget(name: "ErrorInfoTests", dependencies: ["ErrorInfo"]),
     .testTarget(name: "FoundationExtensionsTests", dependencies: ["FoundationExtensions",
                                                                   .product(name: "NonEmpty", package: "swift-nonempty")]),
 //    .testTarget(name: "MacrosTests", dependencies: [.target(name: "MacroImps"),
