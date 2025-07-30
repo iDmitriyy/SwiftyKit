@@ -64,9 +64,9 @@ let package = Package(
     .testTarget(name: "ErrorInfoTests", dependencies: ["ErrorInfo"]),
     .testTarget(name: "FoundationExtensionsTests", dependencies: ["FoundationExtensions",
                                                                   .product(name: "NonEmpty", package: "swift-nonempty")]),
-//    .testTarget(name: "MacrosTests", dependencies: [.target(name: "MacroImps"),
-//                                                    .target(name: "IndependentDeclarations"),
-//                                                    .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")]),
+    .testTarget(name: "MacrosTests", dependencies: [.target(name: "MacroImps"),
+                                                    .target(name: "IndependentDeclarations"),
+                                                    .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")]),
   ],
   swiftLanguageModes: [.v6]
 )
