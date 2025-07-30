@@ -27,7 +27,7 @@ public enum UpdatableCopyMacro: MemberMacro {
     
     let storedProperties = structDeclaration.storedProperties()
     let accessLevel = "public" // TODO: .
-    let copyFuncName = "copyUpdating"
+    let copyFuncName = "copyUpdating" // The same should be spicified in macro declaration file
     let selfType = "Self"
     
     guard !storedProperties.isEmpty else {
@@ -80,7 +80,7 @@ public enum UpdatableCopyMacro: MemberMacro {
     let copyFuncDeclSyntax = try FunctionDeclSyntax(copyFuncSyntaxNode, bodyBuilder: { copyFuncBody })
     
     guard let copyFuncDeclaration = DeclSyntax(copyFuncDeclSyntax) else {
-      throw TextError.message("`func copyUpdating(...) -> \(selfType)` FunctionDeclSyntax was created, but DeclSyntax failed to init")
+      throw TextError.message("`func \(copyFuncName)(...) -> \(selfType)` FunctionDeclSyntax was created, but DeclSyntax failed to init")
     }
     
     // Make function overload with no arguments to warn users when they don't specify any arguments
@@ -92,12 +92,11 @@ public enum UpdatableCopyMacro: MemberMacro {
     
     let emptyArgsFuncSyntaxNode = SyntaxNodeString(stringLiteral: emptyArgsFunc)
     let emptyArgsFuncDeclSyntax = try FunctionDeclSyntax(emptyArgsFuncSyntaxNode, bodyBuilder: { "return self" })
-    guard var emptyArgsFuncDeclaration = DeclSyntax(emptyArgsFuncDeclSyntax) else {
+    guard let emptyArgsFuncDeclaration = DeclSyntax(emptyArgsFuncDeclSyntax) else {
       throw TextError.message("`\(emptyArgsFunc)` FunctionDeclSyntax was created, but DeclSyntax failed to init")
     }
     
-
-    return [copyFuncDeclaration] // emptyArgsFuncDeclaration
+    return [copyFuncDeclaration, emptyArgsFuncDeclaration]
   }
 }
 

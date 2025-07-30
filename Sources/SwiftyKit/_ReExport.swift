@@ -34,5 +34,5 @@ struct Product {
 
 func prod(product: Product) {
   _ = product
-  product.copyUpdating()
+//  product.copyUpdating()
 }
