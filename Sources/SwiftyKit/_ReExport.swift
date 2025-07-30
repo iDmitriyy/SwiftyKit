@@ -30,6 +30,9 @@ struct Product {
   let oldPrice: Double?
 }
 
+//let dd = UpdatableCopyMacro.self
+
 func prod(product: Product) {
   _ = product
+  product.copyUpdating()
 }

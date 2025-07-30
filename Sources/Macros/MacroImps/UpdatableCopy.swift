@@ -9,6 +9,7 @@ public import SwiftSyntax
 import SwiftSyntaxBuilder
 public import SwiftSyntaxMacros
 import Foundation
+@_spi(SwiftyKitBuiltinTypes) import struct IndependentDeclarations.TextError
 
 public enum UpdatableCopyMacro: MemberMacro {
   public static func expansion(
@@ -19,22 +20,30 @@ public enum UpdatableCopyMacro: MemberMacro {
   ) throws -> [DeclSyntax] {
     _ = protocols
     
-    // Extract the properties from the type--must be a struct
-    guard let storedProperties = declaration.as(StructDeclSyntax.self)?.storedProperties(),
-      !storedProperties.isEmpty else { return [] }
+    // Extract the properties from the type. Only struct Types are supported for now.
+    guard let structDeclaration = declaration.as(StructDeclSyntax.self) else {
+      throw TextError.message("UpdatableCopy Macro can only be applied to structs yet")
+    }
+    
+    let storedProperties = structDeclaration.storedProperties()
+    let accessLevel = "public" // TODO: .
+    let copyFuncName = "copyUpdating"
+    let selfType = "Self"
+    
+    guard !storedProperties.isEmpty else {
+      throw TextError.message("Declaration has no stored properties, generation of `func \(copyFuncName)()` doesn't make sense")
+    }
 
-    let funcArguments = storedProperties
-      .compactMap { property -> (name: String, type: String)? in
+    let funcArguments = storedProperties.compactMap { property -> (name: String, type: String)? in
         /// Get the property's name (a.k.a. identifier)...
-        guard let patternBinding = property.bindings.first?.as(PatternBindingSyntax.self) else { return nil }
+        guard let patternBinding: PatternBindingSyntax = property.bindings.first else { return nil }
         guard let name = patternBinding.pattern.as(IdentifierPatternSyntax.self)?.identifier else { return nil }
         // ...and then the property's type...
-        guard let type = patternBinding.typeAnnotation?.as(TypeAnnotationSyntax.self)?.trimmed.description
-          .replacingOccurrences(of: "?", with: "")
-        else { return nil }
+        guard let typeAnnotation: TypeAnnotationSyntax = patternBinding.typeAnnotation else { return nil }
+        let type = typeAnnotation.trimmed.description.replacingOccurrences(of: "?", with: "")
 
         return (name: name.text, type: type)
-      }
+    }
 
     let optionalNames: Set<String> = Set(
       storedProperties.compactMap { property in
@@ -49,11 +58,10 @@ public enum UpdatableCopyMacro: MemberMacro {
       }
     )
 
-    let funcBody: ExprSyntax = """
-      .init(
+    let copyFuncBody: ExprSyntax = """
+      \(raw: selfType)(
       \(raw: funcArguments.map {arg in
               if optionalNames.contains(arg.name) {
-                // Explicit nil assignment preserved
                 return "\(arg.name): \(arg.name)"
               } else {
                 return "\(arg.name): \(arg.name) ?? self.\(arg.name)"
@@ -61,26 +69,35 @@ public enum UpdatableCopyMacro: MemberMacro {
           }.joined(separator: ", \n"))
       )
       """
-
-    guard
-      let funcDeclSyntax = try? FunctionDeclSyntax(
-        SyntaxNodeString(
-          stringLiteral: """
-            public func copy(
-            \(funcArguments.map { "\($0.name)\($0.type)? = nil" }.joined(separator: ", \n"))
-            ) -> Self
-            """.trimmingCharacters(in: .whitespacesAndNewlines)
-        ),
-        bodyBuilder: {
-          funcBody
-        }
-      ),
-      let finalDeclaration = DeclSyntax(funcDeclSyntax)
-    else {
-      return []
+    
+    let copyFuncSyntaxNode =
+      SyntaxNodeString(stringLiteral: """
+        \(accessLevel) func \(copyFuncName)(
+          \(funcArguments.map { "\($0.name)\($0.type)? = nil" }.joined(separator: ", \n"))
+        ) -> \(selfType)
+        """.trimmingCharacters(in: .whitespacesAndNewlines))
+    
+    let copyFuncDeclSyntax = try FunctionDeclSyntax(copyFuncSyntaxNode, bodyBuilder: { copyFuncBody })
+    
+    guard let copyFuncDeclaration = DeclSyntax(copyFuncDeclSyntax) else {
+      throw TextError.message("`func copyUpdating(...) -> \(selfType)` FunctionDeclSyntax was created, but DeclSyntax failed to init")
     }
+    
+    // Make function overload with no arguments to warn users when they don't specify any arguments
+    let emptyArgsFuncString = "func \(copyFuncName)() -> \(selfType)"
+    let emptyArgsMessage = "\"Using \(emptyArgsFuncString) without passing at least one argument make no sense\""
+    let emptyArgsWarning = "@available(*, deprecated, message: \(emptyArgsMessage))"
+    
+    let emptyArgsFunc = emptyArgsWarning + "\n\(accessLevel) " + emptyArgsFuncString
+    
+    let emptyArgsFuncSyntaxNode = SyntaxNodeString(stringLiteral: emptyArgsFunc)
+    let emptyArgsFuncDeclSyntax = try FunctionDeclSyntax(emptyArgsFuncSyntaxNode, bodyBuilder: { "return self" })
+    guard var emptyArgsFuncDeclaration = DeclSyntax(emptyArgsFuncDeclSyntax) else {
+      throw TextError.message("`\(emptyArgsFunc)` FunctionDeclSyntax was created, but DeclSyntax failed to init")
+    }
+    
 
-    return [finalDeclaration]
+    return [copyFuncDeclaration] // emptyArgsFuncDeclaration
   }
 }
 
@@ -101,12 +118,8 @@ extension VariableDeclSyntax {
     case .accessors(let node):
       for accessor in node {
         switch accessor.accessorSpecifier.tokenKind {
-        case .keyword(.willSet), .keyword(.didSet):
-          // stored properties can have observers
-          break
-        default:
-          // everything else makes it a computed property
-          return false
+        case .keyword(.willSet), .keyword(.didSet): break // stored properties can have observers
+        default: return false // everything else makes it a computed property
         }
       }
       return true
@@ -119,92 +132,92 @@ extension VariableDeclSyntax {
 
 extension DeclGroupSyntax {
   /// Get the stored properties from the declaration based on syntax.
-  func storedProperties() -> [VariableDeclSyntax] {
+  fileprivate func storedProperties() -> [VariableDeclSyntax] {
     memberBlock.members.compactMap { member in
-      guard let variable = member.decl.as(VariableDeclSyntax.self),
-        variable.isStoredProperty
-      else { return nil }
-
+      guard let variable = member.decl.as(VariableDeclSyntax.self), variable.isStoredProperty else { return nil }
       return variable
     }
   }
 }
 
-// MARK: Macro Types
+// MARK: - Macro Types
 
 extension UpdatableCopyMacro {
-  //    public struct OptionalResult {
-  //
-  //    }
+  /// R is used as availability Type-token for remove operation.
+  /// Remove operation is only possible for Optional values, so R == Void is used for Optionals.
+  /// For non-Optional values Never is used, so removing is impossible and it is statically proven.
+  public struct CopyingChoice<NewValue, R> {
+    fileprivate let variant: _CopyingChoice<NewValue, R>
+    
+    private init(variant: _CopyingChoice<NewValue, R>) {
+      self.variant = variant
+    }
+    
+    public static var takeValueFromSource: Self { Self(variant: .copyFromSource) }
+    public static func new(_ newValue: NewValue) -> Self { Self(variant: .new(newValue)) }
+    public static func removeCurrent(_ removeAvailabilityToken: R) -> Self { Self(variant: .removeCurrent(removeAvailabilityToken)) }
+  }
 
-  typealias OptionalResult = Backing
-
-  public enum Backing<Wrapped, R> {
-    case keepCurrent
-    case new(Wrapped)
+  fileprivate enum _CopyingChoice<NewValue, R> {
+    case copyFromSource
+    case new(NewValue)
     case removeCurrent(R)
   }
 }
 
-extension UpdatableCopyMacro.OptionalResult: ExpressibleByNilLiteral where R == Void {
+extension UpdatableCopyMacro.CopyingChoice: ExpressibleByNilLiteral where R == Void {
   public init(nilLiteral: ()) {
-    self = .removeCurrent
+    self = .removeCurrent(nilLiteral)
   }
 }
 
-extension UpdatableCopyMacro.OptionalResult where R == Void {
+extension UpdatableCopyMacro.CopyingChoice where R == Void {
+  @available(*, unavailable, message: "Use nil literal instead")
   public static var removeCurrent: Self { .removeCurrent(Void()) }
 }
 
-//extension UpdatedCopyMacro.OptionalResult where R == Never {
-//  public func asSwiftOptional() -> Optional<Wrapped> {
-//    switch self {
-//      case
-//    }
-//  }
-//}
+// MARK: Choice functions
+
+public func updatedCopy_optionalValue<V>(for choice: UpdatableCopyMacro.CopyingChoice<V, Void>, currentValue: V?) -> V? {
+  switch choice.variant {
+    case .copyFromSource: currentValue
+    case .new(let newValue): newValue
+    case .removeCurrent: nil
+  }
+}
+
+public func updatedCopy_value<V>(for choice: UpdatableCopyMacro.CopyingChoice<V, Never>, currentValue: V) -> V {
+  switch choice.variant {
+    case .copyFromSource: currentValue
+    case .new(let newValue): newValue
+  }
+}
+
+// MARK: - Example
 
 struct Product {
   let name: String
   let price: Double
   let oldPrice: Double?
 
-  func copy(
-    name: UpdatableCopyMacro.OptionalResult<String, Never> = .keepCurrent,
-    price: UpdatableCopyMacro.OptionalResult<Double, Never> = .keepCurrent,
-    oldPrice: UpdatableCopyMacro.OptionalResult<Double, Void> = .keepCurrent
+  func copyUpdating(
+    name nameChoice: UpdatableCopyMacro.CopyingChoice<String, Never> = .takeValueFromSource,
+    price priceChoice: UpdatableCopyMacro.CopyingChoice<Double, Never> = .takeValueFromSource,
+    oldPrice oldPriceChoice: UpdatableCopyMacro.CopyingChoice<Double, Void> = .takeValueFromSource
   ) -> Self {
-    let name: String =
-      switch name {
-      case .keepCurrent: self.name
-      case .new(let newName): newName
-      }
-
-    let price: Double =
-      switch price {
-      case .keepCurrent: self.price
-      case .new(let newPrice): newPrice
-      }
-
-    let oldPrice: Double? =
-      switch oldPrice {
-      case .keepCurrent: self.price
-      case .new(let newOldPrice): newOldPrice
-      case .removeCurrent: nil
-      }
-
+    
     return Self(
-      name: name,
-      price: price,
-      oldPrice: oldPrice
+      name: updatedCopy_value(for: nameChoice, currentValue: self.name),
+      price: updatedCopy_value(for: priceChoice, currentValue: self.price),
+      oldPrice: updatedCopy_optionalValue(for: oldPriceChoice, currentValue: self.oldPrice)
     )
   }
 }
 
 private func testCopy(product: Product) {
-  product.copy(name: .new("RenamedProduct"))
-
-  product.copy(oldPrice: .new(99.9))
-  product.copy(oldPrice: nil)
-  product.copy(oldPrice: .removeCurrent)
+  product.copyUpdating(name: .new("RenamedProduct"))
+//product.copyWith(oldPrice: .new(99.9))
+  product.copyUpdating(oldPrice: .new(99.9))
+  product.copyUpdating(oldPrice: nil)
+//   product.copyUpdating(oldPrice: .removeCurrent) // impossible, Error: 'removeCurrent' is unavailable: Use nil literal instead
 }
