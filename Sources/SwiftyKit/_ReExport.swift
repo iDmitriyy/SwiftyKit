@@ -19,7 +19,17 @@
 //import Foundation
 import Macros
 
-let ff = #stringify(4 + 4)
 let col1 = #colorValues(hex: "#0011AAFF")
 let col2 = #colorValues(hex: 0x0011_AAFF)
 //let url = #URL("https://github.com")
+
+@UpdatableCopy
+struct Product {
+  let name: String
+  let price: Double
+  let oldPrice: Double?
+}
+
+func prod(product: Product) {
+  _ = product
+}

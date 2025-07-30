@@ -8,35 +8,16 @@
 import Foundation
 private import IndependentDeclarations
 import SwiftDiagnostics
-//import SwiftCompilerPlugin
 public import SwiftSyntax
 import SwiftSyntaxBuilder
 public import SwiftSyntaxMacros
-
 @_spi(SwiftyKitBuiltinTypes) private import struct IndependentDeclarations.TextError
-
-///      #color("#FFF") -> (red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
-///      #color(0xfff) -> (red: 1.0, green: 1.0, blue: 1.0, alpha: 1.0)
-///
-///
 
 public struct ColorValuesFromRGBAHexMacro: HexExpressionMacro {
   public static func colorExpressionSyntax(red: UInt8, green: UInt8, blue: UInt8, alpha: UInt8) -> SwiftSyntax.ExprSyntax {
     var expr: SwiftSyntax.ExprSyntax = "ColorValues(r: \(raw: red), g: \(raw: green), b: \(raw: blue), a: \(raw: alpha))"
     expr.trailingTrivia = .lineComment(" // r: \(red), g: \(green), b: \(blue), a: \(alpha)")
     
-    //      VariableDeclSyntax(leadingTrivia: [.newlines(2),
-    //        .lineComment("// These members are always generated irrespective of the contents of the generated files. They are intended to exclusively centralize code symbols that would otherwise be repeated frequently."),
-    //        .newlines(1)],
-    //                         modifiers: [DeclModifierSyntax(name: .keyword(.private)),
-    //                                     DeclModifierSyntax(name: .keyword(.static))],
-    //        .let,
-    //                         name: PatternSyntax(IdentifierPatternSyntax(identifier: "decoder")),
-    //                         initializer: InitializerClauseSyntax(value: ExprSyntax(stringLiteral: "\(configuration.decoderExpression)")))
-    //
-    //      // These members are always generated irrespective of the contents of the generated files. They are intended to exclusively centralize code symbols that would otherwise be repeated frequently.
-    //      private static let decoder = JSONDecoder()
-
     return expr
   }
 }

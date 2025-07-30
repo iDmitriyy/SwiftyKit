@@ -11,8 +11,8 @@ import SwiftSyntaxMacros
 @main
 struct MacroPlugin: CompilerPlugin {
   let providingMacros: [any Macro.Type] = [
-        StringifyMacro.self,
         ColorValuesFromRGBAHexMacro.self,
-//        URLMacro.self,
+        UpdatableCopyMacro.self,
+        URLMacro.self,
     ]
 }

@@ -5,15 +5,6 @@
 //  Created by Dmitriy Ignatyev on 29/07/2025.
 //
 
-/// A macro that produces both a value and a string containing the
-/// source code that generated the value. For example,
-///
-///     #stringify(x + y)
-///
-/// produces a tuple `(x + y, "x + y")`.
-@freestanding(expression)
-public macro stringify<T>(_ value: T) -> (T, String) = #externalMacro(module: "MacroImps", type: "StringifyMacro")
-
 /*
  apple examples: https://github.com/swiftlang/swift-syntax/tree/main/Examples/Sources/MacroExamples
  
@@ -24,6 +15,7 @@ public macro stringify<T>(_ value: T) -> (T, String) = #externalMacro(module: "M
  #Equatable #Hashable  | usage: Hashable(includingOnly:) Hashable(allExcept:)
  @OptionSet
  @PrivateEnumInitializers | for structs with private backing enum, generate static-func initializers with cases names.
+ @DebugDescription
  
  #NewEnumWithoutAssociatedValues  | #NewEnum(name: String? = nil, accessLevel: A? = nil)
  

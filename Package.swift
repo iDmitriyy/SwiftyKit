@@ -59,6 +59,9 @@ let package = Package(
     .testTarget(name: "StdLibExtensionsTests", dependencies: ["StdLibExtensions"]),
     .testTarget(name: "FoundationExtensionsTests", dependencies: ["FoundationExtensions",
                                                                   .product(name: "NonEmpty", package: "swift-nonempty")]),
+//    .testTarget(name: "MacrosTests", dependencies: [.target(name: "MacroImps"),
+//                                                    .target(name: "IndependentDeclarations"),
+//                                                    .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")]),
   ],
   swiftLanguageModes: [.v6]
 )
