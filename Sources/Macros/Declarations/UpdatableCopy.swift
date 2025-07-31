@@ -7,3 +7,4 @@
 
 @attached(member, names: named(copyUpdating))
 public macro UpdatableCopy() = #externalMacro(module: "MacroImps", type: "UpdatableCopyMacro")
+

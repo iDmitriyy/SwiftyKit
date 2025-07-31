@@ -2,7 +2,7 @@
 //  _ModuleImports.swift
 //  swifty-kit
 //
-//  Created by tmp on 30/07/2025.
+//  Created by Dmitriy Ignatyev on 30/07/2025.
 //
 
 // Imports common for all files in module:

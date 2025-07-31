@@ -48,15 +48,21 @@ let package = Package(
                                                         .product(name: "Collections", package: "swift-collections")]),
             
       .target(name: "Macros",
-              dependencies: [.target(name: "MacroImps")],
+              dependencies: [.target(name: "MacroImps"),
+                             .target(name: "MacroSymbols")],
               path: "Sources/Macros/Declarations"),
     
       .macro(name: "MacroImps",
-             dependencies: [.target(name: "IndependentDeclarations"),
+             dependencies: [.target(name: "MacroSymbols"),
+                            .target(name: "IndependentDeclarations"),
                             .target(name: "StdLibExtensions"),
                             .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                             .product(name: "SwiftCompilerPlugin", package: "swift-syntax")],
              path: "Sources/Macros/MacroImps"),
+    .target(name: "MacroSymbols",
+            dependencies: [],
+            path: "Sources/Macros/MacroSymbols"),
+    
     // MARK: - Test Targets
     
     .testTarget(name: "SwiftyKitTests", dependencies: [.target(name: "SwiftyKit")]),

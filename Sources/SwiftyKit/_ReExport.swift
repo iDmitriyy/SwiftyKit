@@ -34,5 +34,8 @@ struct Product {
 
 func prod(product: Product) {
   _ = product
+  product.copyUpdating(name: .takeValueFromSource)
+  product.copyUpdating(name: .new("Orange"))
+  product.copyUpdating(oldPrice: nil)
 //  product.copyUpdating()
 }

@@ -5,6 +5,8 @@
 //  Created by Dmitriy Ignatyev on 29/07/2025.
 //
 
+@_exported public import MacroSymbols
+
 /*
  apple examples: https://github.com/swiftlang/swift-syntax/tree/main/Examples/Sources/MacroExamples
  
