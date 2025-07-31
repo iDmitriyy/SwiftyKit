@@ -28,6 +28,11 @@ struct Product {
   let name: String
   let price: Double
   let oldPrice: Double?
+  var discount: Double?
+  var unit: String {
+    willSet {}
+    didSet {}
+  }
 }
 
 //let dd = UpdatableCopyMacro.self

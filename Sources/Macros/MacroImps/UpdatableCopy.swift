@@ -35,6 +35,46 @@ public enum UpdatableCopyMacro: MemberMacro {
 
     let storedProperties = storedProperties(propertiesDecl: storedPropertiesDecl)
         
+    let funcDecl = try makeFuncDecl(accessLevel: accessLevel,
+                                    funcName: funcName,
+                                    storedProperties: storedProperties,
+                                    selfType: selfType)
+    
+    let emptyArgsFuncDecl = try makeEmptyArgsFuncDecl(emptyArgsFuncInterface: emptyArgsFuncInterfaceString,
+                                                      accessLevel: accessLevel)
+    return [funcDecl, emptyArgsFuncDecl]
+  }
+  
+  // MARK: Expansion func decomposition
+  
+  private static func storedProperties(propertiesDecl: [VariableDeclSyntax]) -> [(name: String, type: String, isOptional: Bool)] {
+    propertiesDecl.compactMap { property in
+      /// Get the property's name (a.k.a. identifier)...
+      guard let patternBinding: PatternBindingSyntax = property.bindings.first else { return nil }
+      guard let propertyIdentifier = patternBinding.pattern.as(IdentifierPatternSyntax.self)?.identifier else { return nil }
+      // ...and then the property's type...
+      guard let typeAnnotation: TypeAnnotationSyntax = patternBinding.typeAnnotation else { return nil }
+            
+      let typeDescription = typeAnnotation.type.description
+            
+      let type: String
+      let isOptional: Bool
+      if let _ = typeAnnotation.type.as(OptionalTypeSyntax.self) {
+        isOptional = true
+        type = typeDescription.replacingOccurrences(of: "?", with: "")
+      } else {
+        isOptional = false
+        type = typeDescription
+      }
+
+      return (propertyIdentifier.text, type, isOptional)
+    }
+  }
+  
+  private static func makeFuncDecl(accessLevel: String,
+                                   funcName: String,
+                                   storedProperties: [(name: String, type: String, isOptional: Bool)],
+                                   selfType: String) throws -> DeclSyntax {
     let argsSuffix = "Choice"
     let funcInterfaceArgsList = storedProperties.map {
       print("____________ UpdatableCopyMacro", $0.type)
@@ -71,39 +111,11 @@ public enum UpdatableCopyMacro: MemberMacro {
     
     let funcDecl = try FunctionDeclSyntax(funcInterface, bodyBuilder: { funcBody })
     
-    guard let funcDeclaration = DeclSyntax(funcDecl) else {
+    guard let funcDecl = DeclSyntax(funcDecl) else {
       throw TextError.message("`func \(funcName)(...) -> \(selfType)` FunctionDeclSyntax was created, but DeclSyntax failed to init")
     }
     
-    let emptyArgsFuncDeclaration = try makeEmptyArgsFuncDecl(emptyArgsFuncInterface: emptyArgsFuncInterfaceString,
-                                                             accessLevel: accessLevel)
-    return [funcDeclaration, emptyArgsFuncDeclaration]
-  }
-  
-  // MARK: Expansion func decomposition
-  
-  private static func storedProperties(propertiesDecl: [VariableDeclSyntax]) -> [(name: String, type: String, isOptional: Bool)] {
-    propertiesDecl.compactMap { property in
-      /// Get the property's name (a.k.a. identifier)...
-      guard let patternBinding: PatternBindingSyntax = property.bindings.first else { return nil }
-      guard let propertyIdentifier = patternBinding.pattern.as(IdentifierPatternSyntax.self)?.identifier else { return nil }
-      // ...and then the property's type...
-      guard let typeAnnotation: TypeAnnotationSyntax = patternBinding.typeAnnotation else { return nil }
-            
-      let typeDescription = typeAnnotation.type.description
-            
-      let type: String
-      let isOptional: Bool
-      if let _ = typeAnnotation.type.as(OptionalTypeSyntax.self) {
-        isOptional = true
-        type = typeDescription.replacingOccurrences(of: "?", with: "")
-      } else {
-        isOptional = false
-        type = typeDescription
-      }
-
-      return (propertyIdentifier.text, type, isOptional)
-    }
+    return funcDecl
   }
   
   /// Make function overload with no arguments to warn users when they don't specify at least 1 argument
