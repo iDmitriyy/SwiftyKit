@@ -11,7 +11,14 @@ private import SwiftDiagnostics
 public struct ColorValuesFromRGBAHexMacro: HexExpressionMacro {
   public static func colorExpressionSyntax(red: UInt8, green: UInt8, blue: UInt8, alpha: UInt8) -> SwiftSyntax.ExprSyntax {
     var expr: SwiftSyntax.ExprSyntax = "ColorValues(r: \(raw: red), g: \(raw: green), b: \(raw: blue), a: \(raw: alpha))"
-    expr.trailingTrivia = .lineComment(" // r: \(red), g: \(green), b: \(blue), a: \(alpha)")
+        
+    func floatComponent(_ colorComponent: UInt8) -> Float {
+      Float(colorComponent) / 255
+    }
+    
+    let integer = " // r: \(red), g: \(green), b: \(blue), a: \(alpha)"
+    let float = " // r: \(floatComponent(red)), g: \(floatComponent(green)), b: \(floatComponent(blue)), a: \(floatComponent(alpha))"
+    expr.trailingTrivia = .lineComment(float)
     
     return expr
   }
