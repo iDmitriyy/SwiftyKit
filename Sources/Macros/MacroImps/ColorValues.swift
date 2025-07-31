@@ -16,8 +16,8 @@ public struct ColorValuesFromRGBAHexMacro: HexExpressionMacro {
       Float(colorComponent) / 255
     }
     
-    let integer = " // r: \(red), g: \(green), b: \(blue), a: \(alpha)"
-    let float = " // r: \(floatComponent(red)), g: \(floatComponent(green)), b: \(floatComponent(blue)), a: \(floatComponent(alpha))"
+    let integer = " // UInt: \(red), G: \(green), B: \(blue), A: \(alpha)"
+    let float = " // Float R: \(floatComponent(red)), G: \(floatComponent(green)), B: \(floatComponent(blue)), A: \(floatComponent(alpha)))"
     expr.trailingTrivia = .lineComment(float)
     
     return expr

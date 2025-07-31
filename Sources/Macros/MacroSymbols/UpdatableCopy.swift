@@ -7,6 +7,7 @@
 
 // MARK: - Macro Types
 
+/// Name space
 public enum UpdatableCopyMacro_ {}
 
 extension UpdatableCopyMacro_ {

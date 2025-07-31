@@ -13,5 +13,8 @@ struct EitherTests {
     let value = Either<Int, Int>.left(5)
     let anyValue = value as Any
     #expect(anyValue as? any Comparable == nil, "Either instance must not be Comparable")
+    #expect(throws: Never.self) {
+      
+    }
   }
 }

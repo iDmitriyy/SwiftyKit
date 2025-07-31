@@ -45,7 +45,7 @@ public enum UpdatableCopyMacro: MemberMacro {
     return [funcDecl, emptyArgsFuncDecl]
   }
   
-  // MARK: Expansion func decomposition
+  // MARK: - Expansion func decomposition
   
   private static func storedProperties(propertiesDecl: [VariableDeclSyntax]) -> [(name: String, type: String, isOptional: Bool)] {
     propertiesDecl.compactMap { property in
@@ -76,43 +76,49 @@ public enum UpdatableCopyMacro: MemberMacro {
                                    storedProperties: [(name: String, type: String, isOptional: Bool)],
                                    selfType: String) throws -> DeclSyntax {
     let argsSuffix = "Choice"
-    let funcInterfaceArgsList = storedProperties.map {
-      print("____________ UpdatableCopyMacro", $0.type)
-      return if $0.isOptional {
-        "\($0.name) \($0.name)\(argsSuffix): \(typesNamespace).CopyingChoice<\($0.type), Void> = .takeValueFromSource"
-      } else {
-        // e.g. "price priceChoice: UpdatableCopyMacro.CopyingChoice<Double, Never> = .takeValueFromSource"
-        "\($0.name) \($0.name)\(argsSuffix): \(typesNamespace).CopyingChoice<\($0.type), Never> = .takeValueFromSource"
-      }
-    }.joined(separator: ",\n")
     
-    let funcInterfaceString = """
-        \(accessLevel) func \(funcName)(
-          \(funcInterfaceArgsList)
-        ) -> \(selfType)
+    let funcInterface: SyntaxNodeString
+    do {
+      let funcInterfaceArgsList = storedProperties.map {
+        return if $0.isOptional {
+          "\($0.name) \($0.name)\(argsSuffix): \(typesNamespace).CopyingChoice<\($0.type), Void> = .takeValueFromSource"
+        } else {
+          // e.g. "price priceChoice: UpdatableCopyMacro.CopyingChoice<Double, Never> = .takeValueFromSource"
+          "\($0.name) \($0.name)\(argsSuffix): \(typesNamespace).CopyingChoice<\($0.type), Never> = .takeValueFromSource"
+        }
+      }.joined(separator: ",\n")
+      
+      let funcInterfaceString = """
+          \(accessLevel) func \(funcName)(
+            \(funcInterfaceArgsList)
+          ) -> \(selfType)
+          """
+      funcInterface = SyntaxNodeString(stringLiteral: funcInterfaceString)
+    }
+    
+    let funcBody: ExprSyntax
+    do {
+      let calledInitializerArgsList = storedProperties.map {
+        if $0.isOptional {
+          "\($0.name): updatedCopy_optionalValue(for: \($0.name)\(argsSuffix), currentValue: self.\($0.name))"
+        } else {
+          // e.g. "price: updatedCopy_value(for: priceChoice, currentValue: self.price),"
+          "\($0.name): updatedCopy_value(for: \($0.name)\(argsSuffix), currentValue: self.\($0.name))"
+        }
+      }.joined(separator: ",\n")
+      // func body is an initializer call – Self(
+      funcBody = """
+        \(raw: selfType)(
+        \(raw: calledInitializerArgsList)
+        )
         """
-    
-    let funcInterface = SyntaxNodeString(stringLiteral: funcInterfaceString)
-    
-    let calledInitializerArgsList = storedProperties.map { arg in
-      if arg.isOptional {
-        "\(arg.name): updatedCopy_optionalValue(for: \(arg.name)\(argsSuffix), currentValue: self.\(arg.name))"
-      } else {
-        // e.g. "price: updatedCopy_value(for: priceChoice, currentValue: self.price),"
-        "\(arg.name): updatedCopy_value(for: \(arg.name)\(argsSuffix), currentValue: self.\(arg.name))"
-      }
-    }.joined(separator: ",\n")
-    // func body is an initializer call – Self(
-    let funcBody: ExprSyntax = """
-      \(raw: selfType)(
-      \(raw: calledInitializerArgsList)
-      )
-      """
+    }
     
     let funcDecl = try FunctionDeclSyntax(funcInterface, bodyBuilder: { funcBody })
     
     guard let funcDecl = DeclSyntax(funcDecl) else {
-      throw TextError.message("`func \(funcName)(...) -> \(selfType)` FunctionDeclSyntax was created, but DeclSyntax failed to init")
+      throw TextError
+        .message("`func \(funcName)(...) -> \(selfType)` FunctionDeclSyntax was created, but DeclSyntax failed to init")
     }
     
     return funcDecl
@@ -135,41 +141,36 @@ public enum UpdatableCopyMacro: MemberMacro {
 
 // MARK: SwiftSyntax helper extensions
 
-extension VariableDeclSyntax {
-  /// Check this variable is a stored property
-  fileprivate var isStoredProperty: Bool {
-    guard let binding = bindings.first,
-      bindings.count == 1,
-      modifiers.contains(where: {
-        $0.name == .keyword(.public)
-      }) || modifiers.isEmpty
-    else { return false }
-
-    switch binding.accessorBlock?.accessors {
-    case .none:
-      return true
-
-    case .accessors(let node):
-      for accessor in node {
-        switch accessor.accessorSpecifier.tokenKind {
-        case .keyword(.willSet), .keyword(.didSet): break // stored properties can have observers
-        default: return false // everything else mean it is a computed property
-        }
-      }
-      return true
-
-    case .getter:
-      return false
-    }
-  }
-}
-
 extension DeclGroupSyntax {
   /// Get the stored properties from the declaration based on syntax.
   fileprivate func storedProperties() -> [VariableDeclSyntax] {
     memberBlock.members.compactMap { member in
       guard let variable = member.decl.as(VariableDeclSyntax.self), variable.isStoredProperty else { return nil }
       return variable
+    }
+  }
+}
+
+extension VariableDeclSyntax {
+  /// Check this variable is a stored property
+  fileprivate var isStoredProperty: Bool {
+    guard let binding = bindings.first, bindings.count == 1,
+      modifiers.contains(where: {
+        $0.name == .keyword(.public) // TODO: ?
+      }) || modifiers.isEmpty
+    else { return false }
+
+    switch binding.accessorBlock?.accessors {
+    case .none: return true
+    case .getter: return false
+    case .accessors(let node):
+      for accessor in node {
+        switch accessor.accessorSpecifier.tokenKind {
+        case .keyword(.willSet), .keyword(.didSet): break // stored properties can have observers
+        default: return false // everything else mean it is not a computed property
+        }
+      }
+      return true
     }
   }
 }
