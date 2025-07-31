@@ -29,6 +29,21 @@ struct BundleExtensionTests {
   @Test func mainAppBuildNumber() {
     #expect(Bundle.mainAppBuildNumber >= 0)
   }
+  
+  #if !SWT_NO_EXIT_TESTS
+    @Test func noCrash() async throws {
+      let dd = await #expect(processExitsWith: .success) {
+        let bundleId = Bundle.main.bundleId
+        let mainAppBuildNumber = Bundle.mainAppBuildNumber
+      }
+      
+    // TODO: check actual values, not Apple framework
+      let bundleId = Bundle.main.bundleId // com.apple.dt.xctest.tool
+      let mainAppBuildNumber = Bundle.mainAppBuildNumber // 24244
+      
+      _ = 0
+    }
+  #endif
 }
 
 struct SemVerAppVersionTests {
@@ -75,7 +90,7 @@ struct SemVerAppVersionTests {
     #expect(appVersion.patch == 3)
   }
     
-  @Test func ncoding() throws {
+  @Test func encoding() throws {
     let appVersion = SemVerAppVersion(major: 1, minor: 2, patch: 3)
         
     let encoder = JSONEncoder()

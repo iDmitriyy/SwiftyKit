@@ -15,6 +15,7 @@ import SwiftDiagnostics
 
 #if canImport(MacroImps)
 import MacroImps
+import MacroSymbols
 //import Macros
 import XCTest
 
