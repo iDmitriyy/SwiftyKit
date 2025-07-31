@@ -1,26 +1,16 @@
 //
-//  ErrorInfoFunctions.swift
+//  ErrorInfoDictMerge.swift
 //  swifty-kit
 //
-//  Created by Dmitriy Ignatyev on 16.04.2025.
+//  Created by tmp on 31/07/2025.
 //
 
-public import protocol IndependentDeclarations.DictionaryUnifyingProtocol
-private import FoundationExtensions
+extension ErrorInfoDictFuncs {
+  public enum Merge: Namespacing {}
+}
 
-// MARK: - Merge ErrorInfo
-
-public enum ErrorInfoFunctions: Namespacing {
+extension ErrorInfoDictFuncs.Merge {
   // MARK: Dictionary
-
-  public static func mergeErrorInfo<V>(_ otherInfo: some DictionaryUnifyingProtocol<String, V>,
-                                       to errorInfo: inout some DictionaryUnifyingProtocol<String, V>,
-                                       addingKeyPrefix keyPrefix: String,
-                                       uppercasingFirstLetter: Bool = true,
-                                       line: UInt = #line) {
-    let prefixedOtherInfo = addKeyPrefix(keyPrefix, toKeysOf: otherInfo, uppercasingFirstLetter: uppercasingFirstLetter, line: line)
-    mergeErrorInfo(prefixedOtherInfo, to: &errorInfo, line: line)
-  }
 
   public static func mergeErrorInfo<Dict, V>(_ otherInfos: Dict...,
                                              to errorInfo: inout some DictionaryUnifyingProtocol<String, V>,
@@ -54,7 +44,7 @@ public enum ErrorInfoFunctions: Namespacing {
         _addResolvingKeyCollisions(key: key,
                                    value: value,
                                    firstSuffix: { "^line_\(line)_idx\(index)" },
-                                   otherSuffix: { "_r" + ErrorInfoFunctions.randomSuffix() },
+                                   otherSuffix: { "_r" + ErrorInfoFuncs.randomSuffix() },
                                    to: &errorInfo)
       } // end for (key, value)
     } // end for (index, otherInfo)
@@ -74,7 +64,7 @@ public enum ErrorInfoFunctions: Namespacing {
                                                      otherSuffix: () -> String,
                                                      to errorInfo: inout some DictionaryUnifyingProtocol<String, V>) {
     if let existingValue = errorInfo[key] {
-      guard !ErrorInfoFunctions.isApproximatelyEqual(value, existingValue) else {
+      guard !ErrorInfoFuncs.isApproximatelyEqual(value, existingValue) else {
         return // если значения равны, оставляем в userInfo то которое уже в нём есть
       }
       
@@ -85,7 +75,7 @@ public enum ErrorInfoFunctions: Namespacing {
       let suffix = firstSuffix() // "decodingDate^line_81_idx1"
       var modifiedKey = key + suffix
       while let existingValue2 = errorInfo[modifiedKey] {
-        if ErrorInfoFunctions.isApproximatelyEqual(value, existingValue2) {
+        if ErrorInfoFuncs.isApproximatelyEqual(value, existingValue2) {
           return
         } else {
           modifiedKey += otherSuffix() // "decodingDate^line_81_idx1_1"
@@ -98,28 +88,107 @@ public enum ErrorInfoFunctions: Namespacing {
     }
   }
 
-  // MARK: Add Key Prefix
-
-  public static func addKeyPrefix<V, Dict>(_ keyPrefix: String,
-                                           toKeysOf dict: Dict,
-                                           uppercasingFirstLetter: Bool = true,
-                                           line _: UInt = #line) -> Dict where Dict: DictionaryUnifyingProtocol<String, V> {
-    var prefixedKeysDict = Dict(minimumCapacity: dict.count)
-    
-    for (key, value) in dict {
-      // Edge Case:
-      // ["a": 1, "A": 2]
-      // after adding `prefix` with uppercasingFirstLetter:
-      // ["prefixA": 1, "prefixA^line_81_BF3": 2]
-      let prefixedKey = keyPrefix + (uppercasingFirstLetter ? key.uppercasingFirstLetter() : key)
-      //    _addResolvingKeyCollisions(key: prefixedKey,
-      //                               value: value,
-      //                               firstSuffix: { "^line_\(line)_r" + BaseErrorImpFunctions.randomSuffix() },
-      //                               otherSuffix: BaseErrorImpFunctions.randomSuffix,
-      //                               to: &prefixedKeysDict)
-      fatalError()
+  
+  
+  /// -----------------------------------------------------------------
+  
+  
+  /// Key-modifying resloving collision
+  static func merge<V, Dict>(_ donator: Dict,
+                             to recipient: inout Dict,
+                             file: StaticString? = nil,
+                             line: (some BinaryInteger & CustomStringConvertible)? = nil,
+                             omitEqualValue: Bool = true,
+                             resolvingCollision: (_ a: Dict.Element, _ b: Dict.Element) -> KeyCollisionResolvingResult)
+  -> ErrorInfo where Dict: DictionaryUnifyingProtocol<String, V> {
+    for (key, value) in donator {
+      if let existingValue = recipient[key] {
+        if ErrorInfoFuncs.isApproximatelyEqual(value, existingValue) {
+          
+        } else {
+          
+        }
+      } else {
+        
+      }
     }
     
-    return prefixedKeysDict
+    return .empty
   }
+  
+  static func merge<V, Dict>(_ donator: Dict,
+                             to recipient: inout Dict,
+                             omitEqualValue: Bool = true,
+                             resolvingCollision: (_ a: Dict.Element, _ b: Dict.Element) -> KeyCollisionResolvingResult)
+  -> ErrorInfo where Dict: DictionaryUnifyingProtocol<String, V> {
+    for (key, value) in donator {
+      if let existingValue = recipient[key] {
+        if ErrorInfoFuncs.isApproximatelyEqual(value, existingValue) {
+          
+        } else {
+          
+        }
+      } else {
+        
+      }
+    }
+    
+    return .empty
+  }
+  
+  // all merge functions have no default for omitEqualValue. Extension can be be made on user side, providing overload
+  // with suitable default choice.
+  
+  static func _withResolvingCollisionsAdd<Dict>(keyValue: Dict.Element,
+                                                to recipient: inout Dict,
+                                                omitEqualValue shouldOmitEqualValue: Bool,
+                                                resolvingResult: KeyCollisionResolvingResult) where Dict: DictionaryUnifyingProtocol {
+    let (key, value) = keyValue
+    if let existingValue = recipient[key] {
+      guard !ErrorInfoFuncs.isApproximatelyEqual(value, existingValue) else {
+        return // если значения равны, оставляем в userInfo то которое уже в нём есть
+      }
+      // if collision happened, but values are equal, then we can keep existing value
+      if ErrorInfoFuncs.isApproximatelyEqual(value, existingValue) {
+        if shouldOmitEqualValue {
+          ()
+        } else {
+          
+        }
+      } else { // resolving must be done
+        
+      }
+      
+      let valuesAreEqual = ErrorInfoFuncs.isApproximatelyEqual(value, existingValue)
+      switch (valuesAreEqual, shouldOmitEqualValue) {
+      case (false, _): break // always keep different values, modify 1 or 2 keys
+      case (true, true): break // omit
+      case (true, false): break // keep both equal values, modify 1 or 2 keys
+      }
+      
+      if ErrorInfoFuncs.isApproximatelyEqual(value, existingValue) {
+        
+      }
+      
+      // Например, если в 2х словарях возникла коллизия по ключу "decodingDate", получится такой порядок модификации ключа:
+      // decodingDate ->
+//      let suffix = firstSuffix() // "decodingDate^line_81_idx1"
+//      var modifiedKey = key + suffix
+//      while let existingValue2 = errorInfo[modifiedKey] {
+//        if ErrorInfoFuncs.isApproximatelyEqual(value, existingValue2) {
+//          return
+//        } else {
+//          modifiedKey += otherSuffix() // "decodingDate^line_81_idx1_1"
+//        }
+//      }
+      
+//      errorInfo[modifiedKey] = value
+    } else { // if no collisions then add to recipient
+      recipient[key] = value
+    }
+  }
+  
+  
 }
+
+

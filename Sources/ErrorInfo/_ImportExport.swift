@@ -8,4 +8,5 @@
 // import for all files:
 
 @_exported public import protocol IndependentDeclarations.Namespacing
-@_exported public import StdLibExtensions
+@_exported public import struct IndependentDeclarations.StaticFileLine
+@_exported public import StdLibExtensions // TODO: remove and import privately?

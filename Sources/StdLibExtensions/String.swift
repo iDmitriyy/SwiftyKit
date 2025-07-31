@@ -5,6 +5,14 @@
 //  Created by Dmitriy Ignatyev on 14.04.2025.
 //
 
+extension String {
+  @inlinable @inline(__always)
+  public init(minimumCapacity: Int) {
+    self.init()
+    reserveCapacity(minimumCapacity)
+  }
+}
+
 extension StringProtocol {
   @inlinable
   public func lowercasingFirstLetter() -> String {

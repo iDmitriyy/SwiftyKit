@@ -10,10 +10,9 @@ private import NonEmpty
 
 // MARK: Random Suffix
 
-extension ErrorInfoFunctions {
+extension ErrorInfoFuncs {
   internal static func randomSuffix() -> String {
-    var result = ""
-    result.reserveCapacity(3)
+    var result = String(minimumCapacity: 3)
     result.append(String.englishAlphabetUppercasedString.randomElement())
     result.append(String.englishAlphabetUppercasedString.randomElement())
     result.append(String(describing: UInt.random(in: 0...9)))

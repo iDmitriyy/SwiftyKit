@@ -114,50 +114,54 @@ extension ErrorInfo {
       storage[key] = value
     } else {
       let dict = [key: value]
-      ErrorInfoFunctions._mergeErrorInfo(&storage, with: [dict], line: line)
+//      ErrorInfoFuncs._mergeErrorInfo(&storage, with: [dict], line: line)
     }
   }
 }
 
 // MARK: Prefix & Suffix
 
-extension ErrorInfo {
-  public func addingKeyPrefix(_ keyPrefix: String,
-                              uppercasingFirstLetter uppercasing: Bool = true,
-                              line: UInt = #line) -> Self {
-    let storageCopy = storage
-    let prefixed = ErrorInfoFunctions.addKeyPrefix(keyPrefix, toKeysOf: storageCopy, uppercasingFirstLetter: uppercasing, line: line)
-    return Self(storage: prefixed)
-  }
-}
+//extension ErrorInfo {
+//  public func addingKeyPrefix(_ keyPrefix: String,
+//                              uppercasingFirstLetter uppercasing: Bool = true,
+//                              line: UInt = #line) -> Self {
+//    let storageCopy = storage
+//    let prefixed = ErrorInfoFuncs.addKeyPrefix(keyPrefix, toKeysOf: storageCopy, uppercasingFirstLetter: uppercasing, line: line)
+//    return Self(storage: prefixed)
+//  }
+//}
 
 // MARK: Merge
 
 extension ErrorInfo {
-  // TODO: - merge method with consuming generics instead of variadic ...
   
-  public static func merge(_ otherInfos: Self..., to errorInfo: inout Self, line: UInt = #line) {
-    ErrorInfoFunctions._mergeErrorInfo(&errorInfo.storage, with: otherInfos.map { $0.storage }, line: line)
-  }
-  
-  public static func merge(_ otherInfo: Self,
-                           to errorInfo: inout Self,
-                           addingKeyPrefix keyPrefix: String,
-                           uppercasingFirstLetter uppercasing: Bool = true,
-                           line: UInt = #line) {
-    ErrorInfoFunctions.mergeErrorInfo(otherInfo.storage,
-                                      to: &errorInfo.storage,
-                                      addingKeyPrefix: keyPrefix,
-                                      uppercasingFirstLetter: uppercasing,
-                                      line: line)
-  }
-  
-  public static func merged(_ errorInfo: Self, _ otherInfos: Self..., line: UInt = #line) -> Self {
-    var errorInfoRaw = errorInfo.storage
-    ErrorInfoFunctions._mergeErrorInfo(&errorInfoRaw, with: otherInfos.map { $0.storage }, line: line)
-    return Self(storage: errorInfoRaw)
-  }
 }
+
+//extension ErrorInfo {
+//  // TODO: - merge method with consuming generics instead of variadic ...
+//  
+//  public static func merge(_ otherInfos: Self..., to errorInfo: inout Self, line: UInt = #line) {
+//    ErrorInfoFuncs._mergeErrorInfo(&errorInfo.storage, with: otherInfos.map { $0.storage }, line: line)
+//  }
+//  
+//  public static func merge(_ otherInfo: Self,
+//                           to errorInfo: inout Self,
+//                           addingKeyPrefix keyPrefix: String,
+//                           uppercasingFirstLetter uppercasing: Bool = true,
+//                           line: UInt = #line) {
+//    ErrorInfoFuncs.mergeErrorInfo(otherInfo.storage,
+//                                      to: &errorInfo.storage,
+//                                      addingKeyPrefix: keyPrefix,
+//                                      uppercasingFirstLetter: uppercasing,
+//                                      line: line)
+//  }
+//  
+//  public static func merged(_ errorInfo: Self, _ otherInfos: Self..., line: UInt = #line) -> Self {
+//    var errorInfoRaw = errorInfo.storage
+//    ErrorInfoFuncs._mergeErrorInfo(&errorInfoRaw, with: otherInfos.map { $0.storage }, line: line)
+//    return Self(storage: errorInfoRaw)
+//  }
+//}
 
 // MARK: collect values from KeyPath
 
