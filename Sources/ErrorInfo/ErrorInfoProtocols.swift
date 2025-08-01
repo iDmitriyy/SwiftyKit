@@ -49,10 +49,11 @@ func test(errorInfo: ErrorInfoCollection) {
 //  }
 // }
 
-internal protocol ErrorInfoInternal {
-  associatedtype Storage
+/// Default functions implementations for ErrorInfo types
+internal protocol ErrorInfoInternalDefaultFuncs {
+  associatedtype Storage: DictionaryUnifyingProtocol
   
   var storage: Storage { get }
 }
 
-extension ErrorInfo: ErrorInfoInternal {}
+extension ErrorInfo: ErrorInfoInternalDefaultFuncs {}

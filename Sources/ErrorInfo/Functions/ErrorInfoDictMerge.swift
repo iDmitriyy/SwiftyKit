@@ -9,6 +9,8 @@ extension ErrorInfoDictFuncs {
   public enum Merge: Namespacing {}
 }
 
+/// all merge functions have no default value for omitEqualValue arg.
+/// Extension can be be made on user side, providing overload with suitable default choice.
 extension ErrorInfoDictFuncs.Merge {
   // MARK: Dictionary
 
@@ -49,46 +51,6 @@ extension ErrorInfoDictFuncs.Merge {
       } // end for (key, value)
     } // end for (index, otherInfo)
   }
-
-  /// For key-value pair, the function checks if the key already exists in the `errorInfo` dictionary.
-  /// If the key does not already contained in the `errorInfo` dictionary, the function simply adds this key-value pair to the `errorInfo` dictionary.
-  /// If it is contained, the function checks if the value is approximately equal to the existing value in the `errorInfo` dictionary.
-  /// If they are approximately equal, then the function leaves in the dictionary the value that is already there
-  /// If not, then the function modifies the key by appending a generated suffix consisting of the current line number and the `index`.
-  /// The function then checks if the modified key already exists in the errorInfo dictionary.
-  /// If it does, it appends the index of the current dictionary to the suffix and checks again until it finds a key that does not exist in the `errorInfo` dictionary.
-  /// Once it finds a unique key, the function adds the key-value pair to the `errorInfo` dictionary.
-  internal static func _addResolvingKeyCollisions<V>(key: String,
-                                                     value: V,
-                                                     firstSuffix: () -> String,
-                                                     otherSuffix: () -> String,
-                                                     to errorInfo: inout some DictionaryUnifyingProtocol<String, V>) {
-    if let existingValue = errorInfo[key] {
-      guard !ErrorInfoFuncs.isApproximatelyEqual(value, existingValue) else {
-        return // если значения равны, оставляем в userInfo то которое уже в нём есть
-      }
-      
-      // Возникновение коллизий маловероятно. Если оно всё же произошло, добавляем index
-      // чтобы понять на каком участке цепочки возникла коллизия.
-      // Например, если в 2х словарях возникла коллизия по ключу "decodingDate", получится такой порядок модификации ключа:
-      // decodingDate ->
-      let suffix = firstSuffix() // "decodingDate^line_81_idx1"
-      var modifiedKey = key + suffix
-      while let existingValue2 = errorInfo[modifiedKey] {
-        if ErrorInfoFuncs.isApproximatelyEqual(value, existingValue2) {
-          return
-        } else {
-          modifiedKey += otherSuffix() // "decodingDate^line_81_idx1_1"
-        }
-      }
-      
-      errorInfo[modifiedKey] = value
-    } else { // если коллизии отсутствуют – кладём в словарь
-      errorInfo[key] = value
-    }
-  }
-
-  
   
   /// -----------------------------------------------------------------
   
@@ -135,19 +97,30 @@ extension ErrorInfoDictFuncs.Merge {
     
     return .empty
   }
+}
+
+// MARK: Level 3 functions
+
+extension ErrorInfoDictFuncs.Merge {
+  public typealias ResolvingInput<Dict: DictionaryUnifyingProtocol> = KeyCollisionResolvingInput<Dict.Key, Dict.Value>
+  public typealias ResolvingResult<Dict: DictionaryUnifyingProtocol> = KeyCollisionResolvingResult<Dict.Key>
   
-  // all merge functions have no default value for omitEqualValue arg.
-  // Extension can be be made on user side, providing overload with suitable default choice.
-  
-  // donatorIndex: some BinaryInteger & CustomStringConvertible,
-  
+  /// For key-value pair, the function checks if the key already exists in the `recipient` dictionary.
+  /// If the key does not already contained in the `recipient` dictionary, the function simply adds this key-value pair to the `recipient` dictionary.
+  /// If it is contained, the function checks if the value is approximately equal to the existing value in the `recipient` dictionary.
+  /// If they are approximately equal, then the function leaves in the dictionary the value that is already there
+  /// If not, then the function modifies the key by appending a generated suffix consisting of the current line number and the `index`.
+  /// The function then checks if the modified key already exists in the errorInfo dictionary.
+  /// If it does, it appends the index of the current dictionary to the suffix and checks again until it finds a key that does not exist in the `errorInfo` dictionary.
+  /// Once a unique key is finally created (typically it happens from first time), the function adds the key-value pair to the `recipient` dictionary.
   public static func withResolvingCollisionsAdd<Dict>(keyValue donatorKeyValue: Dict.Element,
                                                       to recipient: inout Dict,
                                                       donatorIndex: some BinaryInteger & CustomStringConvertible,
                                                       omitEqualValue shouldOmitEqualValue: Bool,
                                                       fileLine: StaticFileLine,
-                                                      resolving resolve: (KeyCollisionResolvingInput<Dict.Key, Dict.Value>) -> KeyCollisionResolvingResult<Dict.Key>)
+                                                      resolve: (ResolvingInput<Dict>) -> ResolvingResult<Dict>)
   where Dict: DictionaryUnifyingProtocol, Dict.Key == String {
+    // TODO: update func documentation
     let (donatorKey, donatorValue) = donatorKeyValue
     // In, most cases value is simply added to recipient. When collision happens, it must be properly resolved.
     if let recipientValue = recipient[donatorKey] {
