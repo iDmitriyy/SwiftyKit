@@ -2,7 +2,7 @@
 //  IsApproximatelyEqualTests.swift
 //  swifty-kit
 //
-//  Created by tmp on 29/07/2025.
+//  Created by Dmitriy Ignatyev on 29/07/2025.
 //
 
 import Foundation

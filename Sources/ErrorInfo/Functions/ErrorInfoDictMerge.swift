@@ -99,7 +99,7 @@ extension ErrorInfoDictFuncs.Merge {
                              file: StaticString? = nil,
                              line: (some BinaryInteger & CustomStringConvertible)? = nil,
                              omitEqualValue: Bool = true,
-                             resolvingCollision: (_ a: Dict.Element, _ b: Dict.Element) -> KeyCollisionResolvingResult)
+                             resolvingCollision: (_ a: Dict.Element, _ b: Dict.Element) -> KeyCollisionResolvingResult<Dict.Key>)
   -> ErrorInfo where Dict: DictionaryUnifyingProtocol<String, V> {
     for (key, value) in donator {
       if let existingValue = recipient[key] {
@@ -119,7 +119,7 @@ extension ErrorInfoDictFuncs.Merge {
   static func merge<V, Dict>(_ donator: Dict,
                              to recipient: inout Dict,
                              omitEqualValue: Bool = true,
-                             resolvingCollision: (_ a: Dict.Element, _ b: Dict.Element) -> KeyCollisionResolvingResult)
+                             resolvingCollision: (_ a: Dict.Element, _ b: Dict.Element) -> KeyCollisionResolvingResult<Dict.Key>)
   -> ErrorInfo where Dict: DictionaryUnifyingProtocol<String, V> {
     for (key, value) in donator {
       if let existingValue = recipient[key] {
@@ -136,59 +136,95 @@ extension ErrorInfoDictFuncs.Merge {
     return .empty
   }
   
-  // all merge functions have no default for omitEqualValue. Extension can be be made on user side, providing overload
-  // with suitable default choice.
+  // all merge functions have no default value for omitEqualValue arg.
+  // Extension can be be made on user side, providing overload with suitable default choice.
   
-  static func _withResolvingCollisionsAdd<Dict>(keyValue: Dict.Element,
-                                                to recipient: inout Dict,
-                                                omitEqualValue shouldOmitEqualValue: Bool,
-                                                resolvingResult: KeyCollisionResolvingResult) where Dict: DictionaryUnifyingProtocol {
-    let (key, value) = keyValue
-    if let existingValue = recipient[key] {
-      guard !ErrorInfoFuncs.isApproximatelyEqual(value, existingValue) else {
-        return // если значения равны, оставляем в userInfo то которое уже в нём есть
-      }
+  // donatorIndex: some BinaryInteger & CustomStringConvertible,
+  
+  public static func withResolvingCollisionsAdd<Dict>(keyValue: Dict.Element,
+                                                      to recipient: inout Dict,
+                                                      donatorIndex: some BinaryInteger & CustomStringConvertible,
+                                                      omitEqualValue shouldOmitEqualValue: Bool,
+                                                      fileLine: StaticFileLine,
+                                                      resolving resolve: (KeyCollisionResolvingInput<Dict.Key, Dict.Value>) -> KeyCollisionResolvingResult<Dict.Key>)
+  where Dict: DictionaryUnifyingProtocol, Dict.Key == String {
+    let (donatorKey, donatorValue) = keyValue
+    // In, most cases value is simply added to recipient. When collision happens, it must be properly resolved.
+    if let recipientValue = recipient[donatorKey] {
+      let collidedKey = donatorKey
       // if collision happened, but values are equal, then we can keep existing value
-      if ErrorInfoFuncs.isApproximatelyEqual(value, existingValue) {
-        if shouldOmitEqualValue {
-          ()
-        } else {
-          
-        }
-      } else { // resolving must be done
-        
-      }
+      let valuesAreEqual = ErrorInfoFuncs.isApproximatelyEqual(recipientValue, donatorValue)
       
-      let valuesAreEqual = ErrorInfoFuncs.isApproximatelyEqual(value, existingValue)
+      lazy var resolvingInput = KeyCollisionResolvingInput(element: (collidedKey, recipientValue, donatorValue),
+                                                           areValuesApproximatelyEqual: valuesAreEqual,
+                                                           donatorIndex: donatorIndex,
+                                                           fileLine: fileLine)
+      let resolvingResult: KeyCollisionResolvingResult<Dict.Key>
       switch (valuesAreEqual, shouldOmitEqualValue) {
-      case (false, _): break // always keep different values, modify 1 or 2 keys
-      case (true, true): break // omit
-      case (true, false): break // keep both equal values, modify 1 or 2 keys
+      case (true, true): return // if newly added value is equal to current, then keep only existing
+      case (false, _), // different values must be saved, modify one of or both keys
+           (true, false): // keep both values though they are equal, modify one of or both keys
+        resolvingResult = resolve(resolvingInput)
       }
       
-      if ErrorInfoFuncs.isApproximatelyEqual(value, existingValue) {
+      /// decomposition subroutine of func withResolvingCollisionsAdd()
+      func putValueResolvingWithRandomSuffix(_ value: Dict.Value,
+                                             assumeWasModifiedKey: Dict.Key,
+                                             shouldOmitEqualValue: Bool,
+                                             to recipient: inout Dict) {
+        // Here we can can only make an assumtption that donator key was modified on the client side.
+        // While it should always happen, there is no guarantee.
         
+        // So there are 2 possible collision variants here:
+        // 1. assumeWasModifiedDonatorKey was not really modified
+        // 2. assumeWasModifiedDonatorKey also has a collision with existing key of recipient
+        var modifiedKey = assumeWasModifiedKey
+        var counter: Int = 0
+        while let recipientAnotherValue = recipient[modifiedKey] { // condition mostly always should not happen
+          switch (ErrorInfoFuncs.isApproximatelyEqual(recipientAnotherValue, value), shouldOmitEqualValue) {
+          case (true, true): return // if newly added value is equal to current, then keep only existing
+          case (false, _), // ?? always keep different values
+               (true, false): // ?? keep both equal values
+            let ssuffix = counter == 0 ? "#" + ErrorInfoFuncs.randomSuffix() : ErrorInfoFuncs.randomSuffix()
+            modifiedKey += ssuffix
+            counter += 1
+            // example: 3 error-info instances with decodingDate key
+            // "decodingDate_don0_file_line_SourceFileName_81_#9vT"
+          }
+        }
+        recipient[modifiedKey] = value
       }
       
-      // Например, если в 2х словарях возникла коллизия по ключу "decodingDate", получится такой порядок модификации ключа:
-      // decodingDate ->
-//      let suffix = firstSuffix() // "decodingDate^line_81_idx1"
-//      var modifiedKey = key + suffix
-//      while let existingValue2 = errorInfo[modifiedKey] {
-//        if ErrorInfoFuncs.isApproximatelyEqual(value, existingValue2) {
-//          return
-//        } else {
-//          modifiedKey += otherSuffix() // "decodingDate^line_81_idx1_1"
-//        }
-//      }
-      
-//      errorInfo[modifiedKey] = value
+      switch resolvingResult {
+      case let .modifyDonatorKey(assumeWasModifiedDonatorKey):
+        putValueResolvingWithRandomSuffix(donatorValue,
+                                          assumeWasModifiedKey: assumeWasModifiedDonatorKey,
+                                          shouldOmitEqualValue: shouldOmitEqualValue,
+                                          to: &recipient)
+        
+      case let .modifyRecipientKey(assumeWasModifiedRecipientKey):
+        // 1. replace value that was already contained in recipient by donatorValue
+        recipient[collidedKey] = donatorValue
+        // 2. put value that was already contained in recipient by modifiedRecipientKey
+        putValueResolvingWithRandomSuffix(recipientValue,
+                                          assumeWasModifiedKey: assumeWasModifiedRecipientKey,
+                                          shouldOmitEqualValue: shouldOmitEqualValue,
+                                          to: &recipient)
+        
+      case let .modifyBothKeys(assumeWasModifiedDonatorKey, assumeWasModifiedRecipientKey):
+        recipient[collidedKey] = nil // remove old key & value
+        putValueResolvingWithRandomSuffix(donatorValue,
+                                          assumeWasModifiedKey: assumeWasModifiedDonatorKey,
+                                          shouldOmitEqualValue: shouldOmitEqualValue,
+                                          to: &recipient)
+        
+        putValueResolvingWithRandomSuffix(recipientValue,
+                                          assumeWasModifiedKey: assumeWasModifiedRecipientKey,
+                                          shouldOmitEqualValue: shouldOmitEqualValue,
+                                          to: &recipient)
+      }
     } else { // if no collisions then add to recipient
-      recipient[key] = value
+      recipient[donatorKey] = donatorValue
     }
   }
-  
-  
 }
-
-

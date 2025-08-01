@@ -18,6 +18,8 @@
  @OptionSet
  @PrivateEnumInitializers | for structs with private backing enum, generate static-func initializers with cases names.
  @DebugDescription
+ @EnumCaseStrings(caseNames: Bool = true, caseSignatures: Bool = false) | StaticStrings or Strings?
+ @NewType(frozen: Bool = false, type: Kind (auto, struct, class)) | can such macro be applied > 1 time? Localdate example
  
  #NewEnumWithoutAssociatedValues  | #NewEnum(name: String? = nil, accessLevel: A? = nil)
  
@@ -39,3 +41,22 @@
  @ConformToHashable
  #formatDate
  */
+
+enum Foo {
+  case foo(a: Int)
+  case foo(b: UInt8)
+}
+
+//func fff(f: Foo) {
+//  Foo.foo(a: 4)
+//  Foo.foo(b: 3)
+//  if case let .foo(a: let a) = f {
+//    
+//  }
+////  switch f {
+////  case .foo(let a):
+////    break
+////  case .foo(let b):
+////    break
+////  }
+//}

@@ -16,6 +16,13 @@
 /// @_spi(SwiftyKitBuiltinTypes)
 /// @_spi(SwiftyKitBuiltinFuncs)
 
+/// Modules:
+/// - make script for compiling products as static & dynamic library
+
+/// Binary size ideas:
+/// - make Either, OoneOfx, Empty, HashableExcluded, FileLine, RefBox, TextError, AppVersion, MacrosSymbols and others @frozen
+/// - disable reflection
+
 //import Foundation
 import Macros
 
