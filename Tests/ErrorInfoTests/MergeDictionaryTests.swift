@@ -25,7 +25,7 @@ struct MergeDictionaryTests {
                                   donatorIndex: 0,
                                   omitEqualValue: omitEqualValue,
                                   fileLine: fileLine,
-                                  resolving: { input in
+                                  resolve: { input in
           .modifyDonatorKey(input.element.key)
       })
     ErrorInfoDictFuncs.Merge
@@ -34,7 +34,7 @@ struct MergeDictionaryTests {
                                   donatorIndex: 1,
                                   omitEqualValue: omitEqualValue,
                                   fileLine: fileLine,
-                                  resolving: { input in
+                                  resolve: { input in
           .modifyDonatorKey(input.element.key)
       })
   }

@@ -9,6 +9,7 @@ import struct OrderedCollections.OrderedDictionary
 public import func IndependentDeclarations.prettyDescription // for default valueInterpolation with prettyDescription
 import IndependentDeclarations
 import CrossImportOverlays
+import OrderedCollections
 
 public struct ErrorInfo: ErrorInfoCollection {
   public static let empty: Self = Self()
@@ -16,8 +17,11 @@ public struct ErrorInfo: ErrorInfoCollection {
   // TODO: - add tests for elements ordering stability
   
   public func asStringDict() -> [String: String] {
-//    storage.mapValues { String(describing: $0) }
-    fatalError()
+    var dict = [String: String](minimumCapacity: storage.count)
+    storage.forEach { key, value in // TODO: use builtin initializer of OrderedDict instead of foreach
+      dict[key] = String(describing: value)
+    }
+    return dict
   }
   
   internal private(set) var storage: OrderedDictionary<String, any ValueType>
@@ -110,12 +114,15 @@ extension ErrorInfo {
 //  }
   
   private mutating func _addValue(_ value: any ValueType, forKey key: String, line: UInt) {
-    if !storage.hasValue(forKey: key) {
-      storage[key] = value
-    } else {
-      let dict = [key: value]
-//      ErrorInfoFuncs._mergeErrorInfo(&storage, with: [dict], line: line)
-    }
+    // Here values are added by ErrorInfo subscript, so use root merge-function subroutine to put value into storage
+    // and add a random suffix if collision occurs
+    // Pass unmodified key, suffix will be aded by _putResolvingWithRandomSuffix
+    ErrorInfoDictFuncs.Merge
+      ._putResolvingWithRandomSuffix(value,
+                                     assumeModifiedKey: key,
+                                     shouldOmitEqualValue: true,
+                                     suffixFirstChar: "$",
+                                     to: &storage)
   }
 }
 

@@ -5,6 +5,8 @@
 //  Created by tmp on 28/07/2025.
 //
 
+import IndependentDeclarations
+
 // MARK: - Error Info
 
 public protocol InformativeError: Error {

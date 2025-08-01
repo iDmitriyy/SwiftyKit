@@ -13,20 +13,7 @@ extension ErrorInfoDictFuncs {
 /// Extension can be be made on user side, providing overload with suitable default choice.
 extension ErrorInfoDictFuncs.Merge {
   // MARK: Dictionary
-
-  public static func mergeErrorInfo<Dict, V>(_ otherInfos: Dict...,
-                                             to errorInfo: inout some DictionaryUnifyingProtocol<String, V>,
-                                             line: UInt = #line) where Dict: DictionaryUnifyingProtocol<String, V> {
-    _mergeErrorInfo(&errorInfo, with: otherInfos, line: line)
-  }
-
-  public static func mergedErrorInfos<V, Dict>(_ errorInfo: Dict, _ otherInfos: Dict..., line: UInt = #line)
-    -> Dict where Dict: DictionaryUnifyingProtocol<String, V> {
-    var errorInfo = errorInfo
-    _mergeErrorInfo(&errorInfo, with: otherInfos, line: line)
-    return errorInfo
-  }
-
+  
   /// The purpose of this function is to merge multiple dictionaries of error information into a single dictionary, handling any key collisions by appending a unique suffix to the key.
   ///
   /// The function loops through each dictionary in the `otherInfos` array and for each dictionary, it loops through its key-value pairs.2
@@ -38,72 +25,48 @@ extension ErrorInfoDictFuncs.Merge {
   /// The function then checks if the modified key already exists in the errorInfo dictionary.
   /// If it does, it appends the index of the current dictionary to the suffix and checks again until it finds a key that does not exist in the `errorInfo` dictionary.
   /// Once it finds a unique key, the function adds the key-value pair to the `errorInfo` dictionary.
-  internal static func _mergeErrorInfo<V>(_ errorInfo: inout some DictionaryUnifyingProtocol<String, V>,
-                                          with otherInfos: [some DictionaryUnifyingProtocol<String, V>],
-                                          line: UInt) {
-    for (index, otherInfo) in otherInfos.enumerated() {
-      for (key, value) in otherInfo {
-        _addResolvingKeyCollisions(key: key,
-                                   value: value,
-                                   firstSuffix: { "^line_\(line)_idx\(index)" },
-                                   otherSuffix: { "_r" + ErrorInfoFuncs.randomSuffix() },
-                                   to: &errorInfo)
+  internal static func _mergeErrorInfo<V>(_ recipient: inout some DictionaryUnifyingProtocol<String, V>,
+                                          with donators: [some DictionaryUnifyingProtocol<String, V>],
+                                          omitEqualValue: Bool,
+                                          fileLine: StaticFileLine,
+                                          resolve: (ResolvingInput<String, V>) -> ResolvingResult<String>) {
+    for (donatorIndex, donator) in donators.enumerated() {
+      for donatorElement in donator {
+        withResolvingCollisionsAdd(keyValue: donatorElement,
+                                   to: &recipient,
+                                   donatorIndex: donatorIndex,
+                                   omitEqualValue: omitEqualValue,
+                                   fileLine: fileLine,
+                                   resolve: resolve)
       } // end for (key, value)
     } // end for (index, otherInfo)
   }
   
-  /// -----------------------------------------------------------------
-  
-  
-  /// Key-modifying resloving collision
-  static func merge<V, Dict>(_ donator: Dict,
-                             to recipient: inout Dict,
-                             file: StaticString? = nil,
-                             line: (some BinaryInteger & CustomStringConvertible)? = nil,
-                             omitEqualValue: Bool = true,
-                             resolvingCollision: (_ a: Dict.Element, _ b: Dict.Element) -> KeyCollisionResolvingResult<Dict.Key>)
-  -> ErrorInfo where Dict: DictionaryUnifyingProtocol<String, V> {
-    for (key, value) in donator {
-      if let existingValue = recipient[key] {
-        if ErrorInfoFuncs.isApproximatelyEqual(value, existingValue) {
-          
-        } else {
-          
-        }
-      } else {
-        
-      }
-    }
-    
-    return .empty
-  }
-  
-  static func merge<V, Dict>(_ donator: Dict,
-                             to recipient: inout Dict,
-                             omitEqualValue: Bool = true,
-                             resolvingCollision: (_ a: Dict.Element, _ b: Dict.Element) -> KeyCollisionResolvingResult<Dict.Key>)
-  -> ErrorInfo where Dict: DictionaryUnifyingProtocol<String, V> {
-    for (key, value) in donator {
-      if let existingValue = recipient[key] {
-        if ErrorInfoFuncs.isApproximatelyEqual(value, existingValue) {
-          
-        } else {
-          
-        }
-      } else {
-        
-      }
-    }
-    
-    return .empty
-  }
+  // repeat (each Dict).Key == String  Not supported yet
+//  internal static func _mergeErrorInfo<V, each Dict>(_ recipient: inout some DictionaryUnifyingProtocol<String, V>,
+//                                          with donators: repeat each Dict,
+//                                          omitEqualValue: Bool,
+//                                          fileLine: StaticFileLine,
+//                                          resolve: (ResolvingInput<String, V>) -> ResolvingResult<String>)
+//  where repeat each Dict: DictionaryUnifyingProtocol, repeat (each Dict).Key == String {
+//    for donator in repeat each donators {
+//      for donatorElement in donator {
+//        withResolvingCollisionsAdd(keyValue: donatorElement,
+//                                   to: &recipient,
+//                                   donatorIndex: donatorIndex,
+//                                   omitEqualValue: omitEqualValue,
+//                                   fileLine: fileLine,
+//                                   resolve: resolve)
+//      } // end for (key, value)
+//    } // end for (index, otherInfo)
+//  }
 }
 
 // MARK: Level 3 functions
 
 extension ErrorInfoDictFuncs.Merge {
-  public typealias ResolvingInput<Dict: DictionaryUnifyingProtocol> = KeyCollisionResolvingInput<Dict.Key, Dict.Value>
-  public typealias ResolvingResult<Dict: DictionaryUnifyingProtocol> = KeyCollisionResolvingResult<Dict.Key>
+  public typealias ResolvingInput<Key: Hashable, Value> = KeyCollisionResolvingInput<Key, Value>
+  public typealias ResolvingResult<Key: Hashable> = KeyCollisionResolvingResult<Key>
   
   /// For key-value pair, the function checks if the key already exists in the `recipient` dictionary.
   /// If the key does not already contained in the `recipient` dictionary, the function simply adds this key-value pair to the `recipient` dictionary.
@@ -118,7 +81,7 @@ extension ErrorInfoDictFuncs.Merge {
                                                       donatorIndex: some BinaryInteger & CustomStringConvertible,
                                                       omitEqualValue shouldOmitEqualValue: Bool,
                                                       fileLine: StaticFileLine,
-                                                      resolve: (ResolvingInput<Dict>) -> ResolvingResult<Dict>)
+                                                      resolve: (ResolvingInput<Dict.Key, Dict.Value>) -> ResolvingResult<Dict.Key>)
   where Dict: DictionaryUnifyingProtocol, Dict.Key == String {
     // TODO: update func documentation
     let (donatorKey, donatorValue) = donatorKeyValue
@@ -128,10 +91,14 @@ extension ErrorInfoDictFuncs.Merge {
       // if collision happened, but values are equal, then we can keep existing value
       let valuesAreEqual = ErrorInfoFuncs.isApproximatelyEqual(recipientValue, donatorValue)
       
-      lazy var resolvingInput = KeyCollisionResolvingInput(element: (collidedKey, recipientValue, donatorValue),
+      let element = KeyCollisionResolvingInput.Element(key: collidedKey,
+                                                       existingValue: recipientValue,
+                                                       beingAddedValue: donatorValue)
+      lazy var resolvingInput = KeyCollisionResolvingInput(element: element,
                                                            areValuesApproximatelyEqual: valuesAreEqual,
                                                            donatorIndex: donatorIndex,
                                                            fileLine: fileLine)
+      
       let resolvingResult: KeyCollisionResolvingResult<Dict.Key>
       switch (valuesAreEqual, shouldOmitEqualValue) {
       case (true, true): return // if newly added value is equal to current, then keep only existing
@@ -140,11 +107,13 @@ extension ErrorInfoDictFuncs.Merge {
         resolvingResult = resolve(resolvingInput)
       }
       
+      let suffixFirstChar: UnicodeScalar = "#"
       switch resolvingResult {
       case let .modifyDonatorKey(assumeWasModifiedDonatorKey):
         _putResolvingWithRandomSuffix(donatorValue,
                                       assumeModifiedKey: assumeWasModifiedDonatorKey,
                                       shouldOmitEqualValue: shouldOmitEqualValue,
+                                      suffixFirstChar: suffixFirstChar,
                                       to: &recipient)
         
       case let .modifyRecipientKey(assumeWasModifiedRecipientKey):
@@ -154,6 +123,7 @@ extension ErrorInfoDictFuncs.Merge {
         _putResolvingWithRandomSuffix(recipientValue,
                                       assumeModifiedKey: assumeWasModifiedRecipientKey,
                                       shouldOmitEqualValue: shouldOmitEqualValue,
+                                      suffixFirstChar: suffixFirstChar,
                                       to: &recipient)
         
       case let .modifyBothKeys(assumeWasModifiedDonatorKey, assumeWasModifiedRecipientKey):
@@ -161,11 +131,13 @@ extension ErrorInfoDictFuncs.Merge {
         _putResolvingWithRandomSuffix(donatorValue,
                                       assumeModifiedKey: assumeWasModifiedDonatorKey,
                                       shouldOmitEqualValue: shouldOmitEqualValue,
+                                      suffixFirstChar: suffixFirstChar,
                                       to: &recipient)
         
         _putResolvingWithRandomSuffix(recipientValue,
                                       assumeModifiedKey: assumeWasModifiedRecipientKey,
                                       shouldOmitEqualValue: shouldOmitEqualValue,
+                                      suffixFirstChar: suffixFirstChar,
                                       to: &recipient)
       }
     } else { // if no collisions then add to recipient
@@ -173,11 +145,28 @@ extension ErrorInfoDictFuncs.Merge {
     }
   }
   
+//  private static func _makeInput<Dict>(collidedKey: String,
+//                       recipientValue: Dict.Value,
+//                        donatorValue: Dict.Value,
+//                        valuesAreEqual: Bool,
+//                        donatorIndex: some BinaryInteger & CustomStringConvertible,
+//                        fileLine: StaticFileLine)
+//    -> ResolvingInput<Dict.Key, Dict.Value> where Dict: DictionaryUnifyingProtocol, Dict.Key == String {
+//      let element = KeyCollisionResolvingInput.Element(key: collidedKey,
+//                                                       existingValue: recipientValue,
+//                                                       beingAddedValue: donatorValue)
+//      return KeyCollisionResolvingInput(element: element,
+//                                                           areValuesApproximatelyEqual: valuesAreEqual,
+//                                                           donatorIndex: donatorIndex,
+//                                                           fileLine: fileLine)
+//  }
+  
   /// decomposition subroutine of func withResolvingCollisionsAdd()
-  private static func _putResolvingWithRandomSuffix<Dict>(_ value: Dict.Value,
-                                                          assumeModifiedKey: Dict.Key,
-                                                          shouldOmitEqualValue: Bool,
-                                                          to recipient: inout Dict)
+  internal static func _putResolvingWithRandomSuffix<Dict>(_ value: Dict.Value,
+                                                           assumeModifiedKey: Dict.Key,
+                                                           shouldOmitEqualValue: Bool,
+                                                           suffixFirstChar: UnicodeScalar,
+                                                           to recipient: inout Dict)
     where Dict: DictionaryUnifyingProtocol, Dict.Key == String {
     // Here we can can only make an assumtption that donator key was modified on the client side.
     // While it should always happen, there is no guarantee.
@@ -192,8 +181,9 @@ extension ErrorInfoDictFuncs.Merge {
       case (true, true): return // if newly added value is equal to current, then keep only existing
       case (false, _), // ?? always keep different values
            (true, false): // ?? keep both equal values
-        let ssuffix = counter == 0 ? "#" + ErrorInfoFuncs.randomSuffix() : ErrorInfoFuncs.randomSuffix()
-        modifiedKey += ssuffix
+        let randomSuffix = ErrorInfoFuncs.randomSuffix()
+        let suffix = counter == 0 ? String(suffixFirstChar) + randomSuffix : randomSuffix
+        modifiedKey += suffix
         counter += 1
         // example: 3 error-info instances with decodingDate key
         // "decodingDate_don0_file_line_SourceFileName_81_#9vT"

@@ -5,6 +5,8 @@
 //  Created by Dmitriy Ignatyev on 31/07/2025.
 //
 
+private import StdLibExtensions
+
 public enum ErrorInfoDictFuncs: Namespacing {}
 
 extension ErrorInfoDictFuncs {

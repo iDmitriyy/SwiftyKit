@@ -10,19 +10,33 @@ public enum ErrorInfoMerge: Namespacing {}
 extension ErrorInfoMerge {}
 
 public struct KeyCollisionResolvingInput<Key: Hashable, Value> {
-  public let element: (key: Key, existingValue: Value, beingAddedValue: Value)
+  public let element: Element
   public let areValuesApproximatelyEqual: Bool
   public let donatorIndex: any (BinaryInteger & CustomStringConvertible)
   public let fileLine: StaticFileLine
   
-  public init(element: (key: Key, existingValue: Value, beingAddedValue: Value),
-              areValuesApproximatelyEqual: Bool,
-              donatorIndex: any BinaryInteger & CustomStringConvertible,
-              fileLine: StaticFileLine) {
+  internal init(element: Element,
+                areValuesApproximatelyEqual: Bool,
+                donatorIndex: any BinaryInteger & CustomStringConvertible,
+                fileLine: StaticFileLine) {
     self.element = element
     self.areValuesApproximatelyEqual = areValuesApproximatelyEqual
     self.donatorIndex = donatorIndex
     self.fileLine = fileLine
+  }
+  
+  public struct Element {
+    public let key: Key
+    public let existingValue: Value
+    public let beingAddedValue: Value
+    
+    internal init(key: Key,
+                  existingValue: Value,
+                  beingAddedValue: Value) {
+      self.key = key
+      self.existingValue = existingValue
+      self.beingAddedValue = beingAddedValue
+    }
   }
 }
 
