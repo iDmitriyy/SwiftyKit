@@ -7,6 +7,7 @@
 
 @testable import ErrorInfo
 import Testing
+import Foundation
 
 struct ErrorInfoSubscriptTests {
   @Test func subscriptKeyCollisionsForEqualValues() async throws {
@@ -28,10 +29,13 @@ struct ErrorInfoSubscriptTests {
     
     let keys = errorInfo.asStringDict().keys.sorted(by: { $0.count < $1.count })
     #expect(keys.count == 3)
-    #expect(keys[0].count == 3)
-    #expect(keys[1].count == 7)
-    #expect(keys[2].count == 7) // FIXME: flaky test, if second key2 will collide with key1, then key2 will have cunt = 10
     
+    let suffixFirstChar = "$"
+    #expect(keys[0].count == 3)
+    #expect(keys[1].count == 7 && keys[1].contains("$"))
+    // as suffix is generated randomly, there is a chance that firstly generated suffix for key2 will be equal for key1
+    // if second key2 will collide with key1, then key2 will have cunt = 10
+    #expect((keys[2].count == 7 || keys[2].count == 10) && keys[2].contains("$"))
     // 0 : "key"
     // 1 : "key$lia"
     // 2 : "key$Qet"
