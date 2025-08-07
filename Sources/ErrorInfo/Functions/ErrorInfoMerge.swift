@@ -103,7 +103,7 @@ public struct PrefixTransformFunc: Sendable {
     PrefixTransformFunc(body: { key, prefix in prefix + key },
                         identifier: "concatenation prefix + key")
   
-  public static let uppercasingKeyFirstChar =
+  public static let concatenationUppercasingKeyFirstChar =
     PrefixTransformFunc(body: { key, prefix in prefix + key.uppercasingFirstLetter() },
                         identifier: "concatenation prefix + key.uppercasingFirstLetter()")
 }

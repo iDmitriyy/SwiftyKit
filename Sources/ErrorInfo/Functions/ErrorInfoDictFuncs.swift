@@ -10,9 +10,9 @@ private import StdLibExtensions
 public enum ErrorInfoDictFuncs: Namespacing {}
 
 extension ErrorInfoDictFuncs { // MARK: Add Key Prefix
-  public static func addingKeyPrefix<V, Dict>(_ keyPrefix: String,
-                                              toKeysOf dict: inout Dict,
-                                              transform: PrefixTransformFunc)
+  public static func addKeyPrefix<V, Dict>(_ keyPrefix: String,
+                                           toKeysOf dict: inout Dict,
+                                           transform: PrefixTransformFunc)
     where Dict: DictionaryUnifyingProtocol<String, V> {
     var prefixedKeysDict = Dict(minimumCapacity: dict.count)
     
