@@ -19,21 +19,21 @@ extension ErrorInfoMerge {
   internal static let suffixBeginningForMergeScalar = UnicodeScalar(suffixBeginningForMergeAscii)
 }
 
-public struct KeyCollisionResolvingInput<Key: Hashable, Value> {
+public struct KeyCollisionResolvingInput<Key: Hashable, Value, CId> {
   public let element: Element
   public let areValuesApproximatelyEqual: Bool
   public let donatorIndex: any (BinaryInteger & CustomStringConvertible)
-  /// ?? fileLine: StaticFileLine should be abstracted as "Collision Identifier"
-  public let fileLine: StaticFileLine
+  /// This can be `File + Line`, `Error domain + code` etc.
+  public let identity: CId
   
   internal init(element: Element,
                 areValuesApproximatelyEqual: Bool,
                 donatorIndex: any BinaryInteger & CustomStringConvertible,
-                fileLine: StaticFileLine) {
+                identity: CId) {
     self.element = element
     self.areValuesApproximatelyEqual = areValuesApproximatelyEqual
     self.donatorIndex = donatorIndex
-    self.fileLine = fileLine
+    self.identity = identity
   }
   
   public struct Element {
