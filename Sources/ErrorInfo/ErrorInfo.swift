@@ -16,15 +16,6 @@ public struct ErrorInfo: ErrorInfoCollection {
   
   // TODO: - add tests for elements ordering stability
   
-  
-  public func asStringDict() -> [String: String] { // TODO: shouls be a protocol default imp
-    var dict = [String: String](minimumCapacity: storage.count)
-    storage.forEach { key, value in // TODO: use builtin initializer of OrderedDict instead of foreach
-      dict[key] = String(describing: value)
-    }
-    return dict
-  }
-  
   internal private(set) var storage: OrderedDictionary<String, any ValueType>
   
   fileprivate init(storage: OrderedDictionary<String, any ValueType>) {
@@ -33,12 +24,6 @@ public struct ErrorInfo: ErrorInfoCollection {
   
   public init() {
     self.init(storage: OrderedDictionary<String, any ValueType>())
-  }
-    
-  public init(legacyUserInfo: [String: Any],
-              valueInterpolation: @Sendable (Any) -> String = { prettyDescription(any: $0) }) {
-    self.init()
-    legacyUserInfo.forEach { key, value in storage[key] = valueInterpolation(value) }
   }
 }
 
@@ -188,6 +173,22 @@ extension ErrorInfo {
 //    return Self(storage: errorInfoRaw)
 //  }
 //}
+
+extension ErrorInfo {
+  public init(legacyUserInfo: [String: Any],
+              valueInterpolation: @Sendable (Any) -> String = { prettyDescription(any: $0) }) {
+    self.init()
+    legacyUserInfo.forEach { key, value in storage[key] = valueInterpolation(value) }
+  }
+  
+  public func asStringDict() -> [String: String] { // TODO: shouls be a protocol default imp
+    var dict = [String: String](minimumCapacity: storage.count)
+    storage.forEach { key, value in // TODO: use builtin initializer of OrderedDict instead of foreach
+      dict[key] = String(describing: value)
+    }
+    return dict
+  }
+}
 
 // MARK: collect values from KeyPath
 
