@@ -7,7 +7,15 @@
 
 public enum ErrorInfoMerge: Namespacing {}
 
-extension ErrorInfoMerge {}
+extension ErrorInfoMerge {
+  /// "$"
+  internal static let suffixBeginningForSubcriptAscii: UInt8 = 36
+  internal static let suffixBeginningForSubcriptScalar = UnicodeScalar(suffixBeginningForSubcriptAscii)
+  
+  /// "#"
+  internal static let suffixBeginningForMergeAscii: UInt8 = 35
+  internal static let suffixBeginningForMergeScalar = UnicodeScalar(suffixBeginningForMergeAscii)
+}
 
 public struct KeyCollisionResolvingInput<Key: Hashable, Value> {
   public let element: Element

@@ -2,7 +2,7 @@
 //  ErrorInfoDictMerge.swift
 //  swifty-kit
 //
-//  Created by tmp on 31/07/2025.
+//  Created by Dmitriy Ignatyev on 31/07/2025.
 //
 
 extension ErrorInfoDictFuncs {
@@ -107,7 +107,7 @@ extension ErrorInfoDictFuncs.Merge {
         resolvingResult = resolve(resolvingInput)
       }
       
-      let suffixFirstChar: UnicodeScalar = "#"
+      let suffixFirstChar: UnicodeScalar = ErrorInfoMerge.suffixBeginningForMergeScalar
       switch resolvingResult {
       case let .modifyDonatorKey(assumeWasModifiedDonatorKey):
         _putResolvingWithRandomSuffix(donatorValue,

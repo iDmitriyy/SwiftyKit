@@ -2,7 +2,7 @@
 //  ErrorInfoProtocols.swift
 //  swifty-kit
 //
-//  Created by tmp on 28/07/2025.
+//  Created by Dmitriy Ignatyev on 28/07/2025.
 //
 
 import IndependentDeclarations
@@ -38,6 +38,44 @@ public protocol ErrorInfoCollection: Collection, Sendable, CustomStringConvertib
 /// for merge functions: `#` , e.g. "keyName_don0_file_line_FileName_81_#Wng"
 public protocol ErrorInfoType: ErrorInfoCollection {
   
+}
+
+internal protocol ErrorInfoRequirement {
+  // MARK: Add value
+  
+  mutating func addResolvingCollisions(value: any ErrorInfoValueType, forKey key: String)
+  
+  // MARK: Merge
+  
+  mutating func merge<each D>(_ donators: repeat each D, fileLine: StaticFileLine) where repeat each D: ErrorInfoCollection
+  
+  // MARK: Prefix & Suffix
+  
+  mutating func addKeyPrefix(_ keyPrefix: String, fileLine: StaticFileLine)
+}
+
+extension ErrorInfoRequirement { // MARK: Add value
+  mutating func addIfNotNil(optionalValue: (any ErrorInfoValueType)?, key: String) {
+    guard let value = optionalValue else { return }
+    addResolvingCollisions(value: value, forKey: key)
+  }
+  
+  
+}
+
+extension ErrorInfoRequirement { // MARK: Merge
+  public consuming func merging<each D>(_ donators: repeat each D, fileLine: StaticFileLine) -> Self
+    where repeat each D: ErrorInfoCollection {
+    self.merge(repeat each donators, fileLine: fileLine)
+    return self
+  }
+}
+
+extension ErrorInfoRequirement { // MARK: Prefix & Suffix
+  public consuming func addingKeyPrefix(_ keyPrefix: String, fileLine: StaticFileLine = .this()) -> Self {
+    self.addKeyPrefix(keyPrefix, fileLine: fileLine)
+    return self
+  }
 }
 
 func test(errorInfo: ErrorInfoCollection) {

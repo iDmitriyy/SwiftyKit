@@ -81,7 +81,7 @@ extension ErrorInfo {
     set(maybeValue) {
       // TODO: when nil then T.Type is unknown but should be known
       let value = maybeValue ?? prettyDescription(any: maybeValue)
-      _addValue(value, forKey: key, line: line)
+      _addValue(value, forKey: key)
     }
   }
   
@@ -101,7 +101,7 @@ extension ErrorInfo {
   
   public mutating func add(key: String, optionalValue: (any ValueType)?, line: UInt = #line) {
     guard let value = optionalValue else { return }
-    _addValue(value, forKey: key, line: line)
+    _addValue(value, forKey: key)
   }
   
 //  public mutating func add(key: String, anyValue: Any, line: UInt = #line) {
@@ -113,20 +113,31 @@ extension ErrorInfo {
 //    _addValue(typeDescr + prettyDescription(any: anyValue), forKey: key, line: line)
 //  }
   
-  private mutating func _addValue(_ value: any ValueType, forKey key: String, line: UInt) {
-    // Here values are added by ErrorInfo subscript, so use root merge-function subroutine to put value into storage
-    // and add a random suffix if collision occurs
-    // Pass unmodified key, suffix will be aded by _putResolvingWithRandomSuffix
+  private mutating func _addValue(_ value: any ValueType, forKey key: String) {
+    // Here values are added by ErrorInfo subscript, so use subroutine of root merge-function to put value into storage, which
+    // adds a random suffix if collision occurs
+    // Pass unmodified key
     ErrorInfoDictFuncs.Merge
       ._putResolvingWithRandomSuffix(value,
                                      assumeModifiedKey: key,
                                      shouldOmitEqualValue: true,
-                                     suffixFirstChar: "$",
+                                     suffixFirstChar: ErrorInfoMerge.suffixBeginningForSubcriptScalar,
                                      to: &storage)
   }
 }
 
 // MARK: Prefix & Suffix
+
+extension ErrorInfo {
+  public mutating func addKeyPrefix(_ keyPrefix: String, fileLine: StaticFileLine = .this()) {
+    fatalError()
+  }
+  
+  public consuming func addingKeyPrefix(_ keyPrefix: String, fileLine: StaticFileLine = .this()) -> Self {
+    self.addKeyPrefix(keyPrefix, fileLine: fileLine)
+    return self
+  }
+}
 
 //extension ErrorInfo {
 //  public func addingKeyPrefix(_ keyPrefix: String,
@@ -141,7 +152,14 @@ extension ErrorInfo {
 // MARK: Merge
 
 extension ErrorInfo {
+  public mutating func merge<each D>(_ donators: repeat each D) where repeat each D: ErrorInfoCollection {
+    fatalError()
+  }
   
+  public consuming func merging<each D>(_ donators: repeat each D) -> Self where repeat each D: ErrorInfoCollection {
+    self.merge(repeat each donators)
+    return self
+  }
 }
 
 //extension ErrorInfo {
@@ -178,7 +196,8 @@ extension ErrorInfo {
   public static func collect<T, each V: ErrorInfo.ValueType>(from instance: T,
                                                              keys key: repeat KeyPath<T, each V>) -> Self {
     func collectEach(_ keyPath: KeyPath<T, some ErrorInfo.ValueType>, root: T, to info: inout Self) {
-      info[keyPath.asErrorInfoKeyString()] = root[keyPath: keyPath]
+      let keyPathString = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath)
+      info[keyPathString] = root[keyPath: keyPath]
     }
     // ⚠️ @iDmitriyy
     // _TODO: - add tests
