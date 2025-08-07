@@ -20,6 +20,7 @@
  @DebugDescription
  @EnumCaseStrings(caseNames: Bool = true, caseSignatures: Bool = false) | StaticStrings or Strings?
  @NewType(frozen: Bool = false, type: Kind (auto, struct, class)) | can such macro be applied > 1 time? Localdate example
+ @pureFunc | @Sendable @noAlloc @noLock 
  
  #NewEnumWithoutAssociatedValues  | #NewEnum(name: String? = nil, accessLevel: A? = nil)
  

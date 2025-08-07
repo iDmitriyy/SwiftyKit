@@ -48,6 +48,21 @@ struct MutateFuncTests {
     }
   }
   
+  @Test func copyOnWrite() {
+    let storedValue = ValueTypeWithCoW()
+    let val1 = mutate(value: storedValue) { _ in
+      
+    }
+    // value for func arg should be copied and this copy consumed, no additional copies made
+    // val1.maxCounter == ??
+    
+    let val2 = mutate(value: ValueTypeWithCoW()) { _ in
+      
+    }
+    // func arg should be consumed and no copies made
+    // val2.maxCounter == ??
+  }
+  
   // MARK: - Below test made to check that code compiled with provided args
   
   @Test func apiSurface_AcceptNonCopyableArg() {
@@ -69,6 +84,16 @@ struct MutateFuncTests {
   }
   
   private struct NoMatterWhatError: Error {}
+  
+  struct ValueTypeWithCoW {
+    init() {
+      
+    }
+  }
+  
+  final class CoWCounter {
+    
+  }
   
   final class EmptyClass {}
 }

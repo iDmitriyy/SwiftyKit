@@ -9,29 +9,33 @@ private import StdLibExtensions
 
 public enum ErrorInfoDictFuncs: Namespacing {}
 
-extension ErrorInfoDictFuncs {
-  // MARK: Add Key Prefix
-
-  public static func addKeyPrefix<V, Dict>(_ keyPrefix: String,
-                                           toKeysOf dict: Dict,
-                                           uppercasingFirstLetter: Bool = true,
-                                           line _: UInt = #line) -> Dict where Dict: DictionaryUnifyingProtocol<String, V> {
+extension ErrorInfoDictFuncs { // MARK: Add Key Prefix
+  public static func addingKeyPrefix<V, Dict>(_ keyPrefix: String,
+                                              toKeysOf dict: inout Dict,
+                                              transform: PrefixTransformFunc)
+    where Dict: DictionaryUnifyingProtocol<String, V> {
     var prefixedKeysDict = Dict(minimumCapacity: dict.count)
     
-    for (key, value) in dict {
-      // Edge Case:
-      // ["a": 1, "A": 2]
-      // after adding `prefix` with uppercasingFirstLetter:
-      // ["prefixA": 1, "prefixA^line_81_BF3": 2]
-      let prefixedKey = keyPrefix + (uppercasingFirstLetter ? key.uppercasingFirstLetter() : key)
-      //    _addResolvingKeyCollisions(key: prefixedKey,
-      //                               value: value,
-      //                               firstSuffix: { "^line_\(line)_r" + BaseErrorImpFunctions.randomSuffix() },
-      //                               otherSuffix: BaseErrorImpFunctions.randomSuffix,
-      //                               to: &prefixedKeysDict)
-      fatalError()
-    }
+    // Adding prefix is similar to merge operation, except that key collisions can happen between own keys after they are transformed.
+    // The are no donators, so use lower level soubroutine.
+    // Example:
+    // ["a": 1, "A": 2]
+    // - Add a prefix == "product", with uppercasingKeyFirstChar
+    // - key "a" will be uppercased which introduces a collision
+    // After colissions resolving:
+    // ["productA": 1, "productA#pL4A": 2]
     
-    return prefixedKeysDict
+    // While appearing of equal values making a merge is expected, such situation is not normal when adding a prefix
+    // to all keys.
+    // such self-collisions are something unexpected, so keep all values (shouldOmitEqualValue = false) in this case
+    for (key, value) in dict {
+      let prefixedKey = transform(key: key, prefix: keyPrefix)
+      Merge._putResolvingWithRandomSuffix(value,
+                                          assumeModifiedKey: prefixedKey,
+                                          shouldOmitEqualValue: false,
+                                          suffixFirstChar: ErrorInfoMerge.suffixBeginningForMergeScalar,
+                                          to: &prefixedKeysDict)
+    }
+    return dict = prefixedKeysDict
   }
 }

@@ -5,6 +5,8 @@
 //  Created by Dmitriy Ignatyev on 31/07/2025.
 //
 
+import StdLibExtensions
+
 extension ErrorInfoDictFuncs {
   public enum Merge: Namespacing {}
 }
@@ -12,7 +14,7 @@ extension ErrorInfoDictFuncs {
 /// all merge functions have no default value for omitEqualValue arg.
 /// Extension can be be made on user side, providing overload with suitable default choice.
 extension ErrorInfoDictFuncs.Merge {
-  // MARK: Dictionary
+  // MARK: Merge
   
   /// The purpose of this function is to merge multiple dictionaries of error information into a single dictionary, handling any key collisions by appending a unique suffix to the key.
   ///
@@ -42,7 +44,7 @@ extension ErrorInfoDictFuncs.Merge {
     } // end for (index, otherInfo)
   }
   
-  // repeat (each Dict).Key == String  Not supported yet
+//   repeat (each Dict).Key == String  Not supported yet
 //  internal static func _mergeErrorInfo<V, each Dict>(_ recipient: inout some DictionaryUnifyingProtocol<String, V>,
 //                                          with donators: repeat each Dict,
 //                                          omitEqualValue: Bool,
@@ -62,7 +64,7 @@ extension ErrorInfoDictFuncs.Merge {
 //  }
 }
 
-// MARK: Level 3 functions
+// MARK: - Low level root functions for  a single value 
 
 extension ErrorInfoDictFuncs.Merge {
   public typealias ResolvingInput<Key: Hashable, Value> = KeyCollisionResolvingInput<Key, Value>
@@ -89,7 +91,7 @@ extension ErrorInfoDictFuncs.Merge {
     if let recipientValue = recipient[donatorKey] {
       let collidedKey = donatorKey
       // if collision happened, but values are equal, then we can keep existing value
-      let valuesAreEqual = ErrorInfoFuncs.isApproximatelyEqual(recipientValue, donatorValue)
+      let valuesAreEqual = ErrorInfoFuncs.isApproximatelyEqualAny(recipientValue, donatorValue)
       
       let element = KeyCollisionResolvingInput.Element(key: collidedKey,
                                                        existingValue: recipientValue,
@@ -177,7 +179,10 @@ extension ErrorInfoDictFuncs.Merge {
     var modifiedKey = assumeModifiedKey
     var counter: Int = 0
     while let recipientAnotherValue = recipient[modifiedKey] { // condition mostly always should not happen
-      switch (ErrorInfoFuncs.isApproximatelyEqual(recipientAnotherValue, value), shouldOmitEqualValue) {
+//      if Dict.Value.self == (any Equatable).Type.self {
+//        // TODO: ...
+//      }
+      switch (ErrorInfoFuncs.isApproximatelyEqualAny(recipientAnotherValue, value), shouldOmitEqualValue) {
       case (true, true): return // if newly added value is equal to current, then keep only existing
       case (false, _), // ?? always keep different values
            (true, false): // ?? keep both equal values

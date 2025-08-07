@@ -16,7 +16,8 @@ public struct ErrorInfo: ErrorInfoCollection {
   
   // TODO: - add tests for elements ordering stability
   
-  public func asStringDict() -> [String: String] {
+  
+  public func asStringDict() -> [String: String] { // TODO: shouls be a protocol default imp
     var dict = [String: String](minimumCapacity: storage.count)
     storage.forEach { key, value in // TODO: use builtin initializer of OrderedDict instead of foreach
       dict[key] = String(describing: value)
@@ -120,7 +121,7 @@ extension ErrorInfo {
     ErrorInfoDictFuncs.Merge
       ._putResolvingWithRandomSuffix(value,
                                      assumeModifiedKey: key,
-                                     shouldOmitEqualValue: true,
+                                     shouldOmitEqualValue: true, // TODO: explain why
                                      suffixFirstChar: ErrorInfoMerge.suffixBeginningForSubcriptScalar,
                                      to: &storage)
   }
@@ -193,9 +194,9 @@ extension ErrorInfo {
 extension ErrorInfo {
 //public static func fromKeys<T, each V: ErrorInfo.ValueType>(of instance: T,
   @inlinable
-  public static func collect<T, each V: ErrorInfo.ValueType>(from instance: T,
-                                                             keys key: repeat KeyPath<T, each V>) -> Self {
-    func collectEach(_ keyPath: KeyPath<T, some ErrorInfo.ValueType>, root: T, to info: inout Self) {
+  public static func collect<R, each V: ErrorInfo.ValueType>(from instance: R,
+                                                             keys key: repeat KeyPath<R, each V>) -> Self {
+    func collectEach(_ keyPath: KeyPath<R, some ErrorInfo.ValueType>, root: R, to info: inout Self) {
       let keyPathString = ErrorInfoFuncs.asErrorInfoKeyString(keyPath: keyPath)
       info[keyPathString] = root[keyPath: keyPath]
     }
@@ -206,20 +207,5 @@ extension ErrorInfo {
     repeat collectEach(each key, root: instance, to: &info)
     
     return info
-  }
-}
-
-fileprivate struct _ErrorInfoGeneric<Key, Value, DictType: DictionaryUnifyingProtocol>: Sendable
-  where DictType.Key == Key, DictType.Value == Value, DictType: Sendable {
-  typealias ValueType = ErrorInfo.Value
-  
-  fileprivate private(set) var storage: DictType
-  
-  // TODO: - imp
-  // - may be make current ErrorInfo ordedred & delete ErrorOrderedInfo.
-//  public var _asStringDict: DictType { storage.mapValues { String(describing: $0) } }
-  
-  fileprivate init(storage: DictType) {
-    self.storage = storage
   }
 }
