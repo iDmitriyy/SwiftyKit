@@ -9,14 +9,14 @@ public enum ErrorInfoMerge: Namespacing {}
 
 extension ErrorInfoMerge {
   /// "$"
-  internal static let suffixBeginningForSubcriptAscii: UInt8 = 36
+  internal static let suffixBeginningForSubcriptAsciiCode: UInt8 = 36
   /// "$"
-  internal static let suffixBeginningForSubcriptScalar = UnicodeScalar(suffixBeginningForSubcriptAscii)
+  internal static let suffixBeginningForSubcriptScalar = UnicodeScalar(suffixBeginningForSubcriptAsciiCode)
   
   /// "#"
-  internal static let suffixBeginningForMergeAscii: UInt8 = 35
+  internal static let suffixBeginningForMergeAsciiCode: UInt8 = 35
   /// "#"
-  internal static let suffixBeginningForMergeScalar = UnicodeScalar(suffixBeginningForMergeAscii)
+  internal static let suffixBeginningForMergeScalar = UnicodeScalar(suffixBeginningForMergeAsciiCode)
 }
 
 public struct KeyCollisionResolvingInput<Key: Hashable, Value, CId> {

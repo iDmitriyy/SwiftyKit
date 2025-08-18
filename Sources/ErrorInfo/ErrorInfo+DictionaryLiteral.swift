@@ -8,7 +8,7 @@
 // MARK: Expressible By Dictionary Literal
 
 extension ErrorInfo: ExpressibleByDictionaryLiteral {
-  public typealias Value = any ValueType
+  public typealias Value = any ErrorInfoValueType
   public typealias Key = String
   
   public init(dictionaryLiteral elements: (String, Value)...) {

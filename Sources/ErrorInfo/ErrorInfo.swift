@@ -11,7 +11,8 @@ import IndependentDeclarations
 import CrossImportOverlays
 import OrderedCollections
 
-public struct ErrorInfo: ErrorInfoCollection {
+public struct ErrorInfo: Sendable { // ErrorInfoCollection
+  public typealias ValueType = ErrorInfoValueType
   public static let empty: Self = Self()
   
   // TODO: - add tests for elements ordering stability
@@ -60,36 +61,6 @@ extension ErrorInfo {
 // MARK: Get / Set
 
 extension ErrorInfo {
-  @_disfavoredOverload
-  public subscript(key: String, line: UInt = #line) -> (any ValueType)? {
-    @available(*, unavailable, message: "This is a set only subscript")
-    get { storage[key] }
-    set(maybeValue) {
-      // TODO: when nil then T.Type is unknown but should be known
-      let value = maybeValue ?? prettyDescription(any: maybeValue)
-      _addValue(value, forKey: key)
-    }
-  }
-  
-  // TODO: - think about design of such using of ErronInfoKey.
-  // Subscript duplicated, check if compiler hamdle when root subscript getter become available or not
-  // - add ability to add NonSendable values via sending and wrapping them into a Sendable wrapper
-
-  @_disfavoredOverload
-  public subscript(key: ErronInfoKey, line: UInt = #line) -> (any ValueType)? {
-    get { storage[key.rawValue] }
-    set { self[key.rawValue, line] = newValue }
-  }
-  
-  public subscript(key: ErronInfoKey) -> String? { self[key.rawValue] }
-  
-  public subscript(key: String) -> String? { storage[key] as? String }
-  
-  public mutating func add(key: String, optionalValue: (any ValueType)?, line: UInt = #line) {
-    guard let value = optionalValue else { return }
-    _addValue(value, forKey: key)
-  }
-  
 //  public mutating func add(key: String, anyValue: Any, line: UInt = #line) {
 //    // use cases:
 //    // взятие по ключу значения из [String: Any]. Если оно nil, то Тип мы и не узнаем. Если не nil, может быть полезно
@@ -99,10 +70,20 @@ extension ErrorInfo {
 //    _addValue(typeDescr + prettyDescription(any: anyValue), forKey: key, line: line)
 //  }
   
-  private mutating func _addValue(_ value: any ValueType, forKey key: String) {
+  public subscript(key: Key) -> (Value)? {
+    get { fatalError() }
+    set(maybeValue) { }
+  }
+  
+  func _getUnderlyingValue(forKey key: Key) -> (any ValueType)? {
+    nil
+  }
+  
+  mutating func _addResolvingCollisions(value: any ValueType, forKey key: Key) {
     // Here values are added by ErrorInfo subscript, so use subroutine of root merge-function to put value into storage, which
     // adds a random suffix if collision occurs
     // Pass unmodified key
+    // shouldOmitEqualValue = true, in ccomparison to addKeyPrefix function.
     ErrorInfoDictFuncs.Merge
       ._putResolvingWithRandomSuffix(value,
                                      assumeModifiedKey: key,
@@ -115,31 +96,24 @@ extension ErrorInfo {
 // MARK: Prefix & Suffix
 
 extension ErrorInfo {
-  public mutating func addKeyPrefix(_ keyPrefix: String, fileLine: StaticFileLine = .this()) {
-    fatalError()
+  public mutating func addKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) {
+    ErrorInfoDictFuncs.addKeyPrefix(keyPrefix,
+                                    toKeysOf: &storage,
+                                    transform: transform)
   }
   
-  public consuming func addingKeyPrefix(_ keyPrefix: String, fileLine: StaticFileLine = .this()) -> Self {
-    self.addKeyPrefix(keyPrefix, fileLine: fileLine)
+  public consuming func addingKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) -> Self {
+    self.addKeyPrefix(keyPrefix, transform: transform)
     return self
   }
 }
-
-//extension ErrorInfo {
-//  public func addingKeyPrefix(_ keyPrefix: String,
-//                              uppercasingFirstLetter uppercasing: Bool = true,
-//                              line: UInt = #line) -> Self {
-//    let storageCopy = storage
-//    let prefixed = ErrorInfoFuncs.addKeyPrefix(keyPrefix, toKeysOf: storageCopy, uppercasingFirstLetter: uppercasing, line: line)
-//    return Self(storage: prefixed)
-//  }
-//}
 
 // MARK: Merge
 
 extension ErrorInfo {
   public mutating func merge<each D>(_ donators: repeat each D) where repeat each D: ErrorInfoCollection {
     fatalError()
+//    ErrorInfoDictFuncs.Merge._mergeErrorInfo
   }
   
   public consuming func merging<each D>(_ donators: repeat each D) -> Self where repeat each D: ErrorInfoCollection {

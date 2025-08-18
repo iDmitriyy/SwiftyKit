@@ -9,78 +9,81 @@ import IndependentDeclarations
 
 // MARK: - Error Info
 
-public protocol InformativeError: Error {
-  associatedtype ErrorInfoType: ErrorInfoCollection
-  
-  var info: ErrorInfoType { get }
-}
-
 /// This approach addresses several important concerns:
 /// - Thread Safety: The Sendable requirement is essential to prevent data races and ensure safe concurrent access.
 /// - String Representation: Requiring CustomStringConvertible forces developers to provide meaningful string representations for stored values, which is invaluable for debugging and logging. It also prevents unexpected behavior when converting values to strings.
 /// - Collision Resolution: The Equatable requirement allows to detect and potentially resolve collisions if different values are associated with the same key. This adds a layer of robustness.
 public typealias ErrorInfoValueType = CustomStringConvertible & Equatable & Sendable
 
-public protocol ErrorInfoCollection: Collection, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
-  typealias ValueType = Sendable
-//  associatedtype ValueType: Sendable = ErrorInfoValueType
-//  func merging(with other: some ErrorInfoCollection) -> Self
-  
-  /// e.g. Later it can be decided to keep reference types as is, but interoplate value-types at the moment of passing them to ErrorInfo subscript.
-//  @_disfavoredOverload subscript(_: String, _: UInt) -> (any ValueType)? { get set }
-  
-//  static func merged(_ infos: Self...) -> Self
-//  func asLegacyDictionary() -> [String: Any]
+public protocol NonSendableErrorInfoProtocol<ValueType> {
+  associatedtype ValueType
 }
 
-/// If a collision happens, then two symbols are used as a start of random key suffix:
-/// for subscript: `$` , e.g. "keyName$Ta5"
-/// for merge functions: `#` , e.g. "keyName_don0_file_line_FileName_81_#Wng"
-public protocol ErrorInfoType: ErrorInfoCollection {
-  
-}
-
-internal protocol ErrorInfoRequirement {
+public protocol ErrorInfoRequirement {
+  associatedtype Key
+  associatedtype ValueType
   // MARK: Add value
   
-  mutating func addResolvingCollisions(value: any ErrorInfoValueType, forKey key: String)
+  func _getUnderlyingValue(forKey key: Key) -> ValueType?
+  
+  mutating func _addResolvingCollisions(value: ValueType, forKey key: Key)
+  
+//  func getUnderlyingStorage() -> some DictionaryUnifyingProtocol<String, ValueType>
   
   // MARK: Merge
   
-  mutating func merge<each D>(_ donators: repeat each D, fileLine: StaticFileLine) where repeat each D: ErrorInfoCollection
+  mutating func merge<each D>(_ donators: repeat each D, fileLine: StaticFileLine) where repeat each D: ErrorInfoRequirement
   
   // MARK: Prefix & Suffix
   
-  mutating func addKeyPrefix(_ keyPrefix: String, fileLine: StaticFileLine)
+  mutating func addKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc)
 }
 
-extension ErrorInfoRequirement { // MARK: Add value
-  mutating func addIfNotNil(optionalValue: (any ErrorInfoValueType)?, key: String) {
-    guard let value = optionalValue else { return }
-    addResolvingCollisions(value: value, forKey: key)
-  }
-  
-  
+extension ErrorInfoRequirement where ValueType == any Sendable { 
 }
 
 extension ErrorInfoRequirement { // MARK: Merge
   public consuming func merging<each D>(_ donators: repeat each D, fileLine: StaticFileLine) -> Self
-    where repeat each D: ErrorInfoCollection {
+    where repeat each D: ErrorInfoRequirement {
     self.merge(repeat each donators, fileLine: fileLine)
     return self
   }
 }
 
 extension ErrorInfoRequirement { // MARK: Prefix & Suffix
-  public consuming func addingKeyPrefix(_ keyPrefix: String, fileLine: StaticFileLine = .this()) -> Self {
-    self.addKeyPrefix(keyPrefix, fileLine: fileLine)
+//  toKeysOf dict: inout Dict,
+//  transform: PrefixTransformFunc
+  
+  public consuming func addingKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) -> Self {
+    self.addKeyPrefix(keyPrefix, transform: transform)
     return self
   }
 }
 
+extension ErrorInfoRequirement {
+  public init(legacyUserInfo: [String: Any],
+              valueInterpolation: @Sendable (Any) -> String = { prettyDescription(any: $0) }) {
+//    self.init()
+//    legacyUserInfo.forEach { key, value in storage[key] = valueInterpolation(value) }
+    fatalError()
+  }
+  
+  public func asStringDict() -> [String: String] {
+    fatalError()
+  }
+}
+
+func test(errorInfo: some ErrorInfoRequirement) {
+  var errorInfo2 = errorInfo
+  
+  errorInfo.merging(errorInfo2, fileLine: .this())
+  errorInfo.addingKeyPrefix("ME12", transform: .concatenation)
+  errorInfo2.asStringDict()
+  let infoWithLegacyData = type(of: errorInfo).init(legacyUserInfo: [:])
+}
+
 func test(errorInfo: ErrorInfoCollection) {
   [3].isEmpty
-  
   errorInfo.isEmpty
 }
 

@@ -10,15 +10,17 @@
 extension ErrorInfoFuncs {
   // TODO: - add constraint T: CustomStringConvertible & Equatable & Sendable
   public static func isApproximatelyEqualAny<T>(_ lhs: T, _ rhs: T) -> Bool {
-    if let lhs = lhs as? (any Hashable), let rhs = rhs as? (any Hashable) {
-      AnyHashable(lhs) == AnyHashable(rhs) // use AnyHashable logic for equality comparison
+    if let lhs = lhs as? (any Equatable), let rhs = rhs as? (any Equatable) {
+      // use AnyHashable logic for equality comparison
+//      AnyHashable(lhs) == AnyHashable(rhs)
       // TODO: What if ref types?
+      isApproximatelyEqual(lhs, rhs)
     } else {
       String(describing: lhs) == String(describing: rhs)
     }
   }
   
-  public static func isApproximatelyEqualEquatable<T>(_ lhs: T, _ rhs: T) -> Bool where T: Equatable & CustomStringConvertible {
+  public static func isApproximatelyEqual(_ lhs: some Equatable, _ rhs: some Equatable) -> Bool {
     let lhsAdapter = _EquatableAnyhashableAdapter(lhs)
     let rhsAdapter = _EquatableAnyhashableAdapter(rhs)
     return AnyHashable(lhsAdapter) == AnyHashable(rhsAdapter)

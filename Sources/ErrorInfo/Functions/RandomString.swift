@@ -23,8 +23,8 @@ private let allPrintableNoWhitespaceAsciiSet: Set<UInt8> = mutate(value: Set<UIn
   // remove also some others symbols, that are reserved by ErrorInfo functions or used often used in error-info keys.
   // e.g. folder path path can ve used as a key.
   
-  $0.remove(ErrorInfoMerge.suffixBeginningForSubcriptAscii)
-  $0.remove(ErrorInfoMerge.suffixBeginningForMergeAscii)
+  $0.remove(ErrorInfoMerge.suffixBeginningForSubcriptAsciiCode)
+  $0.remove(ErrorInfoMerge.suffixBeginningForMergeAsciiCode)
   $0.remove(45) // -
   $0.remove(47) // /
   $0.remove(92) // \
