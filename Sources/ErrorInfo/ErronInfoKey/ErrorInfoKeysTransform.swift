@@ -45,26 +45,26 @@
 
 extension ErronInfoKey {
   internal static func fromAnyStyleToCamelCased(string: String) -> String {
-    toPascalOrCamelImp(string: string, firstCharTransform: { $0.lowercased() })
+    _toPascalOrCamelImp(string: string, firstCharTransform: { $0.lowercased() })
   }
   
   internal static func fromAnyStyleToPascalCased(string: String) -> String {
-    toPascalOrCamelImp(string: string, firstCharTransform: { $0.uppercased() })
+    _toPascalOrCamelImp(string: string, firstCharTransform: { $0.uppercased() })
   }
   
   internal static func fromAnyStyleToSnakeCased(string: String) -> String {
-    toSnakeOrKebabImp(string: string, separator: "_")
+    _toSnakeOrKebabImp(string: string, separator: "_")
   }
   
   internal static func fromAnyStyleToKebabCased(string: String) -> String {
-    toSnakeOrKebabImp(string: string, separator: "-")
+    _toSnakeOrKebabImp(string: string, separator: "-")
   }
 }
 
 extension ErronInfoKey {
-  private static func toPascalOrCamelImp(string: String, firstCharTransform: (Character) -> String) -> String {
+  private static func _toPascalOrCamelImp(string: String, firstCharTransform: (Character) -> String) -> String {
     var result = ""
-    var normalCharsCount: UInt = 0
+    var normalCharsCount: UInt = 0 // non-separator characters count
     var previousWasSeprator = false
     for character in string {
       if character == "_" {
@@ -93,7 +93,7 @@ extension ErronInfoKey {
     return normalCharsCount > 0 ? result : string
   }
   
-  private static func toSnakeOrKebabImp(string: String, separator: Character) -> String {
+  private static func _toSnakeOrKebabImp(string: String, separator: Character) -> String {
     enum PreviousCharKind {
       case uppercase
       case lowercase
@@ -101,7 +101,7 @@ extension ErronInfoKey {
     }
     
     var result = ""
-    var normalCharsCount: UInt = 0
+    var normalCharsCount: UInt = 0 // non-separator characters count
     var previousKind: PreviousCharKind?
     for character in string {
       if character == "_" || character == "-" {

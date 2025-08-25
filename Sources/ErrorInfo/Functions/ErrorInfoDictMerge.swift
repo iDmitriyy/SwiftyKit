@@ -44,7 +44,7 @@ extension ErrorInfoDictFuncs.Merge {
     } // end for (index, otherInfo)
   }
   
-//   repeat (each Dict).Key == String  Not supported yet
+//   repeat (each Dict).Key == String  Not supported by Swift yet, wait for some swift 6.x > 6.2
 //  internal static func _mergeErrorInfo<V, each Dict>(_ recipient: inout some DictionaryUnifyingProtocol<String, V>,
 //                                          with donators: repeat each Dict,
 //                                          omitEqualValue: Bool,
@@ -70,6 +70,7 @@ extension ErrorInfoDictFuncs.Merge {
   public typealias ResolvingInput<Key: Hashable, Value, C> = KeyCollisionResolvingInput<Key, Value, C>
   public typealias ResolvingResult<Key: Hashable> = KeyCollisionResolvingResult<Key>
   
+  /// Add value by key to recipient` dictionary`.
   /// For key-value pair, the function checks if the key already exists in the `recipient` dictionary.
   /// If the key does not already contained in the `recipient` dictionary, the function simply adds this key-value pair to the `recipient` dictionary.
   /// If it is contained, the function checks if the value is approximately equal to the existing value in the `recipient` dictionary.
@@ -78,6 +79,13 @@ extension ErrorInfoDictFuncs.Merge {
   /// The function then checks if the modified key already exists in the errorInfo dictionary.
   /// If it does, it appends the index of the current dictionary to the suffix and checks again until it finds a key that does not exist in the `errorInfo` dictionary.
   /// Once a unique key is finally created (typically it happens from first time), the function adds the key-value pair to the `recipient` dictionary.
+  /// - Parameters:
+  ///   - donatorKeyValue:
+  ///   - recipient:
+  ///   - donatorIndex:
+  ///   - shouldOmitEqualValue:
+  ///   - identity:
+  ///   - resolve:
   public static func withResolvingCollisionsAdd<Dict, C>(keyValue donatorKeyValue: Dict.Element,
                                                          to recipient: inout Dict,
                                                          donatorIndex: some BinaryInteger & CustomStringConvertible,

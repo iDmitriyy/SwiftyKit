@@ -20,9 +20,9 @@ private let alphaNumericAsciiSet: Set<UInt8> = mutate(value: Set<UInt8>()) {
 
 private let allPrintableNoWhitespaceAsciiSet: Set<UInt8> = mutate(value: Set<UInt8>()) {
   $0.formUnion(33...126) // all printable characters except space
-  // remove also some others symbols, that are reserved by ErrorInfo functions or used often used in error-info keys.
-  // e.g. folder path path can ve used as a key.
   
+  // remove also some others symbols, that are reserved by ErrorInfo functions or often used in error-info keys.
+  // e.g. folder path path can be used as a key.
   $0.remove(ErrorInfoMerge.suffixBeginningForSubcriptAsciiCode)
   $0.remove(ErrorInfoMerge.suffixBeginningForMergeAsciiCode)
   $0.remove(45) // -

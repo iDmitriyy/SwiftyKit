@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 07/08/2025.
 //
 
-public protocol ErrorInfoCollection: Collection, Sendable, CustomStringConvertible, CustomDebugStringConvertible {
+public protocol ErrorInfoCollection: Collection, CustomStringConvertible, CustomDebugStringConvertible {
   typealias ValueType = Sendable
 //  associatedtype Key_: Hashable
   

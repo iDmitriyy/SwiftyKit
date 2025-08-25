@@ -37,4 +37,18 @@ struct CustomKeyErrorInfo {
       static let multipathTCPAllowed = Tags(rawValue: 1 << 2)
     }
   }
+  
+  enum Key3 {
+    case color(Color)
+    case orientation
+    
+    enum Color {
+      case red
+      case green
+      case blue
+      case cyan
+      case magenta
+      case yellow
+    }
+  }
 }

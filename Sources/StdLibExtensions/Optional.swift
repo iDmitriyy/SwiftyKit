@@ -57,8 +57,8 @@ extension Optional {
   }
 }
 
-extension Optional {
-  public static func typeOfWrapped() -> Wrapped.Type { Wrapped.self }
-  
-  public func typeOfWrapped() -> Wrapped.Type { Wrapped.self }
-}
+//extension Optional {
+//  public static func typeOfWrapped() -> Wrapped.Type { Wrapped.self }
+//  
+//  public func typeOfWrapped() -> Wrapped.Type { Wrapped.self }
+//}

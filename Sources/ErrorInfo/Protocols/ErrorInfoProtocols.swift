@@ -71,6 +71,28 @@ extension ErrorInfoRequirement {
   public func asStringDict() -> [String: String] {
     fatalError()
   }
+  
+  public func asStringDict(options: ErrorInfoStringDictOptions) -> [String: String] {
+    fatalError()
+  }
+}
+
+public struct ErrorInfoStringDictOptions: OptionSet, Sendable {
+  public var rawValue: UInt32
+  
+  public init(rawValue: UInt32) {
+    self.rawValue = rawValue
+  }
+  
+  /// "5.0 Double"
+  /// "2.7 Float16"
+  /// "3.14 Float32?"
+  /// "nil Decimal?"
+  static let typeForAllValues = Self(rawValue: 1 << 0)
+  /// "nil String?"
+  /// "nil UInt?"
+  /// "5"
+  static let typeForOptionalNilValues = Self(rawValue: 1 << 1)
 }
 
 func test(errorInfo: some ErrorInfoRequirement) {

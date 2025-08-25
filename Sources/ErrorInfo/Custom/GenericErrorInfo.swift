@@ -5,8 +5,8 @@
 //  Created by Dmitriy Ignatyev on 07/08/2025.
 //
 
-fileprivate struct _ErrorInfoGeneric<Key, Value, DictType: DictionaryUnifyingProtocol>: Sendable
-  where DictType.Key == Key, DictType.Value == Value, DictType: Sendable {
+fileprivate struct _ErrorInfoGeneric<Key, Value, DictType: DictionaryUnifyingProtocol>
+  where DictType.Key == Key, DictType.Value == Value {
   typealias ValueType = ErrorInfo.Value
   
   fileprivate private(set) var storage: DictType
@@ -19,3 +19,8 @@ fileprivate struct _ErrorInfoGeneric<Key, Value, DictType: DictionaryUnifyingPro
     self.storage = storage
   }
 }
+
+extension _ErrorInfoGeneric: Equatable where Key: Equatable, Value: Equatable, DictType: Equatable {}
+extension _ErrorInfoGeneric: Hashable where Key: Hashable, Value: Hashable, DictType: Hashable {}
+
+extension _ErrorInfoGeneric: Sendable where Key: Sendable, Value: Sendable, DictType: Sendable {}
