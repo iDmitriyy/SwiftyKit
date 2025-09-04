@@ -19,5 +19,7 @@ public func mutate<T: AnyObject, E>(value: consuming T, mutation: (inout T) thro
 
 // TODO: - check new signatire on existing codebases
 // make available for value types only
-// make unavailable instead of deprecated
+// make unavailable instead of deprecated (goal is to disalolw using it / compiler error). @available(*, unavailable doesn't
+// achieve it making overload resolution to choose wrong function (for value types).
 // ~Copyable classes
+

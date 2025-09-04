@@ -61,49 +61,52 @@ extension Either where L == R {
   }
 }
 
-extension Either {
-  public func mapLeft<NewLeft>(_ transform: (L) -> NewLeft) -> Either<NewLeft, R> {
-    switch self {
+extension Either where L: ~Copyable, R: ~Copyable {
+  public consuming func mapLeft<NewLeft>(_ transform: (consuming L) -> NewLeft) -> Either<NewLeft, R> {
+    switch consume self {
     case .left(let value): .left(transform(value))
     case .right(let value): .right(value)
     }
   }
   
-  public func mapRight<NewRight>(_ transform: (R) -> NewRight) -> Either<L, NewRight> {
-    switch self {
+  public consuming func mapRight<NewRight>(_ transform: (consuming R) -> NewRight) -> Either<L, NewRight> {
+    switch consume self {
     case .left(let value): .left(value)
     case .right(let value): .right(transform(value))
     }
   }
   
-  public func swap() -> Either<R, L> {
-    switch self {
+  public consuming func swapped() -> Either<R, L> {
+    switch consume self {
     case .left(let value): .right(value)
     case .right(let value): .left(value)
     }
   }
 }
 
-extension Either {
+extension Either where L: ~Copyable, R: ~Copyable {
   public var isLeft: Bool {
-    guard case .left = self else { return false }; return true
+    switch self {
+    case .left: true
+    case .right: false
+    }
   }
   
   public var isRight: Bool { !isLeft }
 }
 
-extension Either where R: Error {
-  public func asResult() -> Result<L, R> {
-    switch self {
+extension Either where R: Error, L: ~Copyable {
+  public consuming func asResult() -> Result<L, R> {
+    switch consume self {
     case .left(let leftValue): .success(leftValue)
     case .right(let rightValue): .failure(rightValue)
     }
   }
 }
 
-extension Either where L: Error {
-  public func asResult() -> Result<R, L> {
-    switch self {
+extension Either where L: Error, R: ~Copyable {
+  public consuming func asResult() -> Result<R, L> {
+    switch consume self {
     case .left(let leftValue): .failure(leftValue)
     case .right(let rightValue): .success(rightValue)
     }

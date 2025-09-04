@@ -9,6 +9,7 @@
 public func configured<T: AnyObject, E>(object: T, closure: (_ object: T) throws(E) -> Void) throws(E) -> T {
   try closure(object)
   // TODO: - ? sending T
+  // consuming | borrowing
   return object
 }
 
