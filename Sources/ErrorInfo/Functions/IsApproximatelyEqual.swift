@@ -26,14 +26,14 @@ extension ErrorInfoFuncs {
     return AnyHashable(lhsAdapter) == AnyHashable(rhsAdapter)
   }
   
-  /// Used for using Equality comparison algorithm from AnyHashable struct for Equatable but not hashable values.
+  /// Used for using Equality comparison algorithm from AnyHashable struct for Equatable but not hashable instances.
   private struct _EquatableAnyhashableAdapter<T: Equatable>: Hashable {
     let equatableValue: T
     
     init(_ equatableValue: T) {
       self.equatableValue = equatableValue
     }
-    /// empty imp
+    /// empty imp.
     func hash(into hasher: inout Hasher) {}
   }
 }
