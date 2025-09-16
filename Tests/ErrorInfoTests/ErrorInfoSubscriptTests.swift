@@ -41,3 +41,15 @@ struct ErrorInfoSubscriptTests {
     // 2 : "key$Qet"
   }
 }
+
+struct ErrorInfoDictionaryLiteralTests {
+  @Test func initFromLiteral() async throws {
+    let errorInfo: ErrorInfo = [
+      "0": Optional.some(0),
+      "1": Optional.some("1"),
+      "2": Optional<Int>.none,
+    ]
+    
+    errorInfo.asStringDict().count == 3
+  }
+}

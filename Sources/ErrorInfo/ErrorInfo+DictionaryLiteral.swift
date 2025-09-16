@@ -12,10 +12,6 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
   public typealias Key = String
   
   public init(dictionaryLiteral elements: (String, Value)...) {
-    guard !elements.isEmpty else {
-      self = .empty
-      return
-    }
     self.init()
     elements.forEach { key, value in self[key] = value }
   }

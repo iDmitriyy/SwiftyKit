@@ -24,7 +24,7 @@ struct MergeDictionaryTests {
                                   to: &dict,
                                   donatorIndex: 0,
                                   omitEqualValue: omitEqualValue,
-                                  fileLine: fileLine,
+                                  identity: fileLine,
                                   resolve: { input in
           .modifyDonatorKey(input.element.key)
       })
@@ -33,7 +33,7 @@ struct MergeDictionaryTests {
                                   to: &dict,
                                   donatorIndex: 1,
                                   omitEqualValue: omitEqualValue,
-                                  fileLine: fileLine,
+                                  identity: fileLine,
                                   resolve: { input in
           .modifyDonatorKey(input.element.key)
       })

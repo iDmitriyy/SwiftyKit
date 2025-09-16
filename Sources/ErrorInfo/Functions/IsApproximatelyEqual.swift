@@ -21,7 +21,7 @@ extension ErrorInfoFuncs {
     }
   }
   
-  public static func isApproximatelyEqual(_ lhs: some Equatable, _ rhs: some Equatable) -> Bool {
+  private static func isApproximatelyEqual(_ lhs: some Equatable, _ rhs: some Equatable) -> Bool {
     let lhsAdapter = _EquatableAnyhashableAdapter(equatableValue: lhs)
     let rhsAdapter = _EquatableAnyhashableAdapter(equatableValue: rhs)
     return AnyHashable(lhsAdapter) == AnyHashable(rhsAdapter)

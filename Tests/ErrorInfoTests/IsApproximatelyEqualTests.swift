@@ -29,7 +29,7 @@ struct IsApproximatelyEqualTests {
   }
   
   @Test func equalNumbers() throws {
-    ErrorInfoFuncs.isApproximatelyEqual("5" as Any, 5 as Any)
+    ErrorInfoFuncs.isApproximatelyEqualAny("5" as Any, 5 as Any)
     /*
      "5" Int(5)
      Int(5) UInt(5)

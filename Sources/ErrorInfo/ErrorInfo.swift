@@ -50,7 +50,7 @@ extension ErrorInfo {
   
   public subscript(key: Key) -> (Value)? {
     get { fatalError() }
-    set(maybeValue) { }
+    set(maybeValue) {  }
   }
   
   func _getUnderlyingValue(forKey key: Key) -> (any ValueType)? {

@@ -10,6 +10,6 @@ import ErrorInfo
 struct NoRemovingErrorInfoTests {
   
   func testNoRemove() {
-    var errorInfo = PublicStruct()
+    
   }
 }
