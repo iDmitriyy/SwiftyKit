@@ -6,6 +6,6 @@
 //
 
 func testProto(info: inout some ErrorInfoPrototype<String, any ErrorInfoValueType>) {
-  info.addIfNotNil(optionalValue: 3, key: "")
+  info.addIfNotNil(3, key: "")
   
 }

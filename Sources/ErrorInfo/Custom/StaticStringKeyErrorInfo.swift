@@ -19,6 +19,7 @@ extension StaticString: Hashable {
   public func hash(into hasher: inout Hasher) {
     withUTF8Buffer { utf8Buffer in
       for uint8 in utf8Buffer {
+//        utf8Buffer == utf8Buffer
         hasher.combine(uint8)
       }
     }

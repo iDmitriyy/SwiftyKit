@@ -10,7 +10,8 @@
  Error-info instances are often merged in several situatuins:
  - in a context where their content is unknown, and we don't want to inspect their content or make assumptions about it.
  In this case some merging strategy is needed to resolve key collisions.
- - in context where some assumptions can be made
+ - in context where some assumptions can be made, e.g. when network error shown in UI, it is reasonable that some of such errors
+ contain keys like "requestURL", "decodingError", "file", "line".
  - in context where content of error-info instance is fully cintrolled. Examples:
    1. Mapping of complex data structure. top-level type creates top-level info, and in info from each child is accumulated
       in top-level container. Imagine a bundle od products: info for validation of the bundle itself can be prefixed like
@@ -39,4 +40,10 @@
      When error infos are merged in context of errors or error-chains, error domain and code can be used for resolving collision.
      Error domain and code can be used used as prefix / suffix.
  - All Error-info Types, that will be made in future, should able to be compatible with each other for merging.
+ 
+ 
+ Opened equestions:
+ - should all error info types itself be iterable (or iterable keyValues View should better be provided)? - For now Sequence
+ is inherited by root errorInfo protocol, so all instances are iterable and conforms to Sequence.
+ - should errorInfo's have `func removeValue(forKey:)`? For now not.
  */

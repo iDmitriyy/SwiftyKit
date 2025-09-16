@@ -36,6 +36,7 @@ public protocol ErrorInfoRequirement {
   
   // MARK: Prefix & Suffix
   
+  // FIXME: keyPrefix is String and incompatible with generic Key. 
   mutating func addKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc)
 }
 
@@ -62,7 +63,7 @@ extension ErrorInfoRequirement { // MARK: Prefix & Suffix
 
 extension ErrorInfoRequirement {
   public init(legacyUserInfo: [String: Any],
-              valueInterpolation: @Sendable (Any) -> String = { prettyDescription(any: $0) }) {
+              valueInterpolation: @Sendable (Any) -> String = { prettyDescriptionOfOptional(any: $0) }) {
 //    self.init()
 //    legacyUserInfo.forEach { key, value in storage[key] = valueInterpolation(value) }
     fatalError()

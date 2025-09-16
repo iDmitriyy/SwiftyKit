@@ -6,7 +6,7 @@
 //
 
 import struct OrderedCollections.OrderedDictionary
-public import func IndependentDeclarations.prettyDescription // for default valueInterpolation with prettyDescription
+//public import func IndependentDeclarations.prettyDescriptionOfOptional // for default valueInterpolation with prettyDescription
 import IndependentDeclarations
 import CrossImportOverlays
 import OrderedCollections
@@ -30,31 +30,31 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
 
 // MARK: Collection IMP
 
-extension ErrorInfo {
-  public typealias Index = Int
-  
-  public typealias Element = (key: String, value: any ValueType)
-  
-  public var isEmpty: Bool { storage.isEmpty }
-  
-  public var count: Int { storage.count }
-  
-  public var startIndex: Index { storage.keys.startIndex }
-  
-  public var endIndex: Index { storage.keys.endIndex }
-  
-  public subscript(position: Index) -> Element {
-    storage.elements[position]
-  }
-  
-  public func index(after i: Index) -> Index { storage.keys.index(after: i) }
-}
+//extension ErrorInfo {
+//  public typealias Index = Int
+//  
+//  public typealias Element = (key: String, value: any ValueType)
+//  
+//  public var isEmpty: Bool { storage.isEmpty }
+//  
+//  public var count: Int { storage.count }
+//  
+//  public var startIndex: Index { storage.keys.startIndex }
+//  
+//  public var endIndex: Index { storage.keys.endIndex }
+//  
+//  public subscript(position: Index) -> Element {
+//    storage.elements[position]
+//  }
+//  
+//  public func index(after i: Index) -> Index { storage.keys.index(after: i) }
+//}
 
 // MARK: CustomStringConvertible IMP
 
 extension ErrorInfo {
   public var description: String { String(describing: storage) }
-  
+  // FIXME: use @DebugDescription macro
   public var debugDescription: String { String(reflecting: storage) }
 }
 
@@ -150,7 +150,7 @@ extension ErrorInfo {
 
 extension ErrorInfo {
   public init(legacyUserInfo: [String: Any],
-              valueInterpolation: @Sendable (Any) -> String = { prettyDescription(any: $0) }) {
+              valueInterpolation: @Sendable (Any) -> String = { prettyDescriptionOfOptional(any: $0) }) {
     self.init()
     legacyUserInfo.forEach { key, value in storage[key] = valueInterpolation(value) }
   }

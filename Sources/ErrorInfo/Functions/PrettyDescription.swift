@@ -11,9 +11,9 @@ private import Foundation
 
 // MARK: - Pretty Description for Any & Optional<T>
 
-public func prettyDescription(any: Any) -> String {
+public func prettyDescriptionOfOptional(any: Any) -> String {
   if let optional = any as? (any CustomStringConvertible)? {
-    return prettyDescription(any: optional)
+    return prettyDescriptionOfOptional(any: optional)
   } else if Mirror(reflecting: any).displayStyle == .optional {
     var string = String(describing: any)
     while let range = string.range(of: "Optional(") {
@@ -26,9 +26,10 @@ public func prettyDescription(any: Any) -> String {
   }
 }
 
-public func prettyDescription<T>(any: T?) -> String {
+public func prettyDescriptionOfOptional<T>(any: T?) -> String {
   switch any {
   case .some(let value):
+    // FIXME: provide better imp
     var string = String(describing: value)
     while let range = string.range(of: "Optional(") {
       let descr = string.replacingCharacters(in: range, with: "")

@@ -21,8 +21,8 @@ extension ErrorInfoFuncs {
   }
   
   public static func isApproximatelyEqual(_ lhs: some Equatable, _ rhs: some Equatable) -> Bool {
-    let lhsAdapter = _EquatableAnyhashableAdapter(lhs)
-    let rhsAdapter = _EquatableAnyhashableAdapter(rhs)
+    let lhsAdapter = _EquatableAnyhashableAdapter(equatableValue: lhs)
+    let rhsAdapter = _EquatableAnyhashableAdapter(equatableValue: rhs)
     return AnyHashable(lhsAdapter) == AnyHashable(rhsAdapter)
   }
   
@@ -30,10 +30,7 @@ extension ErrorInfoFuncs {
   private struct _EquatableAnyhashableAdapter<T: Equatable>: Hashable {
     let equatableValue: T
     
-    init(_ equatableValue: T) {
-      self.equatableValue = equatableValue
-    }
-    /// empty imp.
+    /// empty imp, hashValue not used
     func hash(into hasher: inout Hasher) {}
   }
 }
