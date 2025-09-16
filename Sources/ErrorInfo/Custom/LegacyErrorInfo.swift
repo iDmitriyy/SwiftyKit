@@ -8,8 +8,10 @@
 // ?? can It be done as typeaalias
 // LegacyErrorInfo = GenericValueErrorInfo<String, Any>
 
-struct LegacyErrorInfo: Sequence {
-  public typealias Element = (key: String, value: Any)
+struct LegacyErrorInfo: ErrorInfoIterable {
+  typealias Key = String
+  typealias Value = Any
+  typealias Element = (key: String, value: Any)
   
   private var storage: [String: Any]
   
@@ -17,7 +19,7 @@ struct LegacyErrorInfo: Sequence {
     storage.makeIterator()
   }
   
-  init(_ info: [String : Any]) {
+  init(_ info: [String: Any]) {
     self.storage = info
   }
 }

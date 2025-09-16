@@ -9,29 +9,79 @@ import OrderedCollections
 import IndependentDeclarations
 import NonEmpty
 
-struct _MultiValueErrorInfo<Key: Hashable, Value>: ErrorInfoIterable {
+/// If a key collision happens, the values are put into a container
+struct MultiValueErrorInfo: ErrorInfoIterable {
+  typealias Key = String
+  typealias Value = any ErrorInfoValueType
+  typealias Element = (key: String, value: any ErrorInfoValueType)
+  
+  private var storage: MultiValueErrorInfoGeneric<String, any ErrorInfoValueType>
+  
+  init() {
+    self.storage = MultiValueErrorInfoGeneric<String, any ErrorInfoValueType>()
+  }
+  
+  func makeIterator() -> some IteratorProtocol<Element> {
+    storage.makeIterator()
+  }
+  
+  mutating func _addResolvingCollisions(value: any ErrorInfoValueType, forKey key: String) {
+    storage._addResolvingCollisions(value: value, forKey: key)
+  }
+}
+
+// MARK: - MultiValueErrorInfo Generic
+
+struct MultiValueErrorInfoGeneric<Key: Hashable, Value>: ErrorInfoIterable {
   typealias Element = (key: Key, value: Value)
   
   func makeIterator() -> some IteratorProtocol<Element> {
     MultiValueIterator(storage: storage)
   }
   
-  // ?? NonEmptyArray -> NonEmpty OrderedSet
   private typealias ValueWrapper = Either<Value, NonEmptyArray<Value>>
   
-  private var storage: OrderedDictionary<Key, ValueWrapper> = [:]
+  private var storage: OrderedDictionary<Key, ValueWrapper>
+  
+  init() {
+    self.storage = [:]
+  }
+  
+  mutating func _addResolvingCollisions(value: Value, forKey key: Key) {
+    if let existing = storage[key] {
+      switch existing {
+      case .left(let currentValue):
+        if ErrorInfoFuncs.isApproximatelyEqualAny(currentValue, value) {
+          ()
+        } else {
+          let array = NonEmptyArray(currentValue, value)
+          storage[key] = .right(array)
+        }
+      case .right(let array):
+        if !array.contains(where: { ErrorInfoFuncs.isApproximatelyEqualAny($0, value) }) {
+          var array = array
+          array.append(value)
+          storage[key] = .right(array)
+        }
+      }
+    } else {
+      storage[key] = .left(value)
+    }
+  }
 }
 
-extension _MultiValueErrorInfo: Sendable where Key: Sendable, Value: Sendable {}
+extension MultiValueErrorInfoGeneric: Sendable where Key: Sendable, Value: Sendable {}
 
-extension _MultiValueErrorInfo {
+extension MultiValueErrorInfoGeneric {
+  // MARK: Iterator
+  
   private struct MultiValueIterator: IteratorProtocol {
     typealias Element = (key: Key, value: Value)
     
     private var storageIterator: OrderedDictionary<Key, ValueWrapper>.Iterator
     private var subIteration: SubIteration?
     
-    struct SubIteration {
+    private struct SubIteration {
       let key: Key
       let values: Array<Value>
       let lastUsedIndex: Array<Value>.Index
@@ -39,7 +89,6 @@ extension _MultiValueErrorInfo {
     
     init(storage: OrderedDictionary<Key, ValueWrapper>) {
       storageIterator = storage.makeIterator()
-      subIteration = nil
     }
     
     mutating func next() -> Element? {
@@ -77,44 +126,5 @@ extension _MultiValueErrorInfo {
         return nil
       }
     }
-  }
-}
-
-/// If a key collision happens, the values are put into a container
-struct MultiValueErrorInfo { //
-  private typealias ValueWrapper = Either<any ErrorInfoValueType, NonEmptyArray<any ErrorInfoValueType>>
-  
-  private var storage: OrderedDictionary<String, ValueWrapper> = [:]
-  
-  mutating func _addResolvingCollisions(value: any ErrorInfoValueType, forKey key: String) {
-    if let existing = storage[key] {
-      switch existing {
-      case .left(let currentValue):
-        if ErrorInfoFuncs.isApproximatelyEqual(currentValue, value) {
-          ()
-        } else {
-          let array = NonEmptyArray(currentValue, value)
-          storage[key] = .right(array)
-        }
-      case .right(let array):
-        if !array.contains(where: { ErrorInfoFuncs.isApproximatelyEqual($0, value) }) {
-          var array = array
-          array.append(value)
-          storage[key] = .right(array)
-        }
-      }
-    } else {
-      storage[key] = .left(value)
-    }
-  }
-}
-
-extension MultiValueErrorInfo {
-  public mutating func addKeyPrefix(_ keyPrefix: String, fileLine: StaticFileLine = .this()) {
-    fatalError()
-  }
-  
-  public mutating func merge<each D>(_ donators: repeat each D) where repeat each D: ErrorInfoCollection {
-    fatalError()
   }
 }

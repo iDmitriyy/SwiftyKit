@@ -7,13 +7,31 @@
 
 import OrderedCollections
 
-struct StaticStringKeyErrorInfo {
-  internal private(set) var storage: OrderedDictionary<StaticStringHashableAdapter, any ErrorInfoValueType>
+struct StaticStringKeyErrorInfo: Sequence {
+  typealias Key = StaticString
+  typealias Value = any ErrorInfoValueType
+  typealias Element = (key: Key, value: Value)
   
-  func sss(str: StaticString) {
+  private var storage: MultiValueErrorInfoGeneric<StaticStringHashableAdapter, any ErrorInfoValueType>
+  
+  func makeIterator() -> some IteratorProtocol<Element> {
+    IteratorAdapter(storage.makeIterator())
+  }
+  
+  private struct IteratorAdapter: IteratorProtocol {
+    private var wrappedIterator: MultiValueErrorInfoGeneric<StaticStringHashableAdapter, any ErrorInfoValueType>.Iterator
     
+    init(_ wrappedIterator: MultiValueErrorInfoGeneric<StaticStringHashableAdapter, any ErrorInfoValueType>.Iterator) {
+      self.wrappedIterator = wrappedIterator
+    }
+    
+    mutating func next() -> (key: Key, value: Value)? {
+      wrappedIterator.next().map { key, value in (key.wrappedValue, value) }
+    }
   }
 }
+
+// MARK: - StaticString Hashable Adapter
 
 struct StaticStringHashableAdapter: Hashable {
   let wrappedValue: StaticString
@@ -36,11 +54,9 @@ struct StaticStringHashableAdapter: Hashable {
         guard lhsBuffer.count == rhsBuffer.count else { return false }
         
         return lhsBuffer.enumerated().allSatisfy { index, byte in
-          rhsBuffer[index] == byte
+          byte == rhsBuffer[index]
         }
       }
     }
   }
 }
-
-// let uniqueFileNames: Set<StaticString> = []

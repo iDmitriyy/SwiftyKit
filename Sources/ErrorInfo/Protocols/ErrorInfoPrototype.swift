@@ -92,10 +92,14 @@ extension ErrorInfoSendableValue { // MARK: Add value
 // MARK: Mergeable
 
 protocol ErrorInfoMergeable<Key, Value>: ErrorInfoIterable {
-  associatedtype Key
-  associatedtype Value
-  
 //  mutating func merge<each D>(_ donators: repeat each D, fileLine: StaticFileLine) where repeat each D: ErrorInfoRootPrototype
+}
+
+extension ErrorInfoMergeable {
+  /// Mergable ErrorInfo can be inited from a sequence with duplicated keys and values
+  init(_ s: some Sequence<Element>) {
+    fatalError()
+  }
 }
 
 extension ErrorInfoMergeable {
