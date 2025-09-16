@@ -8,25 +8,38 @@
 import OrderedCollections
 
 struct StaticStringKeyErrorInfo {
-  internal private(set) var storage: OrderedDictionary<StaticString, any ErrorInfoValueType>
+  internal private(set) var storage: OrderedDictionary<StaticStringHashableAdapter, any ErrorInfoValueType>
   
   func sss(str: StaticString) {
     
   }
 }
 
-extension StaticString: Hashable {
+struct StaticStringHashableAdapter: Hashable {
+  let wrappedValue: StaticString
+  
+  init(_ wrappedValue: StaticString) {
+    self.wrappedValue = wrappedValue
+  }
+  
   public func hash(into hasher: inout Hasher) {
-    withUTF8Buffer { utf8Buffer in
+    wrappedValue.withUTF8Buffer { utf8Buffer in
       for uint8 in utf8Buffer {
-//        utf8Buffer == utf8Buffer
         hasher.combine(uint8)
       }
     }
   }
-  
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    fatalError()
+  // TODO: this is not proper imp
+  static func == (lhs: StaticStringHashableAdapter, rhs: StaticStringHashableAdapter) -> Bool {
+    lhs.wrappedValue.withUTF8Buffer { lhsBuffer in
+      rhs.wrappedValue.withUTF8Buffer { rhsBuffer in
+        guard lhsBuffer.count == rhsBuffer.count else { return false }
+        
+        return lhsBuffer.enumerated().allSatisfy { index, byte in
+          rhsBuffer[index] == byte
+        }
+      }
+    }
   }
 }
 

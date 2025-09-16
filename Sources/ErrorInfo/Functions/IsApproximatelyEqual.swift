@@ -16,6 +16,7 @@ extension ErrorInfoFuncs {
       // TODO: What if ref types?
       isApproximatelyEqual(lhs, rhs)
     } else {
+      // for two Anyobject instances string interpolation is address, so it is the same as === comparison.
       String(describing: lhs) == String(describing: rhs)
     }
   }

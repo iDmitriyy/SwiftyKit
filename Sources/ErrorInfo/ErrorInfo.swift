@@ -28,28 +28,6 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   }
 }
 
-// MARK: Collection IMP
-
-//extension ErrorInfo {
-//  public typealias Index = Int
-//  
-//  public typealias Element = (key: String, value: any ValueType)
-//  
-//  public var isEmpty: Bool { storage.isEmpty }
-//  
-//  public var count: Int { storage.count }
-//  
-//  public var startIndex: Index { storage.keys.startIndex }
-//  
-//  public var endIndex: Index { storage.keys.endIndex }
-//  
-//  public subscript(position: Index) -> Element {
-//    storage.elements[position]
-//  }
-//  
-//  public func index(after i: Index) -> Index { storage.keys.index(after: i) }
-//}
-
 // MARK: CustomStringConvertible IMP
 
 extension ErrorInfo {
@@ -184,3 +162,25 @@ extension ErrorInfo {
     return info
   }
 }
+
+// MARK: Collection IMP
+
+//extension ErrorInfo {
+//  public typealias Index = Int
+//
+//  public typealias Element = (key: String, value: any ValueType)
+//
+//  public var isEmpty: Bool { storage.isEmpty }
+//
+//  public var count: Int { storage.count }
+//
+//  public var startIndex: Index { storage.keys.startIndex }
+//
+//  public var endIndex: Index { storage.keys.endIndex }
+//
+//  public subscript(position: Index) -> Element {
+//    storage.elements[position]
+//  }
+//
+//  public func index(after i: Index) -> Index { storage.keys.index(after: i) }
+//}

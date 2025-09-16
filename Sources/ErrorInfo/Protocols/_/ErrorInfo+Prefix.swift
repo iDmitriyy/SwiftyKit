@@ -6,6 +6,5 @@
 //
 
 public protocol ErrorInfoStringPrefixAddable { // : SomeParentProtocol<String,>
-  
 }
 

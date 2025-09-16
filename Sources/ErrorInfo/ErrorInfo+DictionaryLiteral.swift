@@ -8,7 +8,7 @@
 // MARK: Expressible By Dictionary Literal
 
 extension ErrorInfo: ExpressibleByDictionaryLiteral {
-  public typealias Value = any ErrorInfoValueType
+  public typealias Value = (any ErrorInfoValueType)?
   public typealias Key = String
   
   public init(dictionaryLiteral elements: (String, Value)...) {
@@ -16,7 +16,6 @@ extension ErrorInfo: ExpressibleByDictionaryLiteral {
       self = .empty
       return
     }
-    
     self.init()
     elements.forEach { key, value in self[key] = value }
   }

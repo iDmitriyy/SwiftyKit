@@ -5,16 +5,18 @@
 //  Created by Dmitriy Ignatyev on 07/08/2025.
 //
 
-public protocol ErrorInfoRootPrototype<Key, Value>: Sequence where Self.Element == (key: Key, value: Value) {
+public protocol ErrorInfoIterable<Key, Value>: Sequence where Key: Hashable, Self.Iterator.Element == (key: Key, value: Value) {
   associatedtype Key
   associatedtype Value
+  
+//  var isEmpty: Bool { get }
 }
 
 func fff(dd: some ErrorInfoPrototype<String, Int>) {
   
 }
 
-public protocol ErrorInfoPrototype<Key, Value>: ErrorInfoRootPrototype {
+public protocol ErrorInfoPrototype<Key, Value>: ErrorInfoIterable {
   subscript(key: Key) -> Value? {
 //    @available(*, unavailable, message: "This is a set only subscript")
     get
@@ -42,15 +44,7 @@ extension ErrorInfoPrototype {
 
 // MARK: Hashable
 
-protocol ErrorInfoHashableKey<Key, Value>: ErrorInfoPrototype where Key: Hashable {
-  associatedtype Key
-  associatedtype Value
-  
-  // merge
-  // prefix
-}
-
-extension ErrorInfoHashableKey where Key == String {
+extension ErrorInfoPrototype where Key == String {
   // TODO: - think about design of such using of ErronInfoKey.
   
   // Subscript duplicated, check if compiler handle when root subscript getter become available or not
@@ -66,6 +60,9 @@ extension ErrorInfoHashableKey where Key == String {
     get { self[String(key)] }
     set { self[String(key)] = newValue }
   }
+  
+  // merge
+  // prefix
 }
 
 // MARK: Sendable
@@ -94,7 +91,7 @@ extension ErrorInfoSendableValue { // MARK: Add value
 
 // MARK: Mergeable
 
-protocol ErrorInfoMergeable<Key, Value>: ErrorInfoRootPrototype {
+protocol ErrorInfoMergeable<Key, Value>: ErrorInfoIterable {
   associatedtype Key
   associatedtype Value
   
@@ -108,7 +105,7 @@ extension ErrorInfoMergeable {
 //  }
   
   mutating func merge<D>(_ donator: D,
-                         fileLine: StaticFileLine) where D: ErrorInfoRootPrototype, D.Key == Self.Key {
+                         fileLine: StaticFileLine) where D: ErrorInfoIterable, D.Key == Self.Key {
     
   }
   
@@ -128,7 +125,7 @@ extension ErrorInfoMergeable {
 
 extension ErrorInfoMergeable where Key == String {}
 
-func errrrfff<K: Hashable, V>(errorInfo: some ErrorInfoRootPrototype<K, V>) {
+func errrrfff<K: Hashable, V>(errorInfo: some ErrorInfoIterable<K, V>) {
   var count = 0
   for (key, value) in errorInfo {
     count += 1
@@ -166,4 +163,8 @@ func ddwfsd<K: Hashable, V>(errorInfo: some Sequence<(key: K, value: V)>) {
 //  associatedtype KeyValues: Sequence<Element>
 //
 //  var keyValues: KeyValues { get }
+//}
+
+//protocol ErrorInfoHashableKey<Key, Value>: ErrorInfoPrototype where Key: Hashable {
+//
 //}
