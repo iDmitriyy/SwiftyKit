@@ -43,25 +43,25 @@
 
 //extension DictionaryUnifyingRootProtocol {} // make static method to ErrorInfo for converting Dict?
 
-extension ErronInfoKey {
-  internal static func fromAnyStyleToCamelCased(string: String) -> String {
+extension ErrorInfoFuncs {
+  public static func fromAnyStyleToCamelCased(string: String) -> String {
     _toPascalOrCamelImp(string: string, firstCharTransform: { $0.lowercased() })
   }
   
-  internal static func fromAnyStyleToPascalCased(string: String) -> String {
+  public static func fromAnyStyleToPascalCased(string: String) -> String {
     _toPascalOrCamelImp(string: string, firstCharTransform: { $0.uppercased() })
   }
   
-  internal static func fromAnyStyleToSnakeCased(string: String) -> String {
+  public static func fromAnyStyleToSnakeCased(string: String) -> String {
     _toSnakeOrKebabImp(string: string, separator: "_")
   }
   
-  internal static func fromAnyStyleToKebabCased(string: String) -> String {
+  public static func fromAnyStyleToKebabCased(string: String) -> String {
     _toSnakeOrKebabImp(string: string, separator: "-")
   }
 }
 
-extension ErronInfoKey {
+extension ErrorInfoFuncs {
   private static func _toPascalOrCamelImp(string: String, firstCharTransform: (Character) -> String) -> String {
     var result = ""
     var normalCharsCount: UInt = 0 // non-separator characters count

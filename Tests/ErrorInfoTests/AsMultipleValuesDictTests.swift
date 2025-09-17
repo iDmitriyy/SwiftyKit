@@ -8,17 +8,20 @@
 @testable import ErrorInfo
 import Testing
 import Collections
+import NonEmpty
 
 struct AsMultipleValuesDictTests {
-  func check<Key: Hashable, Value>(_ instance: some ErrorInfoMultipleValuesForKeyMergeable<Key, Value> & ErrorInfoPartialCollection) {
-    let a: [Key: Array<Value>] = instance.asMultipleValuesAnyDict(omitEqualValue: false)
-    let b: [Key: Deque<Value>] = instance.asMultipleValuesAnyDict(omitEqualValue: false)
+  func check<Key: Hashable, Value>(_ instance: some ErrorInfoMultipleValuesForKeyStrategy<Key, Value> & ErrorInfoPartialCollection) {
+    typealias NonEmptyDeque<T> = NonEmpty<Deque<T>>
     
-    let c: OrderedDictionary<Key, Array<Value>> = instance.asMultipleValuesAnyDict(omitEqualValue: false)
-    let d: OrderedDictionary<Key, Deque<Value>> = instance.asMultipleValuesAnyDict(omitEqualValue: false)
+    let sdar: [Key: NonEmptyArray<Value>] = instance.asMultipleValuesGenericDict(omitEqualValue: false)
+    let sdde: [Key: NonEmptyDeque<Value>] = instance.asMultipleValuesGenericDict(omitEqualValue: false)
     
-    // let _: [Key: OrderedSet<Value>] = instance.asMultipleValuesAnyDict(omitEqualValue: false)
+    let odar: OrderedDictionary<Key, NonEmptyArray<Value>> = instance.asMultipleValuesGenericDict(omitEqualValue: false)
+    let odde: OrderedDictionary<Key, NonEmptyDeque<Value>> = instance.asMultipleValuesGenericDict(omitEqualValue: false)
     
-    // let _: [Data: Array<String>] = // binary key
+    // let sdos: [Key: OrderedSet<Value>] = instance.asMultipleValuesAnyDict(omitEqualValue: false)
+    
+    // let _: [Data: Array<String>] = // binary data key
   }
 }
