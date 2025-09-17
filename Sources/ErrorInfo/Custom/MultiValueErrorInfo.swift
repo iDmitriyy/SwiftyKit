@@ -32,6 +32,9 @@ struct MultiValueErrorInfo: IterableErrorInfo {
 
 // MARK: - MultiValueErrorInfo Generic
 
+// TODO: add identity(source specifier) for collision
+// so NonEmptyArray<Value> turns to NonEmptyArray<(Value, CollisionSpecifier)>
+
 struct MultiValueErrorInfoGeneric<Key: Hashable, Value>: IterableErrorInfo {
   typealias Element = (key: Key, value: Value)
   
