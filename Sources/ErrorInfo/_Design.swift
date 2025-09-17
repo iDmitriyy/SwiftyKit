@@ -41,6 +41,35 @@
      Error domain and code can be used used as prefix / suffix.
  - All Error-info Types, that will be made in future, should able to be compatible with each other for merging.
  
+ Usage / applying:
+ - Concrete error types can either use errorInfo with either `keyAugmentation` or `multipleValues` strategy.
+ ?? Which strategy is commonly preferred.
+ - When errors chain summary info is merged, if collision happens then it is good to understand from each error each value
+ was. Donator index can be used if two errors have the same domain, code, identity (e.g. file shortand)
+ In very rare cases when 2 errors:
+    - have the same domain ("ME" – MappingError)
+    - have the same code (7)
+    - created in different files and short variants of these file names are equal ("MVC" – MainViewController | MapViewController)
+    - created at the same line in those different files (40)
+  a random donator index is added.
+ Index is increasing from right to left, where most deep error is always at index 0. New codes alwas appear at the left side and
+ will be at endIndex + 1
+ Example: during collision resolution of 2 diferent values the following keys were created:
+ "time_ME7@MVC_40_idx0"
+ "time_ME7@MVC_40_idx1"
+ ?? may be line can be omited and idx shpuld be used. If error identity(source specifier) is equal, mostly often it is the same
+ file. So line number seems to look like a noise. This looks better:
+ "time_ME7@MVC^idx0"
+ "time_ME7@MVC^idx1"
+ 
+  > This way the following code will add all 1000 values. In comparison, dictionary will save last value.
+ ```
+   for number in 1...1000 {
+     errorInfo["a"] = number
+   }
+ ```
+ However, it is not a typical situation when someone adds 1000 diferrent values for the same key.
+ 
  
  Opened equestions:
  - should all error info types itself be iterable (or iterable keyValues View should better be provided)? - For now Sequence

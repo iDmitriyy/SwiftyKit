@@ -8,7 +8,7 @@
 // ?? can It be done as typeaalias
 // LegacyErrorInfo = GenericValueErrorInfo<String, Any>
 
-struct LegacyErrorInfo: ErrorInfoIterable {
+struct LegacyErrorInfo: IterableErrorInfo {
   typealias Key = String
   typealias Value = Any
   typealias Element = (key: String, value: Any)

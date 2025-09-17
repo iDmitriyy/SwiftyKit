@@ -6,15 +6,15 @@
 //
 
 /// collisions are ressolved by adding an 1000
-struct UInt64KeyErrorInfo {
+struct UInt16KeyErrorInfo {
   
 }
 
-extension UInt64KeyErrorInfo {
+extension UInt16KeyErrorInfo {
   struct CustomKey {
-    let rawValue: UInt64
+    let rawValue: UInt16 // 65536
     
-    fileprivate init(rawValue: UInt64) {
+    fileprivate init(rawValue: UInt16) {
       self.rawValue = rawValue
     }
   }
@@ -23,13 +23,13 @@ extension UInt64KeyErrorInfo {
 // keys:
 // range 1...9(<100)
 // range 100..<200(<1000)
-extension UInt64KeyErrorInfo.CustomKey {
+extension UInt16KeyErrorInfo.CustomKey {
   static let a = Self(rawValue: 0)
-  static let aa = Self(rawValue: 10)
-  static let zz = Self(rawValue: 99)
-  static let aaa = Self(rawValue: 100)
-  static let bbb = Self(rawValue: 101)
-  static let ccc = Self(rawValue: 202)
-  static let zzz = Self(rawValue: 999)
+  static let aa = Self(rawValue: 1)
+  static let zz = Self(rawValue: 9)
+  static let aaa = Self(rawValue: 10)
+  static let bbb = Self(rawValue: 11)
+  static let ccc = Self(rawValue: 22)
+  static let zzz = Self(rawValue: 99)
 }
 

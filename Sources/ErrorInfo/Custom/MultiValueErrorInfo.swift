@@ -10,7 +10,7 @@ import IndependentDeclarations
 import NonEmpty
 
 /// If a key collision happens, the values are put into a container
-struct MultiValueErrorInfo: ErrorInfoIterable {
+struct MultiValueErrorInfo: IterableErrorInfo {
   typealias Key = String
   typealias Value = any ErrorInfoValueType
   typealias Element = (key: String, value: any ErrorInfoValueType)
@@ -32,7 +32,7 @@ struct MultiValueErrorInfo: ErrorInfoIterable {
 
 // MARK: - MultiValueErrorInfo Generic
 
-struct MultiValueErrorInfoGeneric<Key: Hashable, Value>: ErrorInfoIterable {
+struct MultiValueErrorInfoGeneric<Key: Hashable, Value>: IterableErrorInfo {
   typealias Element = (key: Key, value: Value)
   
   func makeIterator() -> some IteratorProtocol<Element> {
@@ -47,6 +47,7 @@ struct MultiValueErrorInfoGeneric<Key: Hashable, Value>: ErrorInfoIterable {
     self.storage = [:]
   }
   
+  // TODO: - add omitEqualValues arg
   mutating func _addResolvingCollisions(value: Value, forKey key: Key) {
     if let existing = storage[key] {
       switch existing {

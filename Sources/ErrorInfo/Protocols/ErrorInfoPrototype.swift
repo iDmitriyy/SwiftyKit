@@ -5,18 +5,39 @@
 //  Created by Dmitriy Ignatyev on 07/08/2025.
 //
 
-public protocol ErrorInfoIterable<Key, Value>: Sequence where Key: Hashable, Self.Iterator.Element == (key: Key, value: Value) {
+public protocol IterableErrorInfo<Key, Value>: Sequence where Key: Hashable, Self.Iterator.Element == (key: Key, value: Value) {
   associatedtype Key
   associatedtype Value
-  
-//  var isEmpty: Bool { get }
 }
 
 func fff(dd: some ErrorInfoPrototype<String, Int>) {
   
 }
 
-public protocol ErrorInfoPrototype<Key, Value>: ErrorInfoIterable {
+public protocol ErrorInfoPartialCollection<Key, Value>: ~Copyable { // : IterableErrorInfo
+  associatedtype Key // temp while developong as ~Copyable
+  associatedtype Value // < delete
+  typealias Element = (key: Key, value: Value) // < delete
+  
+  associatedtype Index
+  associatedtype Indices: Collection where Self.Indices == Self.Indices.SubSequence
+  
+  var isEmpty: Bool { get }
+  
+  var count: Int { get }
+  
+  var startIndex: Index { get }
+  
+  var endIndex: Index { get }
+  
+  var indices: Self.Indices { get }
+  
+  func index(after i: Index) -> Index
+  
+  subscript(position: Index) -> Element { get }
+}
+
+public protocol ErrorInfoPrototype<Key, Value>: IterableErrorInfo {
   subscript(key: Key) -> Value? {
 //    @available(*, unavailable, message: "This is a set only subscript")
     get
@@ -91,7 +112,7 @@ extension ErrorInfoSendableValue { // MARK: Add value
 
 // MARK: Mergeable
 
-protocol ErrorInfoMergeable<Key, Value>: ErrorInfoIterable {
+protocol ErrorInfoMergeable<Key, Value>: IterableErrorInfo {
 //  mutating func merge<each D>(_ donators: repeat each D, fileLine: StaticFileLine) where repeat each D: ErrorInfoRootPrototype
 }
 
@@ -109,7 +130,7 @@ extension ErrorInfoMergeable {
 //  }
   
   mutating func merge<D>(_ donator: D,
-                         fileLine: StaticFileLine) where D: ErrorInfoIterable, D.Key == Self.Key {
+                         fileLine: StaticFileLine) where D: IterableErrorInfo, D.Key == Self.Key {
     
   }
   
@@ -129,38 +150,63 @@ extension ErrorInfoMergeable {
 
 extension ErrorInfoMergeable where Key == String {}
 
-func errrrfff<K: Hashable, V>(errorInfo: some ErrorInfoIterable<K, V>) {
-  var count = 0
-  for (key, value) in errorInfo {
-    count += 1
-  }
+// MARK: - Merge Operations
+
+//protocol ErrorInfoCollisionsResolvable<Key, Value>: IterableErrorInfo {
+//  init(_ keyValues: some Sequence<Element>)
+//}
+//
+//extension ErrorInfoMergeOp {}
+
+public protocol ErrorInfoCollisionsResolvable_<Key, Value>: ~Copyable where Key: Hashable { // : IterableErrorInfo
+  associatedtype Key
+  associatedtype Value
+  typealias Element = (key: Key, value: Value)
+  
+  associatedtype KeyValues: Sequence<Element>
+  /// some keys can be repeated several times, in other words keys are not guaranteed be unique
+  var keyValuesView: KeyValues { get }
+  
+  init()
+  init(minimumCapacity: Int)
+  
+  // TODO: ??! is it possible to implement with no additional args?
+  // subscript can be used, but it is not guaranteed to resolve collisions
+//  mutating func mergeWith(_ keyValues: some Sequence<Element>)
+  
+  /// has default imp
+//  init(_ keyValues: some Sequence<Element>) // TODO: sequence may have duplicated keys
 }
 
-func ddwfsd<K: Hashable, V>(errorInfo: some Sequence<(key: K, value: V)>) {
-//  seq.lazy
-//  seq.enumerated()
-  errorInfo.allSatisfy { e in true }
-  errorInfo.map { $0 }
-  errorInfo.first(where: { _ in true })
-  errorInfo.count(where: { _ in true })
-  errorInfo.underestimatedCount
-  errorInfo.forEach { _ in }
-  errorInfo.compactMap { $0 }
-  errorInfo.contains(where: { _ in true})
-  errorInfo.flatMap { $0 }
-  errorInfo.reduce(into: Dictionary<K, V>()) { partialResult, e in
-    partialResult[e.key] = e.value
-  }
-//  errorInfo.sorted { $0.key < $1.key }
-  errorInfo.dropFirst()
-  errorInfo.dropLast()
-  errorInfo.filter { _ in true }
-  //  errorInfo.max(by: T##((key: Hashable, value: V), (key: Hashable, value: V)) throws -> Bool)
-  errorInfo.prefix(1)
-  errorInfo.suffix(1)
-  errorInfo.reversed()
-  errorInfo.shuffled()
+// MARK: Default implementations
+
+extension ErrorInfoCollisionsResolvable_ {
+//  public init(_ keyValues: some Sequence<Element>) {
+//    self.init()
+//    self.mergeWith(keyValues)
+//  }
+//    
+//  public consuming func mergedWith(_ keyValues: some Sequence<Element>) -> Self {
+//    self.mergeWith(keyValues)
+//    return self
+//  }
 }
+
+//MARK: - Key Augmentation Collison Strategy
+
+public protocol ErrorInfoUniqueKeysAugmentationStrategy<Key, Value>: ErrorInfoCollisionsResolvable_ {
+  associatedtype OpaqueDictType: DictionaryUnifyingProtocol<Key, Value>
+}
+
+extension ErrorInfoUniqueKeysAugmentationStrategy {
+//  static func merge(recipient: consuming some ErrorInfoMergeOp, donator: borrowing some IterableErrorInfo)
+}
+
+//MARK: - MultipleValues For Key Collison Strategy
+
+public protocol ErrorInfoMultipleValuesForKeyStrategy<Key, Value>: ErrorInfoCollisionsResolvable_ {}
+
+// ----------------------------------------------
 
 //protocol ErrorInfoIterable<Key, Value>: ErrorInfoRootPrototype {
 //  typealias Element = (key: Key, value: Value)

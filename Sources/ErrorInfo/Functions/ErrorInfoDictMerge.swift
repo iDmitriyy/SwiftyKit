@@ -64,12 +64,18 @@ extension ErrorInfoDictFuncs.Merge {
 //  }
 }
 
-// MARK: - Low level root functions for  a single value 
+// MARK: - Low level root functions for a single value
+
+// MARK: - Key Augmentation (String overload)
 
 extension ErrorInfoDictFuncs.Merge {
+  // short typealiased names for convenience:
   public typealias ResolvingInput<Key: Hashable, Value, C> = KeyCollisionResolvingInput<Key, Value, C>
   public typealias ResolvingResult<Key: Hashable> = KeyCollisionResolvingResult<Key>
-  
+  // TODO: ?? rename to Input / ResolvingResult as there are no other inputs in Merge namespace
+}
+
+extension ErrorInfoDictFuncs.Merge {
   /// Add value by key to recipient` dictionary`.
   /// For key-value pair, the function checks if the key already exists in the `recipient` dictionary.
   /// If the key does not already contained in the `recipient` dictionary, the function simply adds this key-value pair to the `recipient` dictionary.
@@ -205,4 +211,139 @@ extension ErrorInfoDictFuncs.Merge {
     }
     recipient[modifiedKey] = value
   }
+}
+
+// MARK: - Key Augmentation (generic)
+
+import NonEmpty
+
+extension ErrorInfoDictFuncs.Merge {
+  // ResolvingResult should have one more case: .builtInAddSuffix, and Never type used to make it (un)available for different imps.
+  // For Collection-Type keys it is possible to append random-suffix
+  
+  internal static func withKeyAugmentationAdd<Dict, C>(keyValue donatorKeyValue: Dict.Element,
+                                                       to recipient: inout Dict,
+                                                       donatorIndex: some BinaryInteger & CustomStringConvertible,
+                                                       omitEqualValue shouldOmitEqualValue: Bool,
+                                                       identity: C,
+                                                       suffixSeparator: some Collection<Dict.Key.Element>,
+                                                       randomSuffix: @Sendable () -> NonEmpty<Dict.Key>,
+                                                       resolve: (ResolvingInput<Dict.Key, Dict.Value, C>) -> ResolvingResult<Dict.Key>)
+  where Dict: DictionaryUnifyingProtocol, Dict.Key: MutableCollection, Dict.Key: RangeReplaceableCollection {
+    let (donatorKey, donatorValue) = donatorKeyValue
+    // In, most cases value is simply added to recipient. When collision happens, it must be properly resolved.
+    if let recipientValue = recipient[donatorKey] {
+      let collidedKey = donatorKey
+      // if collision happened, but values are equal, then we can keep existing value
+      let valuesAreEqual = ErrorInfoFuncs.isApproximatelyEqualAny(recipientValue, donatorValue)
+      
+      typealias Input = KeyCollisionResolvingInput<Dict.Key, Dict.Value, C>
+      let element = Input.Element(key: collidedKey,
+                                  existingValue: recipientValue,
+                                  beingAddedValue: donatorValue)
+      lazy var resolvingInput = Input(element: element,
+                                      areValuesApproximatelyEqual: valuesAreEqual,
+                                      donatorIndex: donatorIndex,
+                                      identity: identity)
+      
+      let resolvingResult: KeyCollisionResolvingResult<Dict.Key>
+      switch (valuesAreEqual, shouldOmitEqualValue) {
+      case (true, true): return // if newly added value is equal to current, then keep only existing
+      case (false, _), // different values must be saved, modify one of or both keys
+           (true, false): // keep both values though they are equal, modify one of or both keys
+        resolvingResult = resolve(resolvingInput)
+      }
+      
+      func putAugmentingWithRandomSuffix_(_ value: Dict.Value, assumeModifiedKey: Dict.Key) {
+        _putAugmentingWithRandomSuffix(donatorValue,
+                                       assumeModifiedKey: assumeModifiedKey,
+                                       shouldOmitEqualValue: shouldOmitEqualValue,
+                                       suffixSeparator: suffixSeparator,
+                                       randomSuffix: randomSuffix,
+                                       to: &recipient)
+      }
+      
+      switch resolvingResult {
+      case let .modifyDonatorKey(assumeWasModifiedDonatorKey):
+        putAugmentingWithRandomSuffix_(donatorValue,
+                                        assumeModifiedKey: assumeWasModifiedDonatorKey)
+        
+      case let .modifyRecipientKey(assumeWasModifiedRecipientKey):
+        // 1. replace value that was already contained in recipient by donatorValue
+        recipient[collidedKey] = donatorValue
+        // 2. put value that was already contained in recipient by modifiedRecipientKey
+        putAugmentingWithRandomSuffix_(recipientValue,
+                                      assumeModifiedKey: assumeWasModifiedRecipientKey)
+        
+      case let .modifyBothKeys(assumeWasModifiedDonatorKey, assumeWasModifiedRecipientKey):
+        recipient[collidedKey] = nil // remove old key & value
+        putAugmentingWithRandomSuffix_(donatorValue,
+                                        assumeModifiedKey: assumeWasModifiedDonatorKey)
+        
+        putAugmentingWithRandomSuffix_(recipientValue,
+                                      assumeModifiedKey: assumeWasModifiedRecipientKey)
+      }
+    } else { // if no collisions then add to recipient
+      recipient[donatorKey] = donatorValue
+    }
+  }
+  
+  internal static func _putAugmentingWithRandomSuffix<Dict>(_ value: Dict.Value,
+                                                            assumeModifiedKey: Dict.Key,
+                                                            shouldOmitEqualValue: Bool,
+                                                            suffixSeparator: some Collection<Dict.Key.Element>,
+                                                            randomSuffix: @Sendable () -> NonEmpty<Dict.Key>,
+                                                            to recipient: inout Dict)
+  where Dict: DictionaryUnifyingProtocol, Dict.Key: MutableCollection, Dict.Key: RangeReplaceableCollection {
+    // Here we can can only make an assumtption that donator key was modified on the client side.
+    // While it should always happen, there is no guarantee.
+    
+    // So there are 2 possible collision variants here:
+    // 1. assumeWasModifiedDonatorKey was not really modified
+    // 2. assumeWasModifiedDonatorKey also has a collision with another existing key of recipient
+    var modifiedKey = assumeModifiedKey
+    var counter: Int = 0
+    while let recipientAnotherValue = recipient[modifiedKey] { // condition mostly always should not happen
+//      if Dict.Value.self == (any Equatable).Type.self {
+//        // TODO: ...
+//      }
+      switch (ErrorInfoFuncs.isApproximatelyEqualAny(recipientAnotherValue, value), shouldOmitEqualValue) {
+      case (true, true): return // if newly added value is equal to current, then keep only existing
+      case (false, _), // ?? always keep different values
+           (true, false): // ?? keep both equal values
+        let randomSuffix = randomSuffix()
+        
+        let suffix = mutate(value: Dict.Key()) { // counter == 0 ? String(suffixFirstChar) + randomSuffix : randomSuffix
+          if counter == 0 {
+//            $0[$0.startIndex] = suffixFirstChar
+//            $0[$0.endIndex...] = randomSuffix.rawValue[...]
+            $0.append(contentsOf: suffixSeparator) // suffixSeparator can be empty, which is effectively an absence
+            $0.append(contentsOf: randomSuffix.rawValue)
+          } else {
+            $0 = randomSuffix.rawValue
+          }
+        }
+        
+        // modifiedKey += suffix
+        // modifiedKey[modifiedKey.endIndex...] = suffix[...]
+        modifiedKey.append(contentsOf: suffix)
+        counter += 1
+        // example: 3 error-info instances with decodingDate key
+        // "decodingDate_don0_file_line_SourceFileName_81_#9vT"
+      }
+    }
+    recipient[modifiedKey] = value
+  }
+  
+  /// For integer types.
+  /// .builtInAddSuffix<Never>
+  /// If resolve result didn't make key mutation, an infinite recursion can occur
+//  public static func unsafe_WithKeyMutationAdd<Dict, C>(keyValue donatorKeyValue: Dict.Element,
+//                                                            to recipient: inout Dict,
+//                                                           donatorIndex: some BinaryInteger & CustomStringConvertible,
+//                                                            identity: C,
+//                                                            resolve: (ResolvingInput<Dict.Key, Dict.Value, C>) -> ResolvingResult<Dict.Key>)
+//  where Dict: DictionaryUnifyingProtocol {
+//    
+//  }
 }

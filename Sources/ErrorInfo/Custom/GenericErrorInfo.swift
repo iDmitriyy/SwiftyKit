@@ -31,9 +31,6 @@ extension _ErrorInfoGenericStorage {
 // @inlinable public mutating func updateValue(_ value: Value, forKey key: Key) -> Value?
 // @inlinable public mutating func removeValue(forKey key: Key) -> Value?
 
-extension _ErrorInfoGenericStorage: Equatable where Key: Equatable, Value: Equatable, DictType: Equatable {}
-extension _ErrorInfoGenericStorage: Hashable where Key: Hashable, Value: Hashable, DictType: Hashable {}
-
 extension _ErrorInfoGenericStorage: Sendable where Key: Sendable, Value: Sendable, DictType: Sendable {}
 
 // --------------------------------------
