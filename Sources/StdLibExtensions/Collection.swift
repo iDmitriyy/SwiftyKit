@@ -6,7 +6,7 @@
 //
 
 extension Collection {
-  @inlinable
+  @inlinable @inline(__always)
   public var isNotEmpty: Bool { !isEmpty }
   
   @inlinable @inline(__always)
