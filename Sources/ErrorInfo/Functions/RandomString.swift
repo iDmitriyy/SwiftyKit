@@ -53,7 +53,7 @@ extension ErrorInfoFuncs {
         allPrintableNoWhitespaceAsciiSet.randomElement()!
       }
       
-      result.append(Character(UnicodeScalar.init(randomAsciiNumber)))
+      result.append(Character(UnicodeScalar(randomAsciiNumber)))
     }
     return result
   }
