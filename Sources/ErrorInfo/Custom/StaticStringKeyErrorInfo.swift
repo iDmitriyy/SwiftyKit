@@ -33,20 +33,21 @@ struct StaticStringKeyErrorInfo: Sequence {
 
 // MARK: - StaticString Hashable Adapter
 
-struct StaticStringHashableAdapter: Hashable {
+internal struct StaticStringHashableAdapter: Hashable {
   let wrappedValue: StaticString
   
   init(_ wrappedValue: StaticString) {
     self.wrappedValue = wrappedValue
   }
   
-  public func hash(into hasher: inout Hasher) {
+  func hash(into hasher: inout Hasher) {
     wrappedValue.withUTF8Buffer { utf8Buffer in
       for uint8 in utf8Buffer {
         hasher.combine(uint8)
       }
     }
   }
+
   // TODO: this is not proper imp
   static func == (lhs: StaticStringHashableAdapter, rhs: StaticStringHashableAdapter) -> Bool {
     lhs.wrappedValue.withUTF8Buffer { lhsBuffer in

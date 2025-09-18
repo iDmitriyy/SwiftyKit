@@ -5,9 +5,9 @@
 //  Created by Dmitriy Ignatyev on 07/08/2025.
 //
 
-import OrderedCollections
 import IndependentDeclarations
 import NonEmpty
+import OrderedCollections
 
 /// If a key collision happens, the values are put into a container
 struct MultiValueErrorInfo: IterableErrorInfo {
@@ -18,7 +18,7 @@ struct MultiValueErrorInfo: IterableErrorInfo {
   private var storage: MultiValueErrorInfoGeneric<String, any ErrorInfoValueType>
   
   init() {
-    self.storage = MultiValueErrorInfoGeneric<String, any ErrorInfoValueType>()
+    storage = MultiValueErrorInfoGeneric<String, any ErrorInfoValueType>()
   }
   
   func makeIterator() -> some IteratorProtocol<Element> {
@@ -47,7 +47,7 @@ struct MultiValueErrorInfoGeneric<Key: Hashable, Value>: IterableErrorInfo {
   private var storage: OrderedDictionary<Key, ValueWrapper>
   
   init() {
-    self.storage = [:]
+    storage = [:]
   }
   
   // TODO: - add omitEqualValues arg
@@ -100,9 +100,9 @@ extension MultiValueErrorInfoGeneric {
         let currentIndex = sub.lastUsedIndex + 1
         if sub.values.indices.contains(currentIndex) {
           let result = (sub.key, sub.values[currentIndex])
-          self.subIteration = SubIteration(key: sub.key,
-                                           values: sub.values,
-                                           lastUsedIndex: currentIndex)
+          subIteration = SubIteration(key: sub.key,
+                                      values: sub.values,
+                                      lastUsedIndex: currentIndex)
           return result
         } else {
           subIteration = nil
@@ -121,9 +121,9 @@ extension MultiValueErrorInfoGeneric {
         case .right(let multipleValues):
           let index: Int = 0
           let result = (key, multipleValues.rawValue[index])
-          self.subIteration = SubIteration(key: key,
-                                           values: multipleValues.rawValue,
-                                           lastUsedIndex: index)
+          subIteration = SubIteration(key: key,
+                                      values: multipleValues.rawValue,
+                                      lastUsedIndex: index)
           return result
         }
       } else {

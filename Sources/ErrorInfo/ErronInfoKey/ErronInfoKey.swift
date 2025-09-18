@@ -31,7 +31,7 @@ public struct ErronInfoKey: Hashable, Sendable, CustomStringConvertible, CustomD
   }
   
   internal init(uncheckedString: String) {
-    self.rawValue = uncheckedString
+    rawValue = uncheckedString
   }
 }
 
@@ -45,18 +45,18 @@ extension ErronInfoKey {
   }
 }
 
-//extension ErronInfoKey {
+// extension ErronInfoKey {
 //  public struct Separator: Sendable, Hashable, CustomStringConvertible { // RawRepresentable
 //    private let rawValue: String
-//    
+//
 //    public var description: String { rawValue }
-//    
+//
 //    init(uncheckedString: String) {
 //      self.rawValue = uncheckedString
 //    }
 //  }
-//}
+// }
 //
-//extension ErronInfoKey.Separator {
+// extension ErronInfoKey.Separator {
 //  public static let dash = Self(uncheckedString: "-")
-//}
+// }

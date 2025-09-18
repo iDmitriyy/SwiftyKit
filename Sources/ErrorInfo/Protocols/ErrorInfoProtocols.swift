@@ -22,6 +22,7 @@ public protocol NonSendableErrorInfoProtocol<ValueType> {
 public protocol ErrorInfoRequirement {
   associatedtype Key
   associatedtype ValueType
+
   // MARK: Add value
   
   func _getUnderlyingValue(forKey key: Key) -> ValueType?
@@ -36,34 +37,35 @@ public protocol ErrorInfoRequirement {
   
   // MARK: Prefix & Suffix
   
-  // FIXME: keyPrefix is String and incompatible with generic Key. 
+  // FIXME: keyPrefix is String and incompatible with generic Key.
   mutating func addKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc)
 }
 
-extension ErrorInfoRequirement where ValueType == any Sendable { 
-}
+extension ErrorInfoRequirement where ValueType == any Sendable {}
 
 extension ErrorInfoRequirement { // MARK: Merge
+
   public consuming func merging<each D>(_ donators: repeat each D, fileLine: StaticFileLine) -> Self
     where repeat each D: ErrorInfoRequirement {
-    self.merge(repeat each donators, fileLine: fileLine)
-    return self
-  }
+      merge(repeat each donators, fileLine: fileLine)
+      return self
+    }
 }
 
 extension ErrorInfoRequirement { // MARK: Prefix & Suffix
+
 //  toKeysOf dict: inout Dict,
 //  transform: PrefixTransformFunc
   
   public consuming func addingKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) -> Self {
-    self.addKeyPrefix(keyPrefix, transform: transform)
+    addKeyPrefix(keyPrefix, transform: transform)
     return self
   }
 }
 
 extension ErrorInfoRequirement {
-  public init(legacyUserInfo: [String: Any],
-              valueInterpolation: @Sendable (Any) -> String = { prettyDescriptionOfOptional(any: $0) }) {
+  public init(legacyUserInfo _: [String: Any],
+              valueInterpolation _: @Sendable (Any) -> String = { prettyDescriptionOfOptional(any: $0) }) {
 //    self.init()
 //    legacyUserInfo.forEach { key, value in storage[key] = valueInterpolation(value) }
     fatalError()
@@ -73,7 +75,7 @@ extension ErrorInfoRequirement {
     fatalError()
   }
   
-  public func asStringDict(options: ErrorInfoStringDictOptions) -> [String: String] {
+  public func asStringDict(options _: ErrorInfoStringDictOptions) -> [String: String] {
     fatalError()
   }
 }

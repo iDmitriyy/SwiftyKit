@@ -23,9 +23,9 @@ fileprivate struct _ErrorInfoGenericStorage<Key, Value, DictType: DictionaryUnif
 extension _ErrorInfoGenericStorage {
   func unconditionallyAddResolvingCollisions() {}
   
-  func unconditionallyRemoveValue(forKey: Key) {}
+  func unconditionallyRemoveValue(forKey _: Key) {}
   
-  func mergeWith(other: Self) {}
+  func mergeWith(other _: Self) {}
 }
 
 // @inlinable public mutating func updateValue(_ value: Value, forKey key: Key) -> Value?
@@ -35,10 +35,7 @@ extension _ErrorInfoGenericStorage: Sendable where Key: Sendable, Value: Sendabl
 
 // --------------------------------------
 
-struct _ErrorInfoGenericValue<ValueType> {
-  
-}
-
+struct _ErrorInfoGenericValue<ValueType> {}
 
 /// NoRemovingErrorInfo Is specially made for BaseError default merge algorythms.
 /// As BaseError types can contain different error-info implementations, each instance can have different merge function.

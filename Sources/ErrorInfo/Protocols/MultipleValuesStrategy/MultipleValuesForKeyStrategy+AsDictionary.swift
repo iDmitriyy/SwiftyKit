@@ -6,6 +6,7 @@
 //
 
 // MARK: Default implementations
+
 // TODO: need to be generalized for Integer types >= UInt32
 
 // MARK: Conversion MultipleValues => Dictionary (Key Augmentation)
@@ -24,16 +25,16 @@ extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialColl
   func asGenericDict<I, D>(omitEqualValue: Bool,
                            identity: I,
                            resolve: (KeyCollisionResolvingInput<Key, Value, I>) -> KeyCollisionResolvingResult<Key>)
-  -> D where D: DictionaryUnifyingProtocol<Key, Value> {
-    var recipient = D(minimumCapacity: self.count)
+    -> D where D: DictionaryUnifyingProtocol<Key, Value> {
+    var recipient = D(minimumCapacity: count)
     
-    for keyValue in self.keyValuesView {
+    for keyValue in keyValuesView {
       ErrorInfoDictFuncs.Merge.withKeyAugmentationAdd(keyValue: keyValue,
-                                                          to: &recipient,
-                                                          donatorIndex: 0,
-                                                          omitEqualValue: omitEqualValue,
-                                                          identity: identity,
-                                                          resolve: resolve)
+                                                      to: &recipient,
+                                                      donatorIndex: 0,
+                                                      omitEqualValue: omitEqualValue,
+                                                      identity: identity,
+                                                      resolve: resolve)
     }
     
     return recipient
@@ -50,16 +51,16 @@ public import NonEmpty
 extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialCollection {
   // ExpressibleByArrayLiteral – is only need for some kind of initialization. Somethong like `minimumCapacityInitializable`
   // can also be used.
-  public func asMultipleValuesGenericDict<D, VC>(omitEqualValue: Bool) -> D
+  public func asMultipleValuesGenericDict<D, VC>(omitEqualValue _: Bool) -> D
     where D: DictionaryUnifyingProtocol<Key, NonEmpty<VC>>, VC: RangeReplaceableCollection, VC.Element == Self.Value {
     // VC: ExpressibleByArrayLiteral, VC.ArrayLiteralElement == Self.Value
-    var dict: D = D(minimumCapacity: self.count)
+    var dict: D = D(minimumCapacity: count)
     // VC: RangeReplaceableCollection –
     // init()
     // init(repeating repeatedValue: Self.Element, count: Int)
     // init<S>(_ elements: S) where S : Sequence, Self.Element == S.Element
-      // mutating func reserveCapacity(_ n: Int)
-    for (key, value) in self.keyValuesView {
+    // mutating func reserveCapacity(_ n: Int)
+    for (key, value) in keyValuesView {
       if dict.hasValue(forKey: key) {
         dict[key]?.append(value)
       } else {

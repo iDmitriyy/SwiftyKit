@@ -24,7 +24,7 @@ public protocol ErrorInfoPartialCollection<Key, Value>: ~Copyable { // : Iterabl
 }
 
 public protocol ErrorInfoPrototype<Key, Value>: IterableErrorInfo {
-  subscript(key: Key) -> Value? {
+  subscript(_: Key) -> Value? {
 //    @available(*, unavailable, message: "This is a set only subscript")
     get
     set
@@ -82,18 +82,19 @@ protocol ErrorInfoSendableValue<Key, Value>: ErrorInfoPrototype where Value == a
 }
 
 extension ErrorInfoSendableValue { // MARK: Add value
-    // MARK: Subscripts
+
+  // MARK: Subscripts
     
-    @_disfavoredOverload
-    public subscript(key: Key) -> (Value)? {
-      @available(*, unavailable, message: "This is a set only subscript")
-      get { _getUnderlyingValue(forKey: key) }
-      set(maybeValue) {
-        // TODO: when nil then T.Type is unknown but should be known
-        let value: any Sendable = maybeValue ?? prettyDescriptionOfOptional(any: maybeValue)
-        _unconditionallyAddResolvingCollisions(value: value, forKey: key)
-      }
+  @_disfavoredOverload
+  public subscript(key: Key) -> (Value)? {
+    @available(*, unavailable, message: "This is a set only subscript")
+    get { _getUnderlyingValue(forKey: key) }
+    set(maybeValue) {
+      // TODO: when nil then T.Type is unknown but should be known
+      let value: any Sendable = maybeValue ?? prettyDescriptionOfOptional(any: maybeValue)
+      _unconditionallyAddResolvingCollisions(value: value, forKey: key)
     }
+  }
 }
 
 // MARK: Mergeable
@@ -104,7 +105,7 @@ protocol ErrorInfoMergeable<Key, Value>: IterableErrorInfo {
 
 extension ErrorInfoMergeable {
   /// Mergable ErrorInfo can be inited from a sequence with duplicated keys and values
-  init(_ s: some Sequence<Element>) {
+  init(_: some Sequence<Element>) {
     fatalError()
   }
 }
@@ -112,39 +113,33 @@ extension ErrorInfoMergeable {
 extension ErrorInfoMergeable {
 //  mutating func merge<each D>(_ donators: repeat each D,
 //                              fileLine: StaticFileLine) where repeat each D: ErrorInfoRootPrototype, repeat (each D).Key == Self.Key {
-//    
+//
 //  }
   
-  mutating func merge<D>(_ donator: D,
-                         fileLine: StaticFileLine) where D: IterableErrorInfo, D.Key == Self.Key {
-    
-  }
+  mutating func merge<D>(_: D,
+                         fileLine _: StaticFileLine) where D: IterableErrorInfo, D.Key == Self.Key {}
   
-  mutating func merge<DValue, E>(_ donator: some Sequence<(key: Key, value: DValue)>,
-                                 mapValue: (DValue) throws(E) -> Value,
-                                 fileLine: StaticFileLine) {
-    
-  }
+  mutating func merge<DValue, E>(_: some Sequence<(key: Key, value: DValue)>,
+                                 mapValue _: (DValue) throws(E) -> Value,
+                                 fileLine _: StaticFileLine) {}
 }
 
 extension ErrorInfoMergeable {
-  mutating func merge(_ donator: some Sequence<(key: Key, value: Value)>,
-                      fileLine: StaticFileLine) {
-    
-  }
+  mutating func merge(_: some Sequence<(key: Key, value: Value)>,
+                      fileLine _: StaticFileLine) {}
 }
 
 extension ErrorInfoMergeable where Key == String {}
 
 // ----------------------------------------------
 
-//protocol ErrorInfoIterable<Key, Value>: ErrorInfoRootPrototype {
+// protocol ErrorInfoIterable<Key, Value>: ErrorInfoRootPrototype {
 //  typealias Element = (key: Key, value: Value)
 //  associatedtype KeyValues: Sequence<Element>
 //
 //  var keyValues: KeyValues { get }
-//}
+// }
 
-//protocol ErrorInfoHashableKey<Key, Value>: ErrorInfoPrototype where Key: Hashable {
+// protocol ErrorInfoHashableKey<Key, Value>: ErrorInfoPrototype where Key: Hashable {
 //
-//}
+// }

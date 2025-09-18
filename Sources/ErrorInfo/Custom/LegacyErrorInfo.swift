@@ -20,6 +20,6 @@ struct LegacyErrorInfo: IterableErrorInfo {
   }
   
   init(_ info: [String: Any]) {
-    self.storage = info
+    storage = info
   }
 }

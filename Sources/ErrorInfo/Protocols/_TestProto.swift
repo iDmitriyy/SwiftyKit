@@ -9,28 +9,26 @@ func testProto(info: inout some ErrorInfoPrototype<String, any ErrorInfoValueTyp
   info.addIfNotNil(3, key: "")
 }
 
-func errrrfff<K: Hashable, V>(errorInfo: some IterableErrorInfo<K, V>) {
+func errrrfff<V>(errorInfo: some IterableErrorInfo<some Hashable, V>) {
   var count = 0
   for (key, value) in errorInfo {
     count += 1
   }
 }
 
-func fff(dd: some ErrorInfoPrototype<String, Int>) {
-  
-}
+func fff(dd _: some ErrorInfoPrototype<String, Int>) {}
 
 func ddwfsd<K: Hashable, V>(errorInfo: some Sequence<(key: K, value: V)>) {
 //  seq.lazy
 //  seq.enumerated()
-  errorInfo.allSatisfy { e in true }
+  errorInfo.allSatisfy { _ in true }
   errorInfo.map { $0 }
   errorInfo.first(where: { _ in true })
   errorInfo.count(where: { _ in true })
   errorInfo.underestimatedCount
   errorInfo.forEach { _ in }
   errorInfo.compactMap { $0 }
-  errorInfo.contains(where: { _ in true})
+  errorInfo.contains(where: { _ in true })
   errorInfo.flatMap { $0 }
   errorInfo.reduce(into: Dictionary<K, V>()) { partialResult, e in
     partialResult[e.key] = e.value

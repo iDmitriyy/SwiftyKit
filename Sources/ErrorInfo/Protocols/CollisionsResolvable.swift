@@ -7,11 +7,11 @@
 
 // MARK: - Merge Operations
 
-//protocol ErrorInfoCollisionsResolvable<Key, Value>: IterableErrorInfo {
+// protocol ErrorInfoCollisionsResolvable<Key, Value>: IterableErrorInfo {
 //  init(_ keyValues: some Sequence<Element>)
-//}
+// }
 //
-//extension ErrorInfoMergeOp {}
+// extension ErrorInfoMergeOp {}
 
 public protocol ErrorInfoCollisionsResolvable_<Key, Value>: ~Copyable where Key: Hashable { // : IterableErrorInfo
   associatedtype Key
@@ -47,7 +47,7 @@ extension ErrorInfoCollisionsResolvable_ {
 //  }
 }
 
-//MARK: - Key Augmentation Collison Strategy
+// MARK: - Key Augmentation Collison Strategy
 
 public protocol ErrorInfoUniqueKeysAugmentationStrategy<Key, Value>: ErrorInfoCollisionsResolvable_ {
   associatedtype OpaqueDictType: DictionaryUnifyingProtocol<Key, Value>
@@ -57,6 +57,6 @@ extension ErrorInfoUniqueKeysAugmentationStrategy {
 //  static func merge(recipient: consuming some ErrorInfoMergeOp, donator: borrowing some IterableErrorInfo)
 }
 
-//MARK: - MultipleValues For Key Collison Strategy
+// MARK: - MultipleValues For Key Collison Strategy
 
 public protocol ErrorInfoMultipleValuesForKeyStrategy<Key, Value>: ErrorInfoCollisionsResolvable_ {}

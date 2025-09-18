@@ -30,7 +30,7 @@ extension UnorderedErrorInfo {
 
 // MARK: Collection IMP
 
-//extension UnorderedErrorInfo {
+// extension UnorderedErrorInfo {
 //  public typealias Index = Dictionary<String, any Sendable>.Index
 //
 //  public typealias Element = (key: String, value: any ValueType)
@@ -50,4 +50,4 @@ extension UnorderedErrorInfo {
 //  func index(after i: Index) -> Index {
 //    storage.index(after: i)
 //  }
-//}
+// }

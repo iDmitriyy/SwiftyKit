@@ -5,23 +5,23 @@
 //  Created by Dmitriy Ignatyev on 16.04.2025.
 //
 
-//extension ErronInfoKey {
+// extension ErronInfoKey {
 //  public func camelCased() -> Self {
 //    Self(uncheckedString: Self.fromAnyStyleToCamelCased(string: rawValue))
 //  }
-//  
+//
 //  public func pascalCased() -> Self {
 //    Self(uncheckedString: Self.fromAnyStyleToPascalCased(string: rawValue))
 //  }
-//  
+//
 //  public func snakeCased() -> Self {
 //    Self(uncheckedString: Self.fromAnyStyleToSnakeCased(string: rawValue))
 //  }
-//  
+//
 //  public func kebabCased() -> Self {
 //    Self(uncheckedString: Self.fromAnyStyleToKebabCased(string: rawValue))
 //  }
-//}
+// }
 
 // extension ErrorInfoProtocol {
 //  public func camelCasingKeys() -> String {
@@ -41,7 +41,7 @@
 //  }
 // }
 
-//extension DictionaryUnifyingRootProtocol {} // make static method to ErrorInfo for converting Dict?
+// extension DictionaryUnifyingRootProtocol {} // make static method to ErrorInfo for converting Dict?
 
 extension ErrorInfoFuncs {
   public static func fromAnyStyleToCamelCased(string: String) -> String {

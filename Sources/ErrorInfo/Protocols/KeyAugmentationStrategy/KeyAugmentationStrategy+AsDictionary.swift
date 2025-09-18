@@ -7,9 +7,9 @@
 
 extension ErrorInfoUniqueKeysAugmentationStrategy where Self: ErrorInfoPartialCollection {
   public func asGenericDict<D>() -> D where D: DictionaryUnifyingProtocol<Key, Value> {
-    var recipient = D(minimumCapacity: self.count)
+    var recipient = D(minimumCapacity: count)
     
-    let keyVaues = self.keyValuesView
+    let keyVaues = keyValuesView
     var keyVauesCount: Int = 0
     for (key, value) in keyVaues {
       // TODO: crashing the app by precondition seems not be a good solution.

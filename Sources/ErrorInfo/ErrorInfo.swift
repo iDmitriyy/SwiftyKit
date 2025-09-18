@@ -6,9 +6,11 @@
 //
 
 import struct OrderedCollections.OrderedDictionary
-//public import func IndependentDeclarations.prettyDescriptionOfOptional // for default valueInterpolation with prettyDescription
-import IndependentDeclarations
+
 import CrossImportOverlays
+
+// public import func IndependentDeclarations.prettyDescriptionOfOptional // for default valueInterpolation with prettyDescription
+import IndependentDeclarations
 import OrderedCollections
 
 public struct ErrorInfo: Sendable { // ErrorInfoCollection
@@ -48,12 +50,12 @@ extension ErrorInfo {
 //    _addValue(typeDescr + prettyDescription(any: anyValue), forKey: key, line: line)
 //  }
   
-  public subscript(key: Key) -> (Value)? {
+  public subscript(_: Key) -> (Value)? {
     get { fatalError() }
-    set(maybeValue) {  }
+    set(maybeValue) {}
   }
   
-  func _getUnderlyingValue(forKey key: Key) -> (any ValueType)? {
+  func _getUnderlyingValue(forKey _: Key) -> (any ValueType)? {
     nil
   }
   
@@ -81,7 +83,7 @@ extension ErrorInfo {
   }
   
   public consuming func addingKeyPrefix(_ keyPrefix: String, transform: PrefixTransformFunc) -> Self {
-    self.addKeyPrefix(keyPrefix, transform: transform)
+    addKeyPrefix(keyPrefix, transform: transform)
     return self
   }
 }
@@ -89,24 +91,24 @@ extension ErrorInfo {
 // MARK: Merge
 
 extension ErrorInfo {
-  public mutating func merge<each D>(_ donators: repeat each D) where repeat each D: ErrorInfoCollection {
+  public mutating func merge<each D>(_: repeat each D) where repeat each D: ErrorInfoCollection {
     fatalError()
 //    ErrorInfoDictFuncs.Merge._mergeErrorInfo
   }
   
   public consuming func merging<each D>(_ donators: repeat each D) -> Self where repeat each D: ErrorInfoCollection {
-    self.merge(repeat each donators)
+    merge(repeat each donators)
     return self
   }
 }
 
-//extension ErrorInfo {
+// extension ErrorInfo {
 //  // TODO: - merge method with consuming generics instead of variadic ...
-//  
+//
 //  public static func merge(_ otherInfos: Self..., to errorInfo: inout Self, line: UInt = #line) {
 //    ErrorInfoFuncs._mergeErrorInfo(&errorInfo.storage, with: otherInfos.map { $0.storage }, line: line)
 //  }
-//  
+//
 //  public static func merge(_ otherInfo: Self,
 //                           to errorInfo: inout Self,
 //                           addingKeyPrefix keyPrefix: String,
@@ -118,13 +120,13 @@ extension ErrorInfo {
 //                                      uppercasingFirstLetter: uppercasing,
 //                                      line: line)
 //  }
-//  
+//
 //  public static func merged(_ errorInfo: Self, _ otherInfos: Self..., line: UInt = #line) -> Self {
 //    var errorInfoRaw = errorInfo.storage
 //    ErrorInfoFuncs._mergeErrorInfo(&errorInfoRaw, with: otherInfos.map { $0.storage }, line: line)
 //    return Self(storage: errorInfoRaw)
 //  }
-//}
+// }
 
 extension ErrorInfo {
   public init(legacyUserInfo: [String: Any],
@@ -145,7 +147,7 @@ extension ErrorInfo {
 // MARK: collect values from KeyPath
 
 extension ErrorInfo {
-//public static func fromKeys<T, each V: ErrorInfo.ValueType>(of instance: T,
+  // public static func fromKeys<T, each V: ErrorInfo.ValueType>(of instance: T,
   @inlinable
   public static func collect<R, each V: ErrorInfo.ValueType>(from instance: R,
                                                              keys key: repeat KeyPath<R, each V>) -> Self {
@@ -165,7 +167,7 @@ extension ErrorInfo {
 
 // MARK: Collection IMP
 
-//extension ErrorInfo {
+// extension ErrorInfo {
 //  public typealias Index = Int
 //
 //  public typealias Element = (key: String, value: any ValueType)
@@ -183,4 +185,4 @@ extension ErrorInfo {
 //  }
 //
 //  public func index(after i: Index) -> Index { storage.keys.index(after: i) }
-//}
+// }
