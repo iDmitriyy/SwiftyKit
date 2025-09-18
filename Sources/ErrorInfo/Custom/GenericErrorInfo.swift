@@ -39,7 +39,48 @@ struct _ErrorInfoGenericValue<ValueType> {}
 
 /// NoRemovingErrorInfo Is specially made for BaseError default merge algorythms.
 /// As BaseError types can contain different error-info implementations, each instance can have different merge function.
-typealias NoRemovingErrorInfo<V> = _ErrorInfoGenericValue<V>
+// typealias NoRemovingErrorInfo<V> = _ErrorInfoGenericValue<V>
 
 /// BaseError `summaryErrorInfo` should return Opaque type.
 /// Each error-info type should have an ability to initialize from another one, like collections can be initialized from each other.
+
+import NonEmpty
+
+struct KeyAugmentationErrorInfoGeneric<D>
+  where D: DictionaryUnifyingProtocol, D.Key: RangeReplaceableCollection {
+  
+  private var storage: D
+  
+  init() {
+    storage = D()
+  }
+  
+  /// For usage in subscript imps.
+  mutating func unconditionallyAdd(augmentingIfNeededKey key: D.Key,
+                                   value: D.Value,
+                                   omitEqualValue: Bool,
+                                   suffixSeparator: D.Key,
+                                   randomSuffix: @Sendable () -> NonEmpty<D.Key>) {
+    ErrorInfoDictFuncs.Merge._putAugmentingWithRandomSuffix(value,
+                                      assumeModifiedKey: key,
+                                      shouldOmitEqualValue: omitEqualValue,
+                                      suffixSeparator: suffixSeparator,
+                                      randomSuffix: randomSuffix,
+                                      to: &storage)
+  }
+  
+//  mutating func mergeWith(other: Self,
+//                          donatorIndex: some BinaryInteger,
+//                          omitEqualValue: Bool) {
+//    for (keyValue) in other.storage {
+//      ErrorInfoDictFuncs.Merge.withKeyAugmentationAdd(keyValue: keyValue,
+//                                                      to: &storage,
+//                                                      donatorIndex: donatorIndex,
+//                                                      omitEqualValue: omitEqualValue,
+//                                                      identity: ,
+//                                                      suffixSeparator: ,
+//                                                      randomSuffix: ,
+//                                                      resolve: )
+//    }
+//  }
+}

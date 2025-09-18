@@ -6,7 +6,7 @@
 //
 
 extension ErrorInfoUniqueKeysAugmentationStrategy where Self: ErrorInfoPartialCollection {
-  public func asGenericDict<D>() -> D where D: DictionaryUnifyingProtocol<Key, Value> {
+  public func asDictGeneric<D>() -> D where D: DictionaryUnifyingProtocol<Key, Value> {
     var recipient = D(minimumCapacity: count)
     
     let keyVaues = keyValuesView

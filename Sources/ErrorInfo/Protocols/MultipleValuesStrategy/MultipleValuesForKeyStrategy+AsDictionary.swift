@@ -51,7 +51,7 @@ public import NonEmpty
 extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialCollection {
   // ExpressibleByArrayLiteral – is only need for some kind of initialization. Somethong like `minimumCapacityInitializable`
   // can also be used.
-  public func asMultipleValuesGenericDict<D, VC>(omitEqualValue _: Bool) -> D
+  public func asMultipleValuesDictGeneric<D, VC>(omitEqualValue _: Bool) -> D
     where D: DictionaryUnifyingProtocol<Key, NonEmpty<VC>>, VC: RangeReplaceableCollection, VC.Element == Self.Value {
     // VC: ExpressibleByArrayLiteral, VC.ArrayLiteralElement == Self.Value
     var dict: D = D(minimumCapacity: count)
@@ -84,7 +84,7 @@ extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialColl
   }
   
   private func imp_asMultipleValuesDict(omitEqualValue: Bool) -> OrderedDictionary<Key, NonEmptyArray<Value>> {
-    asMultipleValuesGenericDict(omitEqualValue: omitEqualValue)
+    asMultipleValuesDictGeneric(omitEqualValue: omitEqualValue)
 //    var dict: OrderedDictionary<Key, [Value]> = [:]
 //    for (key, value) in self.keyValuesView {
 //      if dict.hasValue(forKey: key) {
