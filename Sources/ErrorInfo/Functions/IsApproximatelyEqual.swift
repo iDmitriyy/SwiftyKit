@@ -32,6 +32,6 @@ extension ErrorInfoFuncs {
     let equatableValue: T
     
     /// empty imp, hashValue not used
-    func hash(into hasher: inout Hasher) {}
+    func hash(into _: inout Hasher) {}
   }
 }

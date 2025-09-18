@@ -57,19 +57,19 @@ public enum KeyCollisionResolvingResult<Key: Hashable> {
   case modifyBothKeys(donatorKey: Key, recipientKey: Key)
 }
 
-//public struct KeyCollisionResolve<D> where D: DictionaryUnifyingProtocol {
+// public struct KeyCollisionResolve<D> where D: DictionaryUnifyingProtocol {
 //  private let body: (_ donator: D.Element, _ recipient: D.Element) -> KeyCollisionResolvingResult
-//  
+//
 //  init(body: @Sendable @escaping (_: D.Element, _: D.Element) -> KeyCollisionResolvingResult) {
 //    self.body = body
 //  }
-//  
+//
 //  public func callAsFunction(donatorElement: D.Element, recipientElement: D.Element)
 //    -> KeyCollisionResolvingResult {
 //      body(donatorElement, recipientElement)
 //  }
-//}
+// }
 
-//func res(res: KeyCollisionResolve<[String: Any]>) {
+// func res(res: KeyCollisionResolve<[String: Any]>) {
 //  res(donatorElement: ("", 5), recipientElement: ("", ""))
-//}
+// }

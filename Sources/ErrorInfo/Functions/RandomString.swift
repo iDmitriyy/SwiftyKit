@@ -10,7 +10,7 @@ import NonEmpty
 
 // MARK: Random Suffix
 
-//private let alphaNumericCharctersString =
+// private let alphaNumericCharctersString =
 //  String.englishAlphabetUppercasedString + String.englishAlphabetLowercasedString + String.arabicNumeralsString
 
 private let alphaNumericAsciiSet: Set<UInt8> = mutate(value: Set<UInt8>()) {

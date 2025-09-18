@@ -20,7 +20,7 @@ struct MergeDictionaryTests {
     let fileLine = StaticFileLine(fileID: "MergeDictionaryTests", line: 15)
     let omitEqualValue = true
     ErrorInfoDictFuncs.Merge
-      .withResolvingCollisionsAdd(keyValue: ("0", 0),
+      .withKeyAugmentationAdd(keyValue: ("0", 0),
                                   to: &dict,
                                   donatorIndex: 0,
                                   omitEqualValue: omitEqualValue,
@@ -29,7 +29,7 @@ struct MergeDictionaryTests {
           .modifyDonatorKey(input.element.key)
       })
     ErrorInfoDictFuncs.Merge
-      .withResolvingCollisionsAdd(keyValue: ("0", 0),
+      .withKeyAugmentationAdd(keyValue: ("0", 0),
                                   to: &dict,
                                   donatorIndex: 1,
                                   omitEqualValue: omitEqualValue,

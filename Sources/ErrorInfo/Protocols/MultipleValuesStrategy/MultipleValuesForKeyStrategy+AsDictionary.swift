@@ -28,7 +28,7 @@ extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialColl
     var recipient = D(minimumCapacity: self.count)
     
     for keyValue in self.keyValuesView {
-      ErrorInfoDictFuncs.Merge.withResolvingCollisionsAdd(keyValue: keyValue,
+      ErrorInfoDictFuncs.Merge.withKeyAugmentationAdd(keyValue: keyValue,
                                                           to: &recipient,
                                                           donatorIndex: 0,
                                                           omitEqualValue: omitEqualValue,

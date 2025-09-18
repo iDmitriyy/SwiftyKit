@@ -9,7 +9,9 @@ private import StdLibExtensions
 
 public enum ErrorInfoDictFuncs: Namespacing {}
 
-extension ErrorInfoDictFuncs { // MARK: Add Key Prefix
+// MARK: Add Key Prefix
+
+extension ErrorInfoDictFuncs {
   public static func addKeyPrefix<V, Dict>(_ keyPrefix: String,
                                            toKeysOf dict: inout Dict,
                                            transform: PrefixTransformFunc)
