@@ -5,8 +5,8 @@
 //  Created by Dmitriy Ignatyev on 29/07/2025.
 //
 
-import Foundation
 @testable import ErrorInfo
+import Foundation
 import Testing
 
 struct IsApproximatelyEqualTests {
@@ -24,9 +24,7 @@ struct IsApproximatelyEqualTests {
         self.value = value
       }
     }
-    
-    
-  }
+    }
   
   @Test func equalNumbers() throws {
     ErrorInfoFuncs.isApproximatelyEqualAny("5" as Any, 5 as Any)
@@ -38,13 +36,9 @@ struct IsApproximatelyEqualTests {
      */
   }
   
-  @Test func equatableValuesEquality() throws {
-    
-  }
+  @Test func equatableValuesEquality() throws {}
   
-  @Test func notEquatableValuesEquality() throws {
-    
-  }
+  @Test func notEquatableValuesEquality() throws {}
   
   @Test func stringsEquality() throws {
     // LATIN SMALL LETTER E WITH ACUTE

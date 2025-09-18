@@ -8,8 +8,5 @@
 import ErrorInfo
 
 struct NoRemovingErrorInfoTests {
-  
-  func testNoRemove() {
-    
-  }
+  func testNoRemove() {}
 }

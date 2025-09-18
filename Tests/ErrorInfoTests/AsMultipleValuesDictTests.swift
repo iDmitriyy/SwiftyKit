@@ -5,10 +5,10 @@
 //  Created by Dmitriy Ignatyev on 17/09/2025.
 //
 
-@testable import ErrorInfo
-import Testing
 import Collections
+@testable import ErrorInfo
 import NonEmpty
+import Testing
 
 struct AsMultipleValuesDictTests {
   func check<Key: Hashable, Value>(_ instance: some ErrorInfoMultipleValuesForKeyStrategy<Key, Value> & ErrorInfoPartialCollection) {

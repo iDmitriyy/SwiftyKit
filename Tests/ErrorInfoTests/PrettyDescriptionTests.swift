@@ -5,29 +5,29 @@
 //  Created by Dmitriy Ignatyev on 14.12.2024.
 //
 
-import Testing
 @testable import ErrorInfo
+import Testing
 
 struct PrettyDescriptionTests {
   private let assertMessage = "Invalid output"
   
-  @Test func testPrettyDescriptionForString() {
+  @Test func prettyDescriptionForString() {
     let input = "Hello World"
     #expect(prettyDescriptionOfOptional(any: input) == input)
   }
   
-  @Test func testPrettyDescriptionForOptionalString() {
+  @Test func prettyDescriptionForOptionalString() {
     let input: String? = "Hello World"
     let expectedOutput = "Hello World"
     #expect(prettyDescriptionOfOptional(any: input) == expectedOutput)
   }
   
-  @Test func testPrettyDescriptionForNonOptionalLiteral() {
+  @Test func prettyDescriptionForNonOptionalLiteral() {
     let expectedOutput = "10"
     #expect(prettyDescriptionOfOptional(any: 10) == expectedOutput)
   }
   
-  @Test func testCustomStringConvertible() throws {
+  @Test func customStringConvertible() throws {
     let val1: Int = 1
     let expectedOutput = "1"
     
@@ -39,7 +39,7 @@ struct PrettyDescriptionTests {
     }
   }
   
-  @Test func testCustomStringConvertibleOptionalWithNil() throws {
+  @Test func customStringConvertibleOptionalWithNil() throws {
     let singleOptVal: Int? = nil
     let doubleOptVal: Int?? = nil
     let tripleOptVal: Int??? = nil
@@ -85,7 +85,7 @@ struct PrettyDescriptionTests {
   // FIXME: - testCustomStringConvertibleOptionalWithNil | testCustomStringConvertibleOptionalWithWrappedInt
   // code duplicated, can be rewritten as generic. The on;y differemce in them is expectedOutput – nil or 1,2,3
   
-  @Test func testCustomStringConvertibleOptionalWithWrappedInt() throws {
+  @Test func customStringConvertibleOptionalWithWrappedInt() throws {
     let singleOptVal: Int? = 1
     let doubleOptVal: Int?? = 2
     let tripleOptVal: Int??? = 3
@@ -125,7 +125,7 @@ struct PrettyDescriptionTests {
     }
   }
   
-  @Test func testNotCustomStringConvertible() throws {
+  @Test func notCustomStringConvertible() throws {
     let val1: NotCustomStringConvertibleStruct = NotCustomStringConvertibleStruct(id: 1, name: "Name")
     
     #expect(String(describing: val1) == #"NotCustomStringConvertibleStruct(id: 1, name: Optional("Name"))"#)
@@ -137,7 +137,7 @@ struct PrettyDescriptionTests {
     }
   }
   
-  @Test func testNotCustomStringConvertibleOptionalWrapped() throws {
+  @Test func notCustomStringConvertibleOptionalWrapped() throws {
     let singleOptVal: NotCustomStringConvertibleStruct? = NotCustomStringConvertibleStruct(id: 1, name: "Name")
     let doubleOptVal: NotCustomStringConvertibleStruct?? = NotCustomStringConvertibleStruct(id: 2, name: "Name")
     let tripleOptVal: NotCustomStringConvertibleStruct??? = NotCustomStringConvertibleStruct(id: 3, name: "Name")
@@ -192,7 +192,7 @@ struct PrettyDescriptionTests {
     }
   }
   
-  @Test func testNotCustomStringConvertibleOptionalNil() throws {
+  @Test func notCustomStringConvertibleOptionalNil() throws {
     let singleOptVal: NotCustomStringConvertibleStruct? = nil
     let doubleOptVal: NotCustomStringConvertibleStruct?? = nil
     let tripleOptVal: NotCustomStringConvertibleStruct??? = nil
@@ -223,7 +223,7 @@ struct PrettyDescriptionTests {
     }
   }
   
-  @Test func testPrettyDescriptionForCustomDescription() {
+  @Test func prettyDescriptionForCustomDescription() {
     struct CustomStringConvertibleStruct: CustomStringConvertible {
       var description: String { "Custom Description" }
     }

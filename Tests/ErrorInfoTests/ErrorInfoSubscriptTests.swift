@@ -6,8 +6,8 @@
 //
 
 @testable import ErrorInfo
-import Testing
 import Foundation
+import Testing
 
 struct ErrorInfoSubscriptTests {
   @Test func subscriptKeyCollisionsForEqualValues() async throws {

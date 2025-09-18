@@ -21,22 +21,22 @@ struct MergeDictionaryTests {
     let omitEqualValue = true
     ErrorInfoDictFuncs.Merge
       .withKeyAugmentationAdd(keyValue: ("0", 0),
-                                  to: &dict,
-                                  donatorIndex: 0,
-                                  omitEqualValue: omitEqualValue,
-                                  identity: fileLine,
-                                  resolve: { input in
-          .modifyDonatorKey(input.element.key)
-      })
+                              to: &dict,
+                              donatorIndex: 0,
+                              omitEqualValue: omitEqualValue,
+                              identity: fileLine,
+                              resolve: { input in
+                                .modifyDonatorKey(input.element.key)
+                              })
     ErrorInfoDictFuncs.Merge
       .withKeyAugmentationAdd(keyValue: ("0", 0),
-                                  to: &dict,
-                                  donatorIndex: 1,
-                                  omitEqualValue: omitEqualValue,
-                                  identity: fileLine,
-                                  resolve: { input in
-          .modifyDonatorKey(input.element.key)
-      })
+                              to: &dict,
+                              donatorIndex: 1,
+                              omitEqualValue: omitEqualValue,
+                              identity: fileLine,
+                              resolve: { input in
+                                .modifyDonatorKey(input.element.key)
+                              })
   }
   
   @Test func omitEqualValuesFalse() async throws {
@@ -44,13 +44,9 @@ struct MergeDictionaryTests {
     // var info2: [String: Int] = [:]
   }
   
-  @Test func donatorIndexNotChanging() async throws {
-    
-  }
+  @Test func donatorIndexNotChanging() async throws {}
   
-  @Test func modifiedKeyHasCollision() async throws {
-    
-  }
+  @Test func modifiedKeyHasCollision() async throws {}
 }
 
 func asString<T>(any: T) -> String {

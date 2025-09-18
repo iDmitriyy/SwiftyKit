@@ -5,8 +5,8 @@
 //  Created by Dmitriy Ignatyev on 16.04.2025.
 //
 
-import Foundation
 @testable import ErrorInfo
+import Foundation
 import Testing
 
 struct ErrorInfoKeysTransformTests {

@@ -5,10 +5,10 @@
 //  Created by Dmitriy Ignatyev on 29/07/2025.
 //
 
-import Foundation
 @testable import ErrorInfo
-import Testing
+import Foundation
 import NonEmpty
+import Testing
 
 struct RandomSuffixTests {
   @Test func format() throws {
@@ -22,9 +22,7 @@ struct RandomSuffixTests {
       let first = randomSuffix.first
       let second = randomSuffix[randomSuffix.index(after: randomSuffix.startIndex)]
       let third = randomSuffix.last
-      
-      
-    }
+      }
     
     var uniqieSuffixes: Set<String> = []
     var counter: Int = 0
