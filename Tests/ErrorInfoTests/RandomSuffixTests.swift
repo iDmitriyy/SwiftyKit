@@ -8,12 +8,14 @@
 import Foundation
 @testable import ErrorInfo
 import Testing
+import NonEmpty
 
 struct RandomSuffixTests {
   @Test func format() throws {
     let randomSuffixes = (1...100).map { _ in ErrorInfoFuncs.randomSuffix() }
     
     for randomSuffix in randomSuffixes {
+      let randomSuffix = randomSuffix.rawValue
       randomSuffix.count == 3
       randomSuffix.unicodeScalars.count == 3 // supposed to contain ASCII symbols
       
@@ -26,10 +28,10 @@ struct RandomSuffixTests {
     
     var uniqieSuffixes: Set<String> = []
     var counter: Int = 0
-    var nexSuffix = ErrorInfoFuncs.randomSuffix()
+    var nexSuffix = ErrorInfoFuncs.randomSuffix().rawValue
     while !uniqieSuffixes.contains(nexSuffix) {
       uniqieSuffixes.insert(nexSuffix)
-      nexSuffix = ErrorInfoFuncs.randomSuffix()
+      nexSuffix = ErrorInfoFuncs.randomSuffix().rawValue
       counter += 1
     }
     print("_______ next siffux duplicated at \(counter)")

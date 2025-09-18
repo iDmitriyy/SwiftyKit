@@ -6,6 +6,7 @@
 //
 
 private import StdLibExtensions
+import NonEmpty
 
 // MARK: Random Suffix
 
@@ -32,7 +33,7 @@ private let allPrintableNoWhitespaceAsciiSet: Set<UInt8> = mutate(value: Set<UIn
 }
 
 extension ErrorInfoFuncs {
-  internal static func randomSuffix() -> String {
+  internal static func randomSuffix() -> NonEmptyString {
     // 11,451,456 combinations ,
     // duplicated string statistically created after several thousands for count = 4
     // for count == 3 duplicate appears in range 200-1000 calls in average
@@ -41,11 +42,12 @@ extension ErrorInfoFuncs {
   
   ///
   /// Ascii codes in range 33...126 – all printable symbols except space.
-  private static func randomPrintableAsciiCharsString(count: Int) -> String {
+  private static func randomPrintableAsciiCharsString(count: Int) -> NonEmptyString {
     let count = count.boundedWith(1, .max)
         
-    var result = String(minimumCapacity: count)
-    for index in 0..<count {
+    let zeroIndexChar = Character(UnicodeScalar(alphaNumericAsciiSet.randomElement()!))
+    var result: NonEmptyString = NonEmptyString(zeroIndexChar)
+    for index in 1..<count {
       let randomAsciiNumber: UInt8 = if index == 0 || index == count - 1 {
         alphaNumericAsciiSet.randomElement()!
       } else {
@@ -55,6 +57,7 @@ extension ErrorInfoFuncs {
       
       result.append(Character(UnicodeScalar(randomAsciiNumber)))
     }
+    
     return result
   }
   

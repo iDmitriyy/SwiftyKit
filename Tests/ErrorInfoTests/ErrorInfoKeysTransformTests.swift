@@ -41,7 +41,7 @@ struct ErrorInfoKeysTransformTests {
   // MARK: - Tests
   
   @Test func fromAnyStyleToCamelCased() throws {
-    let camelCased = keys.map(ErronInfoKey.fromAnyStyleToCamelCased(string:))
+    let camelCased = keys.map(ErrorInfoFuncs.fromAnyStyleToCamelCased(string:))
     
     let expected = [
       "snakeCaseKey",
@@ -68,7 +68,7 @@ struct ErrorInfoKeysTransformTests {
   }
   
   @Test func fromAnyStyleToPascalCased() throws {
-    let pascalCased = keys.map(ErronInfoKey.fromAnyStyleToPascalCased(string:))
+    let pascalCased = keys.map(ErrorInfoFuncs.fromAnyStyleToPascalCased(string:))
     
     let expected = [
       "SnakeCaseKey",
@@ -95,7 +95,7 @@ struct ErrorInfoKeysTransformTests {
   }
   
   @Test func fromAnyStyleToSnakeCased() throws {
-    let snakeCased = keys.map(ErronInfoKey.fromAnyStyleToSnakeCased(string:))
+    let snakeCased = keys.map(ErrorInfoFuncs.fromAnyStyleToSnakeCased(string:))
     
     let expected = [
       "snake_case_key",
@@ -122,7 +122,7 @@ struct ErrorInfoKeysTransformTests {
   }
   
   @Test func fromAnyStyleToKebabCased() throws {
-    let snakeCased = keys.map(ErronInfoKey.fromAnyStyleToSnakeCased(string:))
+    let snakeCased = keys.map(ErrorInfoFuncs.fromAnyStyleToSnakeCased(string:))
     
     let expected = [
       "snake_case_key",

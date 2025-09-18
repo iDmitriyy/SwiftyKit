@@ -16,6 +16,10 @@ func errrrfff<K: Hashable, V>(errorInfo: some IterableErrorInfo<K, V>) {
   }
 }
 
+func fff(dd: some ErrorInfoPrototype<String, Int>) {
+  
+}
+
 func ddwfsd<K: Hashable, V>(errorInfo: some Sequence<(key: K, value: V)>) {
 //  seq.lazy
 //  seq.enumerated()

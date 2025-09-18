@@ -42,6 +42,8 @@ struct ErrorInfoSubscriptTests {
   }
 }
 
+import NonEmpty
+
 struct ErrorInfoDictionaryLiteralTests {
   @Test func initFromLiteral() async throws {
     let errorInfo: ErrorInfo = [
