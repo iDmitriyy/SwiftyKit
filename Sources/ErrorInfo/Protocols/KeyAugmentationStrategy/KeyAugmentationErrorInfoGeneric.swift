@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 19/09/2025.
 //
 
-import NonEmpty
+public import struct NonEmpty.NonEmpty
 
 /// NoRemovingErrorInfo Is specially made for BaseError default merge algorythms.
 /// As BaseError types can contain different error-info implementations, each instance can have different merge function.
@@ -35,11 +35,11 @@ public struct KeyAugmentationErrorInfoGeneric<D> where D: DictionaryUnifyingProt
   }
 }
 
-// MARK: Mutation Methods
+// MARK: - Mutation Methods
 
 extension KeyAugmentationErrorInfoGeneric {
   /// For usage in subscript imps.
-  mutating func appendResolvingCollisions(augmentingIfNeededKey key: D.Key,
+  public mutating func appendResolvingCollisions(augmentingIfNeededKey key: D.Key,
                                           value: D.Value,
                                           omitEqualValue: Bool,
                                           suffixSeparator: D.Key,
@@ -68,6 +68,12 @@ extension KeyAugmentationErrorInfoGeneric {
 //  }
 }
 
-// MARK: Protocol Conformances
+extension KeyAugmentationErrorInfoGeneric {
+  public mutating func addKeyPrefix(_ keyPrefix: D.Key) {
+    _dict = ErrorInfoDictFuncs.addKeyPrefix(keyPrefix, toKeysOf: _dict)
+  }
+}
+
+// MARK: - Protocol Conformances
 
 extension KeyAugmentationErrorInfoGeneric: Sendable where D: Sendable {}

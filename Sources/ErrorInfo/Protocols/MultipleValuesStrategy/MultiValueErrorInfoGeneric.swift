@@ -27,7 +27,7 @@ public struct MultiValueErrorInfoGeneric<Dict, Value>
   }
 }
 
-// MARK: Mutation Methods
+// MARK: - Mutation Methods
 
 extension MultiValueErrorInfoGeneric {
   public mutating func appendResolvingCollisions(key: Key, value: Value, omitEqualValue: Bool) {
@@ -41,11 +41,17 @@ extension MultiValueErrorInfoGeneric {
   public mutating func _mergeWith(other _: Self) {}
 }
 
-// MARK: Protocol Conformances
+extension MultiValueErrorInfoGeneric where Dict.Key: RangeReplaceableCollection {
+  public mutating func addKeyPrefix(_ keyPrefix: Dict.Key) {
+    storage = ErrorInfoDictFuncs.addKeyPrefix(keyPrefix, toKeysOf: storage)
+  }
+}
+
+// MARK: - Protocol Conformances
 
 extension MultiValueErrorInfoGeneric: Sendable where Dict: Sendable {}
 
-// MARK: MultiValue Container
+// MARK: - MultiValue Container
 
 // TODO: add identity(source specifier) for collision
 // so NonEmptyArray<Value> turns to NonEmptyArray<(Value, CollisionSpecifier)>
