@@ -8,18 +8,25 @@
 // ?? can It be done as typeaalias
 // LegacyErrorInfo = GenericValueErrorInfo<String, Any>
 
-struct LegacyErrorInfo: IterableErrorInfo {
-  typealias Key = String
-  typealias Value = Any
-  typealias Element = (key: String, value: Any)
+public struct LegacyErrorInfo: IterableErrorInfo {
+  public typealias Key = String
+  public typealias Value = Any
+  public typealias Element = (key: String, value: Any)
   
-  private var storage: [String: Any]
+  private var storage: KeyAugmentationErrorInfoGeneric<Dictionary<String, Any>>
   
-  func makeIterator() -> some IteratorProtocol<Element> {
+  public func makeIterator() -> some IteratorProtocol<Element> {
     storage.makeIterator()
   }
   
-  init(_ info: [String: Any]) {
-    storage = info
+  public init(_ info: [String: Any]) {
+    storage = KeyAugmentationErrorInfoGeneric(info)
+  }
+}
+
+extension LegacyErrorInfo {
+  // TODO: this method should be an overload for default implementation
+  public func asDictionary() -> [String: Any] {
+    storage._dict
   }
 }

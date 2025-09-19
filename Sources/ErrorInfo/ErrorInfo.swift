@@ -19,6 +19,8 @@ public struct ErrorInfo: Sendable { // ErrorInfoCollection
   
   // TODO: - add tests for elements ordering stability
   
+//  internal typealias BackingStorage = KeyAugmentationErrorInfoGeneric<OrderedDictionary<String, any ValueType>>
+//  internal private(set) var storage: BackingStorage
   internal private(set) var storage: OrderedDictionary<String, any ValueType>
   
   fileprivate init(storage: OrderedDictionary<String, any ValueType>) {

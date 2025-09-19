@@ -20,6 +20,7 @@
    2. visitor pattern: in this case each element can add some info to visitor-owned info. In this case for each info, returned
       from each element, a prefix like element identity can be added to keys.
  
+ 
  Design principles:
  - Error-info instances must be able to merge.
  - Merge operation must prevent data loss. Legacy [String: Any], as a dictionary type, have merge function, but it only
@@ -41,7 +42,9 @@
      Error domain and code can be used used as prefix / suffix.
  - All Error-info Types, that will be made in future, should able to be compatible with each other for merging.
  
+ 
  Usage / applying:
+ (AnyBaseError -> AnyErrorChainable(Adapter))
  - Concrete error types can either use errorInfo with either `keyAugmentation` or `multipleValues` strategy.
  ?? Which strategy is commonly preferred.
  - When errors chain summary info is merged, if collision happens then it is good to understand from each error each value
@@ -71,8 +74,70 @@
  However, it is not a typical situation when someone adds 1000 diferrent values for the same key.
  
  
+ Hashability:
+ Error-info types / implementations can technically be hashable / equatable, but it seems there are no valid reasons to do so.
+ Error info instances can contain semantically equal content, but differently represented (as Integer or String for example).
+ Comparing two Error-infos with exact same content seems to be wrong operation from perspective of practical usage.
+ 
+ 
  Opened equestions:
  - should all error info types itself be iterable (or iterable keyValues View should better be provided)? - For now Sequence
  is inherited by root errorInfo protocol, so all instances are iterable and conforms to Sequence.
  - should errorInfo's have `func removeValue(forKey:)`? For now not.
+ 
+ 
+ 
+ Rationale:
+ While Error types are quite common, there is still no error-info type for holding payload or addtional details of error.
+ For now it is typical to use [String: Any] dict, but it has several pitfals:
+    - it is not Sendable and thus not concurency compatible
+    - is error prone because almost everything can be put as Any
+    - merging 2 of such dicts can cause collisions which are not easy to resolve
+    - data loss due to lack of builtin merging strategies
+ 
+ Error protocol itself inherits from Sendable, so some Sendable container is needed to hold error's info.
+ General purpose Error-info types have:
+  Key == String
+  Value == any ErrorInfoValueType
+ 
+ typealias ErrorInfoValueType = CustomStringConvertible & Equatable & Sendable
+  
+ This choice for ErrorInfoValueType addresses several important concerns:
+  - Thread Safety: The Sendable requirement is essential to prevent data races and ensure safe concurrent access.
+  - String Representation: Requiring CustomStringConvertible forces developers to provide meaningful string representations for stored values, which is invaluable for debugging and logging. It also prevents unexpected results when converting values to strings.
+  - Collision Resolution: The Equatable requirement allows to detect and resolve collisions if different values are associated with the same key. This adds a layer of robustness.
+ 
+ Currently, the library provides 3 Error-info Types with String keys:
+ - ErrorInfo (Value == any ErrorInfoValueType) uses OrderedDictionary under the hood. It preserves values appending order which can be helpful for debugging and tracing.
+ - UnorderedErrorInfo (Value == any ErrorInfoValueType) uses Swift.Dictionary
+ - LegacyErrorInfoc (Value == Any)
+ 
+ In common, there are 2 strategies for collision resolving:
+ 1) `key augmentation`. For String-keyed containers
+ 2) `multiple values for key`
+ 
+ Which one should be used as a defult is opened question. Initially I only used `key augmentation`
+ 
+ ```
+ func foo<T>(anyValue: T) {
+   var legacyInfo: [String: Any] = ["a": anyValue] // no warning
+   
+   var errorInfo: ErrorInfo = ["a": anyValue] // ⛔️ compiler error
+   var errorInfo: ErrorInfo = ["a": String(describing: anyValue)] // ok
+ }
+ ```
+ 
+ ```
+ func foo() {
+   var errorInfo: ErrorInfo = ["a": "Hello"]
+   bar(&errorInfo)
+ }
+ 
+ func bar(_ errorInfo: inout ErrorInfo) {
+   errorInfo["a"] = "World"
+ }
+ ```
+ 
+ Library was made for String-keyed containers in mind. Neverheless it is designed generically, so any Key types can used, see
+ [toy examples] folder.
  */

@@ -5,6 +5,7 @@
 //  Created by Dmitriy Ignatyev on 07/08/2025.
 //
 
+import ErrorInfo
 import OrderedCollections
 
 struct CustomKeyErrorInfo {

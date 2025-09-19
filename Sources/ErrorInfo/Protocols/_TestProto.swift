@@ -18,6 +18,10 @@ func errrrfff<V>(errorInfo: some IterableErrorInfo<some Hashable, V>) {
 
 func fff(dd _: some ErrorInfoPrototype<String, Int>) {}
 
+func dict(dict: inout [String: String]) {
+  
+}
+
 func ddwfsd<K: Hashable, V>(errorInfo: some Sequence<(key: K, value: V)>) {
 //  seq.lazy
 //  seq.enumerated()

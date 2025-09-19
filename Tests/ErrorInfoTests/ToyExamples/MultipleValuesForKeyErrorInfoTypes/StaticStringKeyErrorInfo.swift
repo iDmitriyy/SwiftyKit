@@ -5,6 +5,7 @@
 //  Created by Dmitriy Ignatyev on 07/08/2025.
 //
 
+import ErrorInfo
 import OrderedCollections
 
 struct StaticStringKeyErrorInfo: Sequence {
@@ -12,16 +13,24 @@ struct StaticStringKeyErrorInfo: Sequence {
   typealias Value = any ErrorInfoValueType
   typealias Element = (key: Key, value: Value)
   
-  private var storage: MultiValueErrorInfoGeneric<StaticStringHashableAdapter, any ErrorInfoValueType>
+  private typealias DictType = OrderedDictionary<StaticStringHashableAdapter, ErrorInfoMultiValueContainer<Value>>
+  private typealias MultiValueStorage = MultiValueErrorInfoGeneric<DictType, Value>
+  
+  private var storage: MultiValueStorage
   
   func makeIterator() -> some IteratorProtocol<Element> {
     IteratorAdapter(storage.makeIterator())
   }
-  
-  private struct IteratorAdapter: IteratorProtocol {
-    private var wrappedIterator: MultiValueErrorInfoGeneric<StaticStringHashableAdapter, any ErrorInfoValueType>.Iterator
+}
+
+// MARK: IteratorAdapter
+
+extension StaticStringKeyErrorInfo {
+  private struct IteratorAdapter<Iterator: IteratorProtocol>: IteratorProtocol
+    where Iterator.Element == (key: StaticStringHashableAdapter, value: Value) {
+    private var wrappedIterator: Iterator
     
-    init(_ wrappedIterator: MultiValueErrorInfoGeneric<StaticStringHashableAdapter, any ErrorInfoValueType>.Iterator) {
+    init(_ wrappedIterator: Iterator) {
       self.wrappedIterator = wrappedIterator
     }
     
@@ -31,7 +40,7 @@ struct StaticStringKeyErrorInfo: Sequence {
   }
 }
 
-// MARK: - StaticString Hashable Adapter
+// MARK: StaticString Hashable Adapter
 
 internal struct StaticStringHashableAdapter: Hashable {
   let wrappedValue: StaticString

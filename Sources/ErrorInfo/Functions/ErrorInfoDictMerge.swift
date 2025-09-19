@@ -118,8 +118,8 @@ extension ErrorInfoDictFuncs.Merge {
                                                            suffixFirstChar: UnicodeScalar,
                                                            to recipient: inout Dict)
     where Dict: DictionaryUnifyingProtocol, Dict.Key == String {
-    _putAugmentingWithRandomSuffix(value,
-                                   assumeModifiedKey: assumeModifiedKey,
+    _putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
+                                   value: value,
                                    shouldOmitEqualValue: shouldOmitEqualValue,
                                    suffixSeparator: String(suffixFirstChar),
                                    randomSuffix: ErrorInfoFuncs.randomSuffix,
@@ -168,9 +168,9 @@ extension ErrorInfoDictFuncs.Merge {
         resolvingResult = resolve(resolvingInput)
       }
       
-      func putAugmentingWithRandomSuffix_(_: Dict.Value, assumeModifiedKey: Dict.Key) {
-        _putAugmentingWithRandomSuffix(donatorValue,
-                                       assumeModifiedKey: assumeModifiedKey,
+      func putAugmentingWithRandomSuffix_(_ value: Dict.Value, assumeModifiedKey: Dict.Key) {
+        _putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
+                                       value: value,
                                        shouldOmitEqualValue: shouldOmitEqualValue,
                                        suffixSeparator: suffixSeparator,
                                        randomSuffix: randomSuffix,
@@ -203,9 +203,9 @@ extension ErrorInfoDictFuncs.Merge {
   }
   
   /// Decomposition subroutine of `func withKeyAugmentationAdd(...)`
-  internal static func _putAugmentingWithRandomSuffix<Dict>(_ value: Dict.Value,
-                                                            assumeModifiedKey: Dict.Key,
-                                                            shouldOmitEqualValue: Bool,
+  internal static func _putAugmentingWithRandomSuffix<Dict>(assumeModifiedKey: Dict.Key,
+                                                            value: Dict.Value,
+                                                            shouldOmitEqualValue omitIfEqual: Bool,
                                                             suffixSeparator: some Collection<Dict.Key.Element>,
                                                             randomSuffix: @Sendable () -> NonEmpty<Dict.Key>,
                                                             to recipient: inout Dict)
@@ -219,16 +219,10 @@ extension ErrorInfoDictFuncs.Merge {
     var modifiedKey = assumeModifiedKey
     var counter: Int = 0
     while let recipientAnotherValue = recipient[modifiedKey] { // condition mostly always should not happen
-//      if Dict.Value.self == (any Equatable).Type.self {
-//        // TODO: ...
-//      }
-      switch (ErrorInfoFuncs.isApproximatelyEqualAny(recipientAnotherValue, value), shouldOmitEqualValue) {
-      case (true, true):
-        // Early exit
-        return // if newly added value is equal to current, then keep only existing
-        
-      case (false, _), // ?? always keep different values
-           (true, false): // ?? keep both equal values
+      let isEqualToCurrent = ErrorInfoFuncs.isApproximatelyEqualAny(recipientAnotherValue, value)
+      if isEqualToCurrent, omitIfEqual { // if newly added value is equal to current, then keep only existing
+        return // Early exit
+      } else {
         let randomSuffix = randomSuffix()
         
         let suffix = mutate(value: Dict.Key()) { // counter == 0 ? String(suffixFirstChar) + randomSuffix : randomSuffix
@@ -240,15 +234,19 @@ extension ErrorInfoDictFuncs.Merge {
           }
         }
         
-        // modifiedKey += suffix
-        modifiedKey.append(contentsOf: suffix)
+        modifiedKey.append(contentsOf: suffix) // modifiedKey += suffix
         counter += 1
         // example: 3 error-info instances with decodingDate key
         // "decodingDate_don0_file_line_SourceFileName_81_#9vT"
       }
-    }
+    } // end while
     recipient[modifiedKey] = value
   }
+  
+  // TODO: add RandomNumberGenerator argument in _putAugmentingWithRandomSuffix randomSuffix closure
+  // withKeyAugmentationAdd() function get a RandomNumberGenerator instance from merge() func.
+  // This way RandomNumberGenerator for a merge() operation
+  // This can also help to write test for _putAugmentingWithRandomSuffix func
   
   /// For integer types.
   /// .builtInAddSuffix<Never>

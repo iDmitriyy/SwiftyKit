@@ -5,6 +5,8 @@
 //  Created by Dmitriy Ignatyev on 26/07/2025.
 //
 
+import ErrorInfo
+
 /// [String: Any] || Unordered Type can have one benefit prior to Ordered Dictionary.
 /// if logging system has strong limit on number of key-value pairs can be logged and drops ones that out of limit, it is not so big problem when keys have different order.
 /// Each log in such situation will have different key-value pairs. From this mosaic a valuable picture of problem can be restored.

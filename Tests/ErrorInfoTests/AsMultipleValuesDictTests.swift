@@ -14,11 +14,11 @@ struct AsMultipleValuesDictTests {
   func check<Key: Hashable, Value>(_ instance: some ErrorInfoMultipleValuesForKeyStrategy<Key, Value> & ErrorInfoPartialCollection) {
     typealias NonEmptyDeque<T> = NonEmpty<Deque<T>>
     
-    let sdar: [Key: NonEmptyArray<Value>] = instance.asMultipleValuesGenericDict(omitEqualValue: false)
-    let sdde: [Key: NonEmptyDeque<Value>] = instance.asMultipleValuesGenericDict(omitEqualValue: false)
+    let sdar: [Key: NonEmptyArray<Value>] = instance.asMultipleValuesDictGeneric(omitEqualValue: false)
+    let sdde: [Key: NonEmptyDeque<Value>] = instance.asMultipleValuesDictGeneric(omitEqualValue: false)
     
-    let odar: OrderedDictionary<Key, NonEmptyArray<Value>> = instance.asMultipleValuesGenericDict(omitEqualValue: false)
-    let odde: OrderedDictionary<Key, NonEmptyDeque<Value>> = instance.asMultipleValuesGenericDict(omitEqualValue: false)
+    let odar: OrderedDictionary<Key, NonEmptyArray<Value>> = instance.asMultipleValuesDictGeneric(omitEqualValue: false)
+    let odde: OrderedDictionary<Key, NonEmptyDeque<Value>> = instance.asMultipleValuesDictGeneric(omitEqualValue: false)
     
     // let sdos: [Key: OrderedSet<Value>] = instance.asMultipleValuesAnyDict(omitEqualValue: false)
     
