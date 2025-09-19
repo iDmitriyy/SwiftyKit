@@ -13,3 +13,10 @@ struct DataKeyErrorInfo {
   private var storage: KeyAugmentationErrorInfoGeneric<OrderedDictionary<Data, any ErrorInfoValueType>>
 }
 
+@available(macOS 16.0.0, *)
+struct LimitedCountErrorInfo<let count: Int, Element> {
+  
+  func ddd() {
+    Self.count
+  }
+}

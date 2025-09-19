@@ -145,3 +145,63 @@ extension MultiValueErrorInfoGeneric {
     }
   }
 }
+
+/*
+ TODO:
+ Save relative order of apending values. Now they are grouped by key. Example:
+ info = init(sequence: [(key1, A), (key2, B), (key1, C), (key2, D)])
+ If ordered dictionary is used then the following order will be during iteration:
+ (key1, A), (key1, C), (key2, B), (key2, D)
+ which differs from the order values were appended
+ */
+
+import Foundation
+import NonEmpty
+
+fileprivate struct Ordered_MultiValueErrorInfoGeneric_<Key: Hashable, Value> {
+  
+  
+}
+
+extension Ordered_MultiValueErrorInfoGeneric_ {
+  struct MultiValueOrderedStorage {
+    private var elements: [Value]
+    private var elementsIndices: [Key: NonEmpty<IndexSet>]
+    
+    func elements(forKey key: Key) -> NonEmptyArray<Value>? {
+      if let indices = elementsIndices[key] {
+        indices.map { elements[$0] }
+      } else {
+        nil
+      }
+    }
+    
+    // FIXME: change IndexSet to RangeSet
+    
+    mutating func append(key: Key, value: Value, omitIfEqual: Bool) {
+      if var indices = elementsIndices[key] {
+        let isEqualToCurrent = indices.contains(where: { index in
+          ErrorInfoFuncs.isApproximatelyEqualAny(elements[index], value)
+        })
+        
+        if isEqualToCurrent, omitIfEqual {
+          return
+        } else {
+          let index = elements.endIndex
+          indices.insert(index)
+          elements.append(value)
+          elementsIndices[key] = indices
+        }
+      } else {
+        let index = elements.endIndex
+        elements.append(value)
+        elementsIndices[key] = NonEmpty<IndexSet>(index)
+      }
+    }
+    
+//    mutating func removeAllValues(forKey: Key) {
+//      // to removing a single value all indices need to be recalculated
+//      // will be implemented if ever needed
+//    }
+  }
+}
