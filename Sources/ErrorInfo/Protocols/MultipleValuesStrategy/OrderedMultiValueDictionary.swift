@@ -15,7 +15,7 @@ import StdLibExtensions
 public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: Value)
   
-  private var _entries: [(key: Key, value: Value)]
+  private var _entries: [EntryElement]
   /// stores indices for all values for a key
   private var _keyEntryIndices: [Key: NonEmptyOrderedIndexSet] // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
   
@@ -61,6 +61,9 @@ extension OrderedMultiValueDictionary {
   public func allValuesView(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
     if let indices = _keyEntryIndices[key] {
       let indexSet = RangeSet(indices._asHeapNonEmptyOrderedSet, within: _entries)
+//      if singleIndex {
+//        return CollectionOfOne()
+//      }
       return AllValuesForKeyView(entries: _entries, valueIndices: indexSet)
     } else {
       return nil as Optional<AllValuesForKeyView>
@@ -112,14 +115,17 @@ extension OrderedMultiValueDictionary {
 // MARK: - AllValues ForKey View
 
 extension OrderedMultiValueDictionary {
+  private typealias EntryElement = Element
+  
   /// Adapter for changing element type from (key: Key, value: Value) to Value
-  private struct AllValuesForKeyView: Sequence { // TODO: : ~Escapable
+  private struct AllValuesForKeyView: Sequence {
+    // TODO: ~Escapable | as DiscontiguousSlice is used, View must not outlive source
     typealias Element = Value
-    let entries: [(key: Key, value: Value)]
+    let entries: [EntryElement]
     let valueIndices: RangeSet<Int>
     
     func makeIterator() -> some IteratorProtocol<Value> {
-      let slicedEntries = entries[valueIndices]
+      let slicedEntries: DiscontiguousSlice<[EntryElement]> = entries[valueIndices]
       var iterator = slicedEntries.makeIterator()
       return AnyIterator<Value> {
         iterator.next()?.value
