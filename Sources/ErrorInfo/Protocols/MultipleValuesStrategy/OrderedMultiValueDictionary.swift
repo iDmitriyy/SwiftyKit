@@ -40,6 +40,12 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
 
 extension OrderedMultiValueDictionary: Sendable where Key: Sendable, Value: Sendable {}
 
+/*
+ TODO:
+ 1) conform it to DictionaryProtocol for using with Dict merge / addPrefix functions
+ 2) AllValuesForKeyView ~Escapable | RangeSet instaed IndexSet | entries without storing keys
+ */
+
 // MARK: Get methods
 
 extension OrderedMultiValueDictionary {
