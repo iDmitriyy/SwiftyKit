@@ -16,8 +16,13 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: Value)
   
   private var _entries: [EntryElement]
+  /// for `allValuesForKey` function
   /// stores indices for all values for a key
   private var _keyEntryIndices: [Key: NonEmptyOrderedIndexSet] // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
+  
+//  private var __entries: [Value] // _entries wthout Key duplicated copies
+  // [`indexOf value in __entries`: `index of its key in _keyEntryIndices.keys`]
+//  private var __keyIndices: [Int: Int]
   
   public var keys: some Collection<Key> { _keyEntryIndices.keys }
   
@@ -40,6 +45,10 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
 
 extension OrderedMultiValueDictionary: Sendable where Key: Sendable, Value: Sendable {}
 
+extension OrderedMultiValueDictionary: CustomDebugStringConvertible {
+  public var debugDescription: String { String(reflecting: _entries) }
+}
+
 /*
  TODO:
  1) conform it to DictionaryProtocol for using with Dict merge / addPrefix functions
@@ -53,22 +62,30 @@ extension OrderedMultiValueDictionary {
   public subscript(key: Key) -> NonEmpty<some Collection<Value>>? {
     allValues(forKey: key)
   }
+
+  public func hasValue(forKey key: Key) -> Bool {
+    _keyEntryIndices.hasValue(forKey: key)
+  }
   
 //  func ddd() -> some ~Escapable {
 //
 //  }
   
-  public func allValuesView(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
-    if let indices = _keyEntryIndices[key] {
-      let indexSet = RangeSet(indices._asHeapNonEmptyOrderedSet, within: _entries)
-//      if singleIndex {
-//        return CollectionOfOne()
-//      }
-      return AllValuesForKeyView(entries: _entries, valueIndices: indexSet)
+  public func allValuesView(forKey key: Key) -> AllValuesForKey? { // & ~Escapable
+    if let allValuesForKeyIndices = _keyEntryIndices[key] {
+      AllValuesForKey(entries: _entries, valueIndices: allValuesForKeyIndices)
     } else {
-      return nil as Optional<AllValuesForKeyView>
+      nil as Optional<AllValuesForKey>
     }
   }
+  
+//  public func allValuesView(forKey key: Key) -> (some Sequence<Value>)? { // & ~Escapable
+//    if let allValuesForKeyIndices = _keyEntryIndices[key] {
+//      AllValuesForKeyView(entries: _entries, valueIndices: allValuesForKeyIndices)
+//    } else {
+//      nil as Optional<AllValuesForKeyView>
+//    }
+//  }
   
   @available(*, deprecated, message: "allValuesView(forKey:)")
   public func allValues(forKey key: Key) -> NonEmpty<some Collection<Value>>? {
@@ -77,10 +94,6 @@ extension OrderedMultiValueDictionary {
     // 1) MultiValueContainer enum | case single(element: ), case multiple(elements: )
     // 2) for multiple elements NonEmptyArray<Value>
     return indices._asHeapNonEmptyOrderedSet.map { _entries[$0].value }
-  }
-  
-  public func hasValue(forKey key: Key) -> Bool {
-    _keyEntryIndices.hasValue(forKey: key)
   }
 }
 
@@ -99,11 +112,18 @@ extension OrderedMultiValueDictionary {
     _entries.append((key, value))
   }
   
-  public mutating func removeValues(forKey key: Key) {
+  public mutating func removeAllValues(forKey key: Key) {
     guard let indices = _keyEntryIndices[key] else { return }
     
-    let indicesToRemove: RangeSet = RangeSet(indices._asHeapNonEmptyOrderedSet, within: _entries)
-    _entries.removeSubranges(indicesToRemove)
+    switch indices {
+    case .single(let index):
+      // Typycally there is only one value for key
+      _entries.remove(at: index)
+    case .multiple:
+      let indicesToRemove = indices.asRangeSet(for: _entries)
+      _entries.removeSubranges(indicesToRemove)
+    }
+    _keyEntryIndices.removeValue(forKey: key)
   }
   
   public mutating func removeAll(keepingCapacity keepCapacity: Bool = false) {
@@ -115,17 +135,24 @@ extension OrderedMultiValueDictionary {
 // MARK: - AllValues ForKey View
 
 extension OrderedMultiValueDictionary {
-  private typealias EntryElement = Element
+  fileprivate typealias EntryElement = Element
   
   /// Adapter for changing element type from (key: Key, value: Value) to Value
-  private struct AllValuesForKeyView: Sequence {
+  public struct AllValuesForKey: Sequence { //  ~Escapable
     // TODO: ~Escapable | as DiscontiguousSlice is used, View must not outlive source
-    typealias Element = Value
-    let entries: [EntryElement]
-    let valueIndices: RangeSet<Int>
+    public typealias Element = Value
+    private let entries: [EntryElement]
+    private let valueIndices: NonEmptyOrderedIndexSet
     
-    func makeIterator() -> some IteratorProtocol<Value> {
-      let slicedEntries: DiscontiguousSlice<[EntryElement]> = entries[valueIndices]
+//    @lifetime(borrow entries)
+//    @_lifetime(immortal)
+    fileprivate init(entries: [EntryElement], valueIndices: NonEmptyOrderedIndexSet) {
+      self.entries = entries
+      self.valueIndices = valueIndices
+    }
+    
+    public func makeIterator() -> some IteratorProtocol<Value> {
+      let slicedEntries: DiscontiguousSlice<[EntryElement]> = entries[valueIndices.asRangeSet(for: entries)]
       var iterator = slicedEntries.makeIterator()
       return AnyIterator<Value> {
         iterator.next()?.value
@@ -150,7 +177,14 @@ internal enum NonEmptyOrderedIndexSet {
     case let .multiple(indices): indices
     }
   }
-
+  
+  internal func asRangeSet<C>(for collection: C) -> RangeSet<Int> where C: Collection, C.Index == Int {
+    switch self {
+    case let .single(index): RangeSet(CollectionOfOne(index), within: collection)
+    case let .multiple(indices): RangeSet(indices, within: collection)
+    }
+  }
+  
   // CollectionOfOne
   internal mutating func insert(_ newIndex: Int) {
     switch self {

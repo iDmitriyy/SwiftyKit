@@ -131,6 +131,18 @@ extension ErrorInfoMergeable {
 
 extension ErrorInfoMergeable where Key == String {}
 
+struct SingleUseInstance<T: ~Copyable>: ~Copyable {
+  private let instance: T
+
+  init(instance: consuming T) {
+    self.instance = instance
+  }
+
+  consuming func use() -> T {
+    instance
+  }
+}
+
 // ----------------------------------------------
 
 // protocol ErrorInfoIterable<Key, Value>: ErrorInfoRootPrototype {

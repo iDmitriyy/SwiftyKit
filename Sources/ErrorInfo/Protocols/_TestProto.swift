@@ -5,6 +5,12 @@
 //  Created by Dmitriy Ignatyev on 08/08/2025.
 //
 
+import Playgrounds
+
+#Playground {
+  var dict = OrderedMultiValueDictionary<String, Int>()
+}
+
 func testProto(info: inout some ErrorInfoPrototype<String, any ErrorInfoValueType>) {
   info.addIfNotNil(3, key: "")
 }
