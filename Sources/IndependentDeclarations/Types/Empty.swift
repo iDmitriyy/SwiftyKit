@@ -5,7 +5,7 @@
 //  Created by Dmitriy Ignatyev on 14.12.2024.
 //
 
-public struct Empty: Hashable, Sendable, CustomStringConvertible {
+public struct Empty: Hashable, Sendable, CustomStringConvertible { // , BitwiseCopyable
   public var description: String { "Empty()" }
   
   public init() {}

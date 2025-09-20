@@ -11,13 +11,15 @@ extension Dictionary: DictionaryUnifyingProtocol {
 //  }
 }
 
+public protocol DictionaryRootProtocol<Key, Value>: Swift.Sequence where Element == (key: Key, value: Value) {
+  associatedtype Key: Hashable
+  associatedtype Value
+}
+
 // MARK: - Dictionary Unifying RootProtocol
 
 /// Рутовый протокол для работы с разным словарями в generic контексте
-public protocol DictionaryUnifyingRootProtocol<Key, Value>: Swift.Sequence where Element == (key: Key, value: Value) {
-  associatedtype Key: Hashable
-  associatedtype Value
-  
+public protocol DictionaryUnifyingRootProtocol<Key, Value>: DictionaryRootProtocol {  
   associatedtype Keys: Swift.Collection<Key>, Equatable
   associatedtype Values: Swift.Collection<Value> // у словарей здесь MutableCollection, надо изучить насколько это
   // безопасно для NonEmpty
@@ -31,6 +33,8 @@ public protocol DictionaryUnifyingRootProtocol<Key, Value>: Swift.Sequence where
   var count: Int { get }
   
   func index(forKey key: Key) -> Index?
+  
+  func makeIterator() -> Iterator
 }
 
 // MARK: - _Dictionary Unifying NonEmpty Protocol

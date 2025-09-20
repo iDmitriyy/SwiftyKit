@@ -13,13 +13,12 @@ struct StaticStringKeyErrorInfo: Sequence {
   typealias Value = any ErrorInfoValueType
   typealias Element = (key: Key, value: Value)
   
-  private typealias DictType = OrderedDictionary<StaticStringHashableAdapter, ErrorInfoMultiValueContainer<Value>>
-  private typealias MultiValueStorage = MultiValueErrorInfoGeneric<DictType, Value>
+  private typealias MultiValueStorage = OrderedMultiValueErrorInfoGeneric<StaticStringHashableAdapter, Value>
   
-  private var storage: MultiValueStorage
+  private var _storage: MultiValueStorage
   
   func makeIterator() -> some IteratorProtocol<Element> {
-    IteratorAdapter(storage.makeIterator())
+    IteratorAdapter(_storage.makeIterator())
   }
 }
 

@@ -138,7 +138,7 @@ extension ErrorInfoDictFuncs.Merge {
   internal static func withKeyAugmentationAdd<Dict, C>(keyValue donatorKeyValue: Dict.Element,
                                                        to recipient: inout Dict,
                                                        donatorIndex: some BinaryInteger & CustomStringConvertible,
-                                                       omitEqualValue shouldOmitEqualValue: Bool,
+                                                       omitEqualValue omitIfEqual: Bool,
                                                        identity: C,
                                                        suffixSeparator: some Collection<Dict.Key.Element>,
                                                        randomSuffix: @Sendable () -> NonEmpty<Dict.Key>,
@@ -149,29 +149,26 @@ extension ErrorInfoDictFuncs.Merge {
     if let recipientValue = recipient[donatorKey] {
       let collidedKey = donatorKey
       // if collision happened, but values are equal, then we can keep existing value
-      let valuesAreEqual = ErrorInfoFuncs.isApproximatelyEqualAny(recipientValue, donatorValue)
+      let isEqualToCurrent = ErrorInfoFuncs.isApproximatelyEqualAny(recipientValue, donatorValue)
       
       typealias Input = KeyCollisionResolvingInput<Dict.Key, Dict.Value, C>
-      let element = Input.Element(key: collidedKey,
-                                  existingValue: recipientValue,
-                                  beingAddedValue: donatorValue)
+      let element = Input.Element(key: collidedKey, existingValue: recipientValue, beingAddedValue: donatorValue)
       lazy var resolvingInput = Input(element: element,
-                                      areValuesApproximatelyEqual: valuesAreEqual,
+                                      areValuesApproximatelyEqual: isEqualToCurrent,
                                       donatorIndex: donatorIndex,
                                       identity: identity)
       
       let resolvingResult: KeyCollisionResolvingResult<Dict.Key>
-      switch (valuesAreEqual, shouldOmitEqualValue) {
-      case (true, true): return // if newly added value is equal to current, then keep only existing
-      case (false, _), // different values must be saved, modify one of or both keys
-           (true, false): // keep both values though they are equal, modify one of or both keys
+      if omitIfEqual, isEqualToCurrent {
+        return
+      } else {
         resolvingResult = resolve(resolvingInput)
       }
       
       func putAugmentingWithRandomSuffix_(_ value: Dict.Value, assumeModifiedKey: Dict.Key) {
         _putAugmentingWithRandomSuffix(assumeModifiedKey: assumeModifiedKey,
                                        value: value,
-                                       shouldOmitEqualValue: shouldOmitEqualValue,
+                                       shouldOmitEqualValue: omitIfEqual,
                                        suffixSeparator: suffixSeparator,
                                        randomSuffix: randomSuffix,
                                        to: &recipient)
@@ -179,23 +176,18 @@ extension ErrorInfoDictFuncs.Merge {
       
       switch resolvingResult {
       case let .modifyDonatorKey(assumeWasModifiedDonatorKey):
-        putAugmentingWithRandomSuffix_(donatorValue,
-                                       assumeModifiedKey: assumeWasModifiedDonatorKey)
+        putAugmentingWithRandomSuffix_(donatorValue, assumeModifiedKey: assumeWasModifiedDonatorKey)
         
       case let .modifyRecipientKey(assumeWasModifiedRecipientKey):
         // 1. replace value that was already contained in recipient by donatorValue
         recipient[collidedKey] = donatorValue
         // 2. put value that was already contained in recipient by modifiedRecipientKey
-        putAugmentingWithRandomSuffix_(recipientValue,
-                                       assumeModifiedKey: assumeWasModifiedRecipientKey)
+        putAugmentingWithRandomSuffix_(recipientValue, assumeModifiedKey: assumeWasModifiedRecipientKey)
         
       case let .modifyBothKeys(assumeWasModifiedDonatorKey, assumeWasModifiedRecipientKey):
         recipient[collidedKey] = nil // remove old key & value
-        putAugmentingWithRandomSuffix_(donatorValue,
-                                       assumeModifiedKey: assumeWasModifiedDonatorKey)
-        
-        putAugmentingWithRandomSuffix_(recipientValue,
-                                       assumeModifiedKey: assumeWasModifiedRecipientKey)
+        putAugmentingWithRandomSuffix_(donatorValue, assumeModifiedKey: assumeWasModifiedDonatorKey)
+        putAugmentingWithRandomSuffix_(recipientValue, assumeModifiedKey: assumeWasModifiedRecipientKey)
       }
     } else { // if no collisions then add to recipient
       recipient[donatorKey] = donatorValue
@@ -220,7 +212,7 @@ extension ErrorInfoDictFuncs.Merge {
     var counter: Int = 0
     while let recipientAnotherValue = recipient[modifiedKey] { // condition mostly always should not happen
       let isEqualToCurrent = ErrorInfoFuncs.isApproximatelyEqualAny(recipientAnotherValue, value)
-      if isEqualToCurrent, omitIfEqual { // if newly added value is equal to current, then keep only existing
+      if omitIfEqual, isEqualToCurrent { // if newly added value is equal to current, then keep only existing
         return // Early exit
       } else {
         let randomSuffix = randomSuffix()

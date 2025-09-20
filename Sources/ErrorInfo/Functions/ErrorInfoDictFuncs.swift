@@ -54,3 +54,35 @@ extension ErrorInfoDictFuncs {
     return prefixedKeysDict
   }
 }
+
+import IndependentDeclarations
+import Collections
+public import HashTreeCollections
+
+protocol DictionaryProtocolUpdateValue: DictionaryUnifyingRootProtocol {
+  @discardableResult
+  mutating func updateValue(_ value: Value, forKey key: Key) -> Value?
+}
+
+func foo(ordered: OrderedDictionary<String, Int>,
+         tree: TreeDictionary<String, Int>,
+         swiftDict: [String: Int]) {
+  
+}
+
+extension TreeDictionary: DictionaryUnifyingRootProtocol {}
+
+//extension TreeDictionary: DictionaryUnifyingProtocol {
+//  public init(minimumCapacity: Int) {
+//    self.init()
+//    self.reserveCapacity(minimumCapacity)
+//  }
+//  
+//  public mutating func reserveCapacity(_ minimumCapacity: Int) {
+//    
+//  }
+//  
+//  public mutating func removeAll(keepingCapacity keepCapacity: Bool) {
+//
+//  }
+//}

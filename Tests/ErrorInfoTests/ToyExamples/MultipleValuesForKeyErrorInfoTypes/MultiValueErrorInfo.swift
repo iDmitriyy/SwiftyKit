@@ -12,22 +12,22 @@ import OrderedCollections
 struct MultiValueErrorInfo: IterableErrorInfo {
   typealias Key = String
   typealias Value = any ErrorInfoValueType
-  typealias Element = (key: String, value: any ErrorInfoValueType)
+  typealias Element = (key: Key, value: Value)
   
-  private typealias DictType = OrderedDictionary<String, ErrorInfoMultiValueContainer<Value>>
+  private typealias MultiValueStorage = OrderedMultiValueErrorInfoGeneric<Key, Value>
   
-  private var storage: MultiValueErrorInfoGeneric<DictType, Value>
+  private var _storage: MultiValueStorage
   
   init() {
-    storage = MultiValueErrorInfoGeneric<DictType, Value>()
+    _storage = MultiValueStorage()
   }
   
   func makeIterator() -> some IteratorProtocol<Element> {
-    storage.makeIterator()
+    _storage.makeIterator()
   }
   
-  mutating func _addResolvingCollisions(value: any ErrorInfoValueType, forKey key: String, omitIfEqual: Bool) {
-    storage.appendResolvingCollisions(key: key, value: value, omitEqualValue: omitIfEqual)
+  mutating func addResolvingCollisions(key: Key, value: Value, omitEqualValue omitIfEqual: Bool = true) {
+    _storage.appendResolvingCollisions(key: key, value: value, omitEqualValue: omitIfEqual)
   }
 }
 
