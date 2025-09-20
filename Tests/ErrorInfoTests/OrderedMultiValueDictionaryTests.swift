@@ -205,12 +205,8 @@ struct NonEmptyOrderedIndexSetTests {
     var indexSet: NonEmptyOrderedIndexSet = .single(index: 2)
     indexSet.insert(4)
     indexSet.insert(6)
+    indexSet.insert(6)
 
-    switch indexSet {
-    case .multiple(let indices):
-      #expect(indices.apply(Array.init) == [2, 4, 6])
-    case .single:
-      Issue.record("Should be .multiple")
-    }
+    #expect(indexSet.apply(Array.init) == [2, 4, 6])
   }
 }
