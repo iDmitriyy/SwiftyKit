@@ -7,7 +7,7 @@ import PackageDescription
 let package = Package(
   name: "swifty-kit",
   // (macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
-  platforms: [.macOS(.v10_15), .iOS(.v13), .tvOS(.v13), .watchOS(.v6), .macCatalyst(.v13)],
+  platforms: [.macOS(.v15), .iOS(.v18), .tvOS(.v18), .macCatalyst(.v18), .watchOS(.v11), .visionOS(.v2)],
   products: [
     // Products define the executables and libraries a package produces, making them visible to other packages.
     .library(name: "SwiftyKit", targets: ["SwiftyKit"]),
