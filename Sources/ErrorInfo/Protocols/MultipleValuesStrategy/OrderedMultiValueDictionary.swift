@@ -28,6 +28,8 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   
   public var count: Int { _entries.count }
   
+  public var isEmpty: Bool { _entries.isEmpty }
+  
   public init() {
     _entries = []
     _keyEntryIndices = [:]
