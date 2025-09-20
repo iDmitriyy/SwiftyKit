@@ -154,9 +154,7 @@ extension OrderedMultiValueDictionary {
     public func makeIterator() -> some IteratorProtocol<Value> {
       let slicedEntries: DiscontiguousSlice<[EntryElement]> = entries[valueIndices.asRangeSet(for: entries)]
       var iterator = slicedEntries.makeIterator()
-      return AnyIterator<Value> {
-        iterator.next()?.value
-      }
+      return AnyIterator<Value> { iterator.next()?.value }
     }
   }
 }
