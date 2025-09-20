@@ -8,6 +8,7 @@
 @testable import ErrorInfo
 import Testing
 import StdLibExtensions
+import OrderedCollections
 
 struct OrderedMultiValueDictionaryTests {
 //  @Test func `test values order`() throws {
@@ -127,14 +128,14 @@ extension OrderedMultiValueDictionaryTests {
 
   @Test func `test Keys Match Inserted Keys`() {
     var dict = OrderedMultiValueDictionary<String, Int>()
-    let keys = ["a", "b", "c", "a", "b"]
+    let keys = ["a", "b", "c", "d", "e", "f", "g"] + ["a", "b"]
     
     for (i, key) in keys.enumerated() {
       dict.append(key: key, value: i)
     }
     
-    let expectedKeys = Set(keys)
-    let actualKeys = Set(dict.keys)
+    let expectedKeys = OrderedSet(keys)
+    let actualKeys = OrderedSet(dict.keys)
     #expect(expectedKeys == actualKeys)
   }
   

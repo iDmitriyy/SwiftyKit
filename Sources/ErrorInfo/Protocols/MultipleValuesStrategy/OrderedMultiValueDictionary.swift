@@ -18,7 +18,7 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   private var _entries: [EntryElement]
   /// for `allValuesForKey` function
   /// stores indices for all values for a key
-  private var _keyEntryIndices: [Key: NonEmptyOrderedIndexSet] // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
+  private var _keyEntryIndices: OrderedDictionary<Key, NonEmptyOrderedIndexSet> // TODO: ? use RangeSet instead of NonEmptyOrderedIndexSet?
   
 //  private var __entries: [Value] // _entries wthout Key duplicated copies
   // [`indexOf value in __entries`: `index of its key in _keyEntryIndices.keys`]
@@ -37,7 +37,7 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   
   public init(minimumCapacity: Int) {
     _entries = Array(minimumCapacity: minimumCapacity)
-    _keyEntryIndices = Dictionary(minimumCapacity: minimumCapacity)
+    _keyEntryIndices = OrderedDictionary(minimumCapacity: minimumCapacity)
   }
   
   public func makeIterator() -> some IteratorProtocol<(key: Key, value: Value)> {
