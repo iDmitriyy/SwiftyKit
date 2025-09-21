@@ -134,9 +134,9 @@
  storage implementation has bigger overhead.
  
  (test the followng case, the keys are correctly augmented with error domain / code)
- NE2 ["T.Type": type1, "timeStamp": time1, "id": 2, "ne": "ne"]
- ME14 ["decodingDate": date1, "timeStamp": time0, "id": 1, "me": "me"]
- JM4 ["decodingDate": date0, "T.Type": type0, "id": 0, "jm": "jm"]
+ JM4 ["decodingDate": date0, "T.Type": type0, "line": 0]
+ ME14 ["decodingDate": date1]
+ NE2 ["T.Type": type1]
  
  Value Collisions:
  There is a choice whether equal values should be added or not. By default they are not added.
