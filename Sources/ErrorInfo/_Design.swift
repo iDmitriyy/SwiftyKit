@@ -123,6 +123,12 @@
  The main source of collisions is when error infos of multiple errors are merged.
  When it happens, it reasonable to disambiguate from each error each value was and augment keys with error domain and code, for example.
  
+ For an error type it seems `multiple values for key` is sematically preferred. error instance may have several different values
+ if error info was passed around the code and finally landed to error initializer.
+ When several of such error are merged to a Dictionary then:
+ - collisions inside error are resolved by key augmentation, where value.collisionSpecifier is used (e.g. as an suffix)
+ - collisions between errors are also resolved by key augmentation, but some kind of error identity used (e.g. domain + code)
+ 
  `key augmentation` error-info containers can simply wrap OrderedDictionary as a backing storage.
  For `multiple values for key` special OrderedMultiValueDictionary is needed. It can be optimized, but all in all its backing
  storage implementation has bigger overhead.
