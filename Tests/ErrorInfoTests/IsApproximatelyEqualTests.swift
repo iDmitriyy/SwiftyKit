@@ -77,20 +77,24 @@ extension IsApproximatelyEqualTests {
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyObject, 5))
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyObject, 5 as AnyObject))
     
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyHashable, 5))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyHashable, 5 as AnyHashable))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Equatable, 5))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Equatable, 5 as any Equatable))
     
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Hashable, 5))
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Hashable, 5 as any Hashable))
     
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Equatable, 5))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Equatable, 5 as any Equatable))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyHashable, 5))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyHashable, 5 as AnyHashable))
+    
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any CustomStringConvertible, 5))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any CustomStringConvertible, 5 as any CustomStringConvertible))
     
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any ErrorInfoValueType, 5))
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any ErrorInfoValueType, 5 as any ErrorInfoValueType))
     
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any CustomStringConvertible, 5))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any CustomStringConvertible, 5 as any CustomStringConvertible))
+    // TODO: + Optionaal(5)
+    
+    // + different types casted `any ErrorInfoValueType` and the passed to isApproximatelyEqualAny fo erasure of Generic type
     
     // #expect(_isOptional(type(of: Optional<Int>(4) as Any).self))
   }
@@ -184,10 +188,33 @@ extension IsApproximatelyEqualTests {
     // struct TypeB { let value: Int }
   }
   
-  @Test func `mixed Types`() {
+  @Test func `mixed Types With Same String Representation`() {
     let a = 123
     let b = "123"
     // Different types are treated as not equal even if they have semantically same meaning
     #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+    
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as Any, b))
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as Any, b as Any))
+    
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as AnyObject, b))
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as AnyObject, b as AnyObject))
+    
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any Equatable, b))
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any Equatable, b as any Equatable))
+    
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any Hashable, b))
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any Hashable, b as any Hashable))
+    
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as AnyHashable, b))
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as AnyHashable, b as AnyHashable))
+    
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any CustomStringConvertible, b))
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any CustomStringConvertible, b as any CustomStringConvertible))
+    
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any ErrorInfoValueType, b))
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a as any ErrorInfoValueType, b as any ErrorInfoValueType))
+    
+    // TODO: + Optionaal(b)
   }
 }
