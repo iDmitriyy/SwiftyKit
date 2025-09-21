@@ -77,7 +77,13 @@ func _merge(_ infos: NonEmptyArray<(any Error, info: [String: Any])>) {
   // ]
   typealias ErrorIdentity = Int // index
   var accumulator: [[String: Any]] = []
+    
   
+//  let dd = do {
+//    54
+//  }
+//   @_noImplicitCopy let value = [5]
+//   var d = value
   // - find all key intersections
   // - make memory about: errors at which indices have collisions for concrete key
   // - not collided keys are added to summary as is

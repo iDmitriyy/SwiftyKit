@@ -88,8 +88,11 @@ for target: PackageDescription.Target in package.targets {
     settings.append(.enableUpcomingFeature("InternalImportsByDefault"))
     settings.append(.enableUpcomingFeature("MemberImportVisibility"))
     settings.append(.enableExperimentalFeature("BorrowingSwitch"))
+    settings.append(.enableExperimentalFeature("NoImplicitCopy"))
     settings.append(.enableExperimentalFeature("LifetimeDependence"))
     settings.append(.enableExperimentalFeature("Lifetimes"))
+//    settings.append(.enableExperimentalFeature("DoExpressions"))
+    
     $0 = settings
   }(&target.swiftSettings)
 }
