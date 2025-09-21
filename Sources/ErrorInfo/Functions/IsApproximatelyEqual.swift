@@ -107,13 +107,14 @@ extension ErrorInfoFuncs {
 /// https://stackoverflow.com/questions/32645612/check-if-variable-is-an-optional-and-what-type-it-wraps/32781143#32781143
 fileprivate protocol AnyOptionalProtocol {
   associatedtype Wrapped
-  
-  
 }
 
 extension AnyOptionalProtocol {
   func wrappedType() -> Wrapped.Type { Wrapped.self }
   func wrappedTypeAny() -> Any.Type { Wrapped.self }
+  
+  // With Int casted to AnyObject, is it possible to wrap this AnyObject to optional and then call flattened().wrappedType
+  // to understand that originally it was Int?
 }
 
 // extension AnyOptionalProtocol {
