@@ -85,6 +85,14 @@ extension IsApproximatelyEqualTests {
     
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Equatable, 5))
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Equatable, 5 as any Equatable))
+    
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any ErrorInfoValueType, 5))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any ErrorInfoValueType, 5 as any ErrorInfoValueType))
+    
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any CustomStringConvertible, 5))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any CustomStringConvertible, 5 as any CustomStringConvertible))
+    
+    // #expect(_isOptional(type(of: Optional<Int>(4) as Any).self))
   }
     
   @Test func `equatable Integers NotEqual`() {

@@ -57,6 +57,8 @@ extension ErrorInfoFuncs {
         // Because of that String(describing:) for Optional.some(5) and 5 will have different Strings – "Optional(5)" and "5".
         // prettyDescriptionOfOptional solves this problem
         
+        
+        
         // FIXME: Foo(5) == Bar(5)
         // Use AnyOptionalProtocol.flattened()
         //        if let optionalLhs = lhs as? (any AnyOptionalProtocol) {
@@ -79,6 +81,8 @@ extension ErrorInfoFuncs {
         // } else {
         //
         // }
+        // or
+        // _isOptional(L.self)
         
         prettyDescriptionOfOptional(any: lhs) == prettyDescriptionOfOptional(any: rhs)
       }
