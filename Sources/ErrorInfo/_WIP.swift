@@ -11,6 +11,7 @@
  
  To do:
  - move to separate package
+ - create NonEmpty + SwiftCollections package
  
  - complete imp for isApproximatelyEqualAny
  - complete tests for isApproximatelyEqualAny
