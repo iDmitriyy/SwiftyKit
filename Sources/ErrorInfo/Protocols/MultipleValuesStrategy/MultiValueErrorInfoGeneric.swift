@@ -62,8 +62,8 @@ public enum ErrorInfoMultiValueContainer<T> {
   case multiple(elements: NonEmptyArray<T>)
   
   fileprivate mutating func append(_ newElement: T, omitIfEqual: Bool) {
-    let isEqualToCurrent: () -> Bool // for defered / lazy initialization
-    let elementsWithAppendedNew: () -> NonEmptyArray<T> // for defered / lazy initialization
+    let isEqualToCurrent: () -> Bool // for defered / lazy computation
+    let elementsWithAppendedNew: () -> NonEmptyArray<T> // for defered / lazy computation
     switch self {
     case .single(let currentElement):
       isEqualToCurrent = { ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, newElement) }
