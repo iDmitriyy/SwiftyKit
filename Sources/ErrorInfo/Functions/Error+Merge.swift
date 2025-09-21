@@ -47,15 +47,18 @@ import OrderedCollections
 func _merge(_ infos: NonEmptyArray<(any Error, info: [String: Any])>) {
   // JM4 ["decodingDate": date0, // collide with ME14
   //      "T.Type": type0, // collide with NE2
-  //      "id": 0, "jm": // collide with ME14 & NE2
-  //      "jm"]
+  //      "id": 0, // collide with ME14 & NE2
+  //      "uid" 9, // collide with ME14 & NE2, but value is equal with ME14
+  //      "jm":  "jm"]
   // ME14 ["decodingDate": date1,
   //       "timeStamp": time0, // collide with NE2
   //       "id": 1,
+  //       "uid" 9,
   //       "me": "me"]
   // NE2 ["T.Type": type1,
   //      "timeStamp": time1,
   //      "id": 2,
+  //      "uid" 0,
   //      "ne": "ne"]
   // =>
   // [
