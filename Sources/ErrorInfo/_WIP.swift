@@ -10,6 +10,8 @@
  - 
  
  To do:
+ - move to separate package
+ 
  - complete imp for isApproximatelyEqualAny
  - complete tests for isApproximatelyEqualAny
  
