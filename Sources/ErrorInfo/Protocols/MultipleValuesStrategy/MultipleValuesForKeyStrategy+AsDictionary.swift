@@ -23,7 +23,7 @@ extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialColl
 //  @_specialize(where Key == String, Value == String)
   /// Key-augmentation merge strategy.
   func asGenericDict<I, D>(omitEqualValue: Bool,
-                           identity: I,
+                           collisionsSpecifier: I,
                            resolve: (KeyCollisionResolvingInput<Key, Value, I>) -> KeyCollisionResolvingResult<Key>)
     -> D where D: DictionaryUnifyingProtocol<Key, Value> {
     var recipient = D(minimumCapacity: count)
@@ -33,7 +33,7 @@ extension ErrorInfoMultipleValuesForKeyStrategy where Self: ErrorInfoPartialColl
                                                       to: &recipient,
                                                       donatorIndex: 0,
                                                       omitEqualValue: omitEqualValue,
-                                                      identity: identity,
+                                                      identity: collisionsSpecifier,
                                                       resolve: resolve)
     }
     

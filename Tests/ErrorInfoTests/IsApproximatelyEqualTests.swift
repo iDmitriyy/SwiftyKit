@@ -24,7 +24,7 @@ struct IsApproximatelyEqualTests {
         self.value = value
       }
     }
-    }
+  }
   
   @Test func equalNumbers() throws {
     ErrorInfoFuncs.isApproximatelyEqualAny("5" as Any, 5 as Any)
@@ -52,5 +52,101 @@ struct IsApproximatelyEqualTests {
     
     eLatin.hash == eCombined.hash
     eLatin.hashValue == eCombined.hashValue
+  }
+}
+
+extension IsApproximatelyEqualTests {
+  // Custom Equatable struct for testing
+  struct TestEquatable: Equatable {
+    let value: Int
+  }
+    
+  // Custom class (reference type) for testing
+  class TestNonEquatableStringConvertibleClass: CustomStringConvertible {
+    let id: Int
+    init(id: Int) { self.id = id }
+    var description: String { "TestClass id: \(id)" }
+  }
+    
+  @Test func `equatable Integers Equal`() {
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5, 5))
+  }
+    
+  @Test func `equatable Integers NotEqual`() {
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(5, 6))
+  }
+    
+  @Test func `equatable Strings Equal`() {
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny("hello", "hello"))
+  }
+    
+  @Test func `equatable Strings NotEqual`() {
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny("hello", "world"))
+  }
+    
+  @Test func `custom EquatableStruct Equal`() {
+    let a = TestEquatable(value: 10)
+    let b = TestEquatable(value: 10)
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+  }
+    
+  @Test func `custom EquatableStruct NotEqual`() {
+    let a = TestEquatable(value: 10)
+    let b = TestEquatable(value: 11)
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+  }
+    
+  @Test func `reference Types With Same Description`() {
+    let a = TestNonEquatableStringConvertibleClass(id: 1)
+    let b = TestNonEquatableStringConvertibleClass(id: 1)
+    // If not Equatable, classes are compared by ===
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+  }
+    
+  @Test func `reference Types With Different Description`() {
+    let a = TestNonEquatableStringConvertibleClass(id: 1)
+    let b = TestNonEquatableStringConvertibleClass(id: 2)
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+  }
+  
+  @Test func `non Equatable Values With Same Description`() {
+    struct NonEquatable {}
+    let a = NonEquatable()
+    let b = NonEquatable()
+    // Since NonEquatable is neither Equatable nor class with address, string describing will be same (likely type name)
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+  }
+  
+  @Test func `non Equatable Values With Different Description`() {
+    class DiffDesc: CustomStringConvertible {
+      let desc: String
+      init(desc: String) { self.desc = desc }
+      var description: String { desc }
+    }
+    let a = DiffDesc(desc: "foo")
+    let b = DiffDesc(desc: "bar")
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(a, a))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(b, b))
+  }
+  
+  @Test func `non Equatable non StringConvertible Class`() {
+    final class ClassType {
+      let value: String
+      init(value: String) { self.value = value }
+    }
+    let a = ClassType(value: "foo")
+    let b = ClassType(value: "bar")
+    
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(a, a))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(b, b))
+  }
+  
+  @Test func `mixed Types`() {
+    let a = 123
+    let b = "123"
+    // Different types, fallback to String comparison
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
   }
 }

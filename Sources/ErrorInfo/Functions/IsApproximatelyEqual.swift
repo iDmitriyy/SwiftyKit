@@ -5,19 +5,26 @@
 //  Created by Dmitriy Ignatyev on 28/07/2025.
 //
 
-// MARK: - is ApproximatelycEqual
+// MARK: - is Approximately Equal
 
 extension ErrorInfoFuncs {
   // TODO: - add constraint T: CustomStringConvertible & Equatable & Sendable
-  public static func isApproximatelyEqualAny<T>(_ lhs: T, _ rhs: T) -> Bool {
+  public static func isApproximatelyEqualAny<L, R>(_ lhs: L, _ rhs: R) -> Bool {
     if let lhs = lhs as? (any Equatable), let rhs = rhs as? (any Equatable) {
       // use AnyHashable logic for equality comparison
 //      AnyHashable(lhs) == AnyHashable(rhs)
-      // TODO: What if ref types?
       isApproximatelyEqual(lhs, rhs)
     } else {
-      // for two Anyobject instances string interpolation is address, so it is the same as === comparison.
-      String(describing: lhs) == String(describing: rhs)
+      if L.self is any AnyObject.Type {
+        if R.self is any AnyObject.Type {
+          // If not Equatable, classes are compared by ===
+          (lhs as AnyObject) === (rhs as AnyObject)
+        } else {
+          false
+        }
+      } else {
+        String(describing: lhs) == String(describing: rhs)
+      }
     }
   }
   
