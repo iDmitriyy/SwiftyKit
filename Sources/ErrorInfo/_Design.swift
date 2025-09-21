@@ -62,8 +62,8 @@
  "time_ME7@MVC_40_idx2"
  ?? may be line can be omited and idx shpuld be used. If error identity(source specifier) is equal, mostly often it is the same
  file. So line number seems to look like a noise. This looks better:
- "time_ME7@MVC^idx0" || "time_ME7@MVC[i0]" || "time_ME7@MVC[0]"
- "time_ME7@MVC^idx1" || "time_ME7@MVC[i2]" || "time_ME7@MVC[2]"
+ "time_ME7@MVC^idx0" || "time_ME7@MVC[i0]" || "time_ME7@MVC(0)"
+ "time_ME7@MVC^idx1" || "time_ME7@MVC[i2]" || "time_ME7@MVC(2)"
  
   > This way the following code will add all 1000 values. In comparison, dictionary will save last value.
  ```
