@@ -84,17 +84,29 @@ struct OrderedMultiValueDictionaryTests {
     #expect(!dict.hasValue(forKey: "b"))
   }
 
-  @Test func `test Iteration`() {
+  @Test func `test Iteration Order`() {
     var dict = OrderedMultiValueDictionary<String, Int>()
-    dict.append(key: "a", value: 1)
-    dict.append(key: "b", value: 2)
-    dict.append(key: "a", value: 3)
+    
+    typealias Element = (String, Int)
+    let a0: Element = ("a", 0)
+    let b1: Element = ("b", 1)
+    let a2: Element = ("a", 2)
+    let c3: Element = ("c", 3)
+    let a4: Element = ("a", 4)
+    
+    dict.append(a0)
+    dict.append(b1)
+    dict.append(a2)
+    dict.append(c3)
+    dict.append(a4)
 
     let keyValues = Array(dict)
-    #expect(keyValues.count == 3)
-    #expect(keyValues[0] == ("a", 1))
-    #expect(keyValues[1] == ("b", 2))
-    #expect(keyValues[2] == ("a", 3))
+    #expect(keyValues.count == 5)
+    #expect(keyValues[0] == a0)
+    #expect(keyValues[1] == b1)
+    #expect(keyValues[2] == a2)
+    #expect(keyValues[3] == c3)
+    #expect(keyValues[4] == a4)
   }
 
   @Test func `test Keys Property`() {

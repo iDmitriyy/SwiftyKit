@@ -114,6 +114,10 @@ extension OrderedMultiValueDictionary {
     _entries.append((key, value))
   }
   
+  public mutating func append(_ newElement: (key: Key, value: Value)) {
+    append(key: newElement.key, value: newElement.value)
+  }
+  
   public mutating func removeAllValues(forKey key: Key) {
     guard let indices = _keyEntryIndices[key] else { return }
     
@@ -194,7 +198,6 @@ internal enum NonEmptyOrderedIndexSet: Sequence {
     }
   }
   
-  // CollectionOfOne
   internal mutating func insert(_ newIndex: Int) {
     switch self {
     case .single(let currentIndex):
