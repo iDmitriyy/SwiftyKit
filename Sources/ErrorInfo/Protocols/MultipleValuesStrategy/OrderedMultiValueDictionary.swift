@@ -7,6 +7,7 @@
 
 public import struct NonEmpty.NonEmpty
 private import typealias NonEmpty.NonEmptyArray
+import InternalCollectionsUtilities
 import OrderedCollections
 import StdLibExtensions
 
@@ -45,11 +46,27 @@ public struct OrderedMultiValueDictionary<Key: Hashable, Value>: Sequence {
   }
 }
 
-extension OrderedMultiValueDictionary: Sendable where Key: Sendable, Value: Sendable {}
+extension OrderedMultiValueDictionary: Collection {
+  public typealias Index = Int
+  
+  public var startIndex: Int { _entries.startIndex }
+  
+  public var endIndex: Int { _entries.endIndex }
+  
+  public func index(after i: Int) -> Int { _entries.index(after: i) }
+  
+  public subscript(position: Int) -> (key: Key, value: Value) {
+//    TODO: _read {
+    _entries[position]
+//    }
+  }
+}
 
 extension OrderedMultiValueDictionary: CustomDebugStringConvertible {
-  public var debugDescription: String { String(reflecting: _entries) }
+  public var debugDescription: String { InternalCollectionsUtilities._dictionaryDescription(for: self) }
 }
+
+extension OrderedMultiValueDictionary: Sendable where Key: Sendable, Value: Sendable {}
 
 /*
  TODO:
@@ -60,6 +77,12 @@ extension OrderedMultiValueDictionary: CustomDebugStringConvertible {
 // MARK: Get methods
 
 extension OrderedMultiValueDictionary {
+  public subscript(key: Key) -> Value {
+    @available(*, unavailable, message: "This is a set only subscript")
+    get { fatalError("unavailable") } // allValues(forKey: key)?.first
+    set { append(key: key, value: newValue) }
+  }
+  
   @available(*, deprecated, message: "allValuesView(forKey:)")
   public subscript(key: Key) -> NonEmpty<some Collection<Value>>? {
     allValues(forKey: key)

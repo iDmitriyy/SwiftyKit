@@ -9,6 +9,14 @@ import Playgrounds
 
 #Playground {
   var dict = OrderedMultiValueDictionary<String, Int>()
+  
+  dict["a"] = 1
+  dict["a"] = 2
+  dict["b"] = 3
+  
+  dict.debugDescription
+  
+  dict
 }
 
 func testProto(info: inout some ErrorInfoPrototype<String, any ErrorInfoValueType>) {
