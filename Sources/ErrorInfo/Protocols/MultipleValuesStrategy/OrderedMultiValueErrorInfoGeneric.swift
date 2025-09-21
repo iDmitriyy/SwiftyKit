@@ -19,15 +19,23 @@
 
 public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence {
   public typealias Element = (key: Key, value: Value)
+  private typealias ValueWrapper = ValueWithCollisionWrapper<Value, String>
   
-  private var _storage: OrderedMultiValueDictionary<Key, Value>
+  private var _storage: OrderedMultiValueDictionary<Key, ValueWrapper>
   
   public init() {
-    self._storage = OrderedMultiValueDictionary<Key, Value>()
+    self._storage = OrderedMultiValueDictionary<Key, ValueWrapper>()
   }
   
   public func makeIterator() -> some IteratorProtocol<Element> {
-    _storage.makeIterator()
+    var sourceIterator = _storage.makeIterator()
+    return AnyIterator {
+      if let (key, valueWrapper) = sourceIterator.next() {
+        (key, valueWrapper.value)
+      } else {
+        nil
+      }
+    }
   }
 }
 
@@ -37,17 +45,18 @@ extension OrderedMultiValueErrorInfoGeneric {
   public mutating func appendResolvingCollisions(key: Key, value newValue: Value, omitEqualValue omitIfEqual: Bool) {
     if let currentValues = _storage.allValuesView(forKey: key) {
       let isEqualToCurrent = currentValues.contains(where: { currentValue in
-        ErrorInfoFuncs.isApproximatelyEqualAny(currentValue, newValue)
+        ErrorInfoFuncs.isApproximatelyEqualAny(currentValue.value, newValue)
       })
       
       // if both `isEqualToCurrent` and `omitIfEqual` are true then value must not be added. Otherwise add it.
       if omitIfEqual, isEqualToCurrent {
         return
       } else {
-        _storage.append(key: key, value: newValue)
+        // FIXME: collisionSpecifier
+        _storage.append(key: key, value: .valueWithCollision(newValue, collisionSpecifier: ""))
       }
     } else {
-      _storage.append(key: key, value: newValue)
+      _storage.append(key: key, value: .value(newValue))
     }
   }
   
@@ -63,3 +72,17 @@ extension OrderedMultiValueErrorInfoGeneric {
 // MARK: - Protocol Conformances
 
 extension OrderedMultiValueErrorInfoGeneric: Sendable where Key: Sendable, Value: Sendable {}
+
+fileprivate enum ValueWithCollisionWrapper<Value, Specifier> {
+  case value(Value)
+  case valueWithCollision(Value, collisionSpecifier: Specifier)
+  
+  var value: Value {
+    switch self {
+    case .value(let value): value
+    case .valueWithCollision(let value, _): value
+    }
+  }
+}
+
+extension ValueWithCollisionWrapper: Sendable where Value: Sendable, Specifier: Sendable {}

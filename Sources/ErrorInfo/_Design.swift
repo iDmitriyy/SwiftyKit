@@ -84,7 +84,7 @@
  - should all error info types itself be iterable (or iterable keyValues View should better be provided)? - For now Sequence
  is inherited by root errorInfo protocol, so all instances are iterable and conforms to Sequence.
  - should errorInfo's have `func removeValue(forKey:)`? For now not.
- 
+ - which collisison resultion strategy should be default?
  
  
  Rationale:
