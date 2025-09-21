@@ -62,17 +62,19 @@ public enum ErrorInfoMultiValueContainer<T> {
   case multiple(elements: NonEmptyArray<T>)
   
   fileprivate mutating func append(_ newElement: T, omitIfEqual: Bool) {
-    let isEqualToCurrent: Bool
+    let isEqualToCurrent: () -> Bool // for defered / lazy initialization
     let elementsWithAppendedNew: () -> NonEmptyArray<T> // for defered / lazy initialization
     switch self {
     case .single(let currentElement):
-      isEqualToCurrent = ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, newElement)
+      isEqualToCurrent = { ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, newElement) }
       elementsWithAppendedNew = { NonEmptyArray(currentElement, newElement) }
       
     case .multiple(var elements):
-      isEqualToCurrent = elements.contains(where: { currentElement in
-        ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, newElement)
-      })
+      isEqualToCurrent =  {
+        elements.contains(where: { currentElement in
+          ErrorInfoFuncs.isApproximatelyEqualAny(currentElement, newElement)
+        })
+      }
             
       elementsWithAppendedNew = {
         elements.append(newElement)
@@ -81,7 +83,7 @@ public enum ErrorInfoMultiValueContainer<T> {
     }
     
     // if both `isEqualToCurrent` and `omitIfEqual` are true then value must not be added. Otherwise add it.
-    if omitIfEqual, isEqualToCurrent {
+    if omitIfEqual, isEqualToCurrent() {
       return
     } else {
       self = .multiple(elements: elementsWithAppendedNew())

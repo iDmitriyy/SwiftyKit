@@ -49,7 +49,7 @@ public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence 
 extension OrderedMultiValueErrorInfoGeneric {
   public mutating func appendResolvingCollisions(key: Key, value newValue: Value, omitEqualValue omitIfEqual: Bool) {
     if let currentValues = _storage.allValuesView(forKey: key) {
-      let isEqualToCurrent = currentValues.contains(where: { currentValue in
+      lazy var isEqualToCurrent = currentValues.contains(where: { currentValue in
         ErrorInfoFuncs.isApproximatelyEqualAny(currentValue.value, newValue)
       })
       
@@ -58,7 +58,7 @@ extension OrderedMultiValueErrorInfoGeneric {
         return
       } else {
         // FIXME: collisionSpecifier
-        _storage.append(key: key, value: .valueWithCollision(newValue, collisionSpecifier: ""))
+        _storage.append(key: key, value: .collidedValue(newValue, collisionSpecifier: ""))
       }
     } else {
       _storage.append(key: key, value: .value(newValue))
@@ -80,12 +80,12 @@ extension OrderedMultiValueErrorInfoGeneric: Sendable where Key: Sendable, Value
 
 fileprivate enum ValueWithCollisionWrapper<Value, Specifier> {
   case value(Value)
-  case valueWithCollision(Value, collisionSpecifier: Specifier)
+  case collidedValue(Value, collisionSpecifier: Specifier)
   
   var value: Value {
     switch self {
     case .value(let value): value
-    case .valueWithCollision(let value, _): value
+    case .collidedValue(let value, _): value
     }
   }
 }
