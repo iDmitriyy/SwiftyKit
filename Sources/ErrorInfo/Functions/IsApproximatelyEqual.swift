@@ -104,10 +104,16 @@ extension ErrorInfoFuncs {
   }
 }
 
+/// https://stackoverflow.com/questions/32645612/check-if-variable-is-an-optional-and-what-type-it-wraps/32781143#32781143
 fileprivate protocol AnyOptionalProtocol {
   associatedtype Wrapped
   
-  func wrappedType() -> Wrapped.Type
+  
+}
+
+extension AnyOptionalProtocol {
+  func wrappedType() -> Wrapped.Type { Wrapped.self }
+  func wrappedTypeAny() -> Any.Type { Wrapped.self }
 }
 
 // extension AnyOptionalProtocol {
@@ -116,6 +122,6 @@ fileprivate protocol AnyOptionalProtocol {
 //  }
 // }
 
-extension Optional: AnyOptionalProtocol {
-  func wrappedType() -> Wrapped.Type { Wrapped.self }
-}
+//extension Optional: AnyOptionalProtocol {
+//  func wrappedType() -> Wrapped.Type { Wrapped.self }
+//}
