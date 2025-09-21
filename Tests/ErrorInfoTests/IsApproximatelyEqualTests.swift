@@ -70,6 +70,21 @@ extension IsApproximatelyEqualTests {
     
   @Test func `equatable Integers Equal`() {
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5, 5))
+    
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as Any, 5))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as Any, 5 as Any))
+    
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyObject, 5))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyObject, 5 as AnyObject))
+    
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyHashable, 5))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as AnyHashable, 5 as AnyHashable))
+    
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Hashable, 5))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Hashable, 5 as any Hashable))
+    
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Equatable, 5))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(5 as any Equatable, 5 as any Equatable))
   }
     
   @Test func `equatable Integers NotEqual`() {
