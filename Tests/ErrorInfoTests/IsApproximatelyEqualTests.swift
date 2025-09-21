@@ -151,6 +151,16 @@ extension IsApproximatelyEqualTests {
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(b, b))
   }
   
+  @Test func `non Equatable StringConvertible ValueType`() {
+    // struct TypeA: CustomStringConvertible { let value: Int }
+    // struct TypeB: CustomStringConvertible { let value: Int }
+  }
+  
+  @Test func `non Equatable non StringConvertible ValueType`() {
+    // struct TypeA { let value: Int }
+    // struct TypeB { let value: Int }
+  }
+  
   @Test func `mixed Types`() {
     let a = 123
     let b = "123"
