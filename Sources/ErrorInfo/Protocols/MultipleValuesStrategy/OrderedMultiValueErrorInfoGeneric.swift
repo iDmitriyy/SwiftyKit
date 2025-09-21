@@ -90,4 +90,10 @@ fileprivate enum ValueWithCollisionWrapper<Value, Specifier> {
   }
 }
 
+fileprivate enum ValueCollisionSourceKind {
+  case `subscript`
+  case merge
+  case keyPrefixAddition
+}
+
 extension ValueWithCollisionWrapper: Sendable where Value: Sendable, Specifier: Sendable {}

@@ -92,6 +92,7 @@
  For now it is typical to use [String: Any] dict, but it has several pitfals:
     - it is not Sendable and thus not concurency compatible
     - is error prone because almost everything can be put as Any
+    - previous value is lost when new value is set for a given key
     - merging 2 of such dicts can cause collisions which are not easy to resolve
     - data loss due to lack of builtin merging strategies
  
@@ -107,16 +108,37 @@
   - String Representation: Requiring CustomStringConvertible forces developers to provide meaningful string representations for stored values, which is invaluable for debugging and logging. It also prevents unexpected results when converting values to strings.
   - Collision Resolution: The Equatable requirement allows to detect and resolve collisions if different values are associated with the same key. This adds a layer of robustness.
  
- Currently, the library provides 3 Error-info Types with String keys:
- - ErrorInfo (Value == any ErrorInfoValueType) uses OrderedDictionary under the hood. It preserves values appending order which can be helpful for debugging and tracing.
+ Currently the library provides 3 Error-info Types with String keys:
+ - ErrorInfo (Value == any ErrorInfoValueType) uses OrderedMultiValueDictionary under the hood. It preserves values appending order which can be helpful for debugging and tracing.
  - UnorderedErrorInfo (Value == any ErrorInfoValueType) uses Swift.Dictionary
  - LegacyErrorInfoc (Value == Any)
  
  In common, there are 2 strategies for collision resolving:
- 1) `key augmentation`. For String-keyed containers
+ 1) `key augmentation`. For String-keyed containers (more precisely to say Collection-based-key containers)
  2) `multiple values for key`
  
- Which one should be used as a defult is opened question. Initially I only used `key augmentation`
+ Which one should be used as a default is an opened question. Initially I only used `key augmentation`, which was enough for our needs.
+ It seems there is no need to make key augmentation when collision just happens. Collisions very rarely happens when adding values
+ via subscript on the client side.
+ The main source of collisions is when error infos of multiple errors are merged.
+ When it happens, it reasonable to disambiguate from each error each value was and augment keys with error domain and code, for example.
+ 
+ (test the followng case, the keys are correctly agumented with error domain / codes)
+ NE2 ["T.Type": type1, "timeStamp": time1, "id": 2]
+ ME14 ["decodingDate": date1, "timeStamp": time0, "id": 1]
+ JM4 ["decodingDate": date0, "T.Type": type0, "id": 0]
+ 
+ Value Collisions:
+ There is a choice whether equal values should be added or not. By default they are not added.
+ ```
+ func foo() {
+   var info: ErrorInfo = ["a": 1]
+   info["a"] = 1 // not added as 1 is already stored for key "a"
+   info["a"] = 2 // added, now there are 2 values for key "a"
+   info["a"] = "2" // added, Integer(2) and String("2") are treated as different values
+ }
+ ```
+ For comparison `func isApproximatelyEqualAny` is used.
  
  ```
  func foo<T>(anyValue: T) {

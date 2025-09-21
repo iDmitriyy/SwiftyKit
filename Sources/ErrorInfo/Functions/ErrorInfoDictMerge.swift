@@ -30,8 +30,8 @@ extension ErrorInfoDictFuncs.Merge {
   internal static func _mergeErrorInfo<V, C>(_ recipient: inout some DictionaryUnifyingProtocol<String, V>,
                                              with donators: [some DictionaryUnifyingProtocol<String, V>],
                                              omitEqualValue: Bool,
-                                             identity: C = StaticFileLine.this(),
-                                             resolve: (ResolvingInput<String, V, C>) -> ResolvingResult<String>) {
+                                             identity: C,
+                                             resolve: @Sendable (ResolvingInput<String, V, C>) -> ResolvingResult<String>) {
     for (donatorIndex, donator) in donators.enumerated() {
       for donatorElement in donator {
         withKeyAugmentationAdd(keyValue: donatorElement,
