@@ -123,10 +123,14 @@
  The main source of collisions is when error infos of multiple errors are merged.
  When it happens, it reasonable to disambiguate from each error each value was and augment keys with error domain and code, for example.
  
- (test the followng case, the keys are correctly agumented with error domain / codes)
- NE2 ["T.Type": type1, "timeStamp": time1, "id": 2]
- ME14 ["decodingDate": date1, "timeStamp": time0, "id": 1]
- JM4 ["decodingDate": date0, "T.Type": type0, "id": 0]
+ `key augmentation` error-info containers can simply wrap OrderedDictionary as a backing storage.
+ For `multiple values for key` special OrderedMultiValueDictionary is needed. It can be optimized, but all in all its backing
+ storage implementation has bigger overhead.
+ 
+ (test the followng case, the keys are correctly augmented with error domain / code)
+ NE2 ["T.Type": type1, "timeStamp": time1, "id": 2, "ne": "ne"]
+ ME14 ["decodingDate": date1, "timeStamp": time0, "id": 1, "me": "me"]
+ JM4 ["decodingDate": date0, "T.Type": type0, "id": 0, "jm": "jm"]
  
  Value Collisions:
  There is a choice whether equal values should be added or not. By default they are not added.
