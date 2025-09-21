@@ -11,6 +11,16 @@ private import Foundation
 
 // MARK: - Pretty Description for Any & Optional<T>
 
+/// Cleans up the string representation of any value (including deeply nested optionals) by removing redundant "Optional(...)" wrappers.
+///
+/// Example:
+/// ```
+/// prettyDescriptionOfOptional(any: Optional(Optional(42)))        // "42"
+/// prettyDescriptionOfOptional(any: Optional<Optional<Int>>.none)  // "nil"
+/// prettyDescriptionOfOptional(any: "Hello")                       // "Hello"
+/// ```
+/// - Parameter any: A value of type `Any`, which may or may not be an optional.
+/// - Returns: A String representing the unwrapped value or "nil"
 public func prettyDescriptionOfOptional(any: Any) -> String {
   if let optional = any as? (any CustomStringConvertible)? {
     return prettyDescriptionOfOptional(any: optional)
@@ -26,6 +36,16 @@ public func prettyDescriptionOfOptional(any: Any) -> String {
   }
 }
 
+/// Cleans up the string representation of any value (including deeply nested optionals) by removing redundant "Optional(...)" wrappers.
+///
+/// Example:
+/// ```
+/// prettyDescriptionOfOptional(any: Optional(Optional(42)))        // "42"
+/// prettyDescriptionOfOptional(any: Optional<Optional<Int>>.none)  // "nil"
+/// prettyDescriptionOfOptional(any: "Hello")                       // "Hello"
+/// ```
+/// - Parameter any: A value of type `T?`, which may or may not be an optional.
+/// - Returns: A String representing the unwrapped value or "nil"
 public func prettyDescriptionOfOptional<T>(any: T?) -> String {
   switch any {
   case .some(let value):
