@@ -123,10 +123,18 @@ extension IsApproximatelyEqualTests {
       init(desc: String) { self.desc = desc }
       var description: String { desc }
     }
-    let a = DiffDesc(desc: "foo")
+    let a1 = DiffDesc(desc: "foo")
+    let a2 = DiffDesc(desc: "foo")
     let b = DiffDesc(desc: "bar")
-    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
-    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(a, a))
+    
+    // RefType instances are compared by === even if the conform to CustomStringConvertible
+    
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a1, b))
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a2, b))
+    #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a1, a2))
+    
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(a1, a1))
+    #expect(ErrorInfoFuncs.isApproximatelyEqualAny(a2, a2))
     #expect(ErrorInfoFuncs.isApproximatelyEqualAny(b, b))
   }
   
@@ -146,7 +154,7 @@ extension IsApproximatelyEqualTests {
   @Test func `mixed Types`() {
     let a = 123
     let b = "123"
-    // Different types, fallback to String comparison
+    // Different types are treated as not equal even if they have semantically same meaning
     #expect(!ErrorInfoFuncs.isApproximatelyEqualAny(a, b))
   }
 }
