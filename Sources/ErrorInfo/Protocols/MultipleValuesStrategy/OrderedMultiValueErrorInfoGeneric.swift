@@ -21,6 +21,11 @@ public struct OrderedMultiValueErrorInfoGeneric<Key: Hashable, Value>: Sequence 
   public typealias Element = (key: Key, value: Value)
   private typealias ValueWrapper = ValueWithCollisionWrapper<Value, String>
   
+  // Improvement / optimization:
+  // Typically there will be one value for each key, so OrderedDictionary is enough for most situations.
+  // OrderedMultiValueDictionary is needed when first collision happens.
+  // All overhead which OrderedMultiValueDictionary havs can be eliminated untill first collision happens.
+  // _storage: Either<OrderedDictionary<Key, Value>, OrderedMultiValueDictionary<Key, ValueWrapper>>
   private var _storage: OrderedMultiValueDictionary<Key, ValueWrapper>
   
   public init() {
