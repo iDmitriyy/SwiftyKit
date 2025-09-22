@@ -1,5 +1,5 @@
 {
-  "originHash" : "5bbc8fbe1708dd6b18caceb975ee54615cb2e80d7c423db4f0fbd1f3b2418a4a",
+  "originHash" : "adc8f8cca46b10c766adcbeb90c2f5966edf32e546ec1494b50e5764018dc1c2",
   "pins" : [
     {
       "identity" : "swift-algorithms",
@@ -22,10 +22,10 @@
     {
       "identity" : "swift-nonempty",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/pointfreeco/swift-nonempty.git",
+      "location" : "https://github.com/iDmitriyy/swift-nonempty.git",
       "state" : {
-        "revision" : "1fd3f067ebc3900d200aa7e977fdb614cc5533bc",
-        "version" : "0.5.0"
+        "branch" : "SwiftCollectionsAdditions",
+        "revision" : "9586bc2dbf2bbc9fb8ada49637af4fdb57a4a7d8"
       }
     },
     {
@@ -44,6 +44,15 @@
       "state" : {
         "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
         "version" : "601.0.1"
+      }
+    },
+    {
+      "identity" : "swiftcollections-nonempty",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/iDmitriyy/SwiftCollections-NonEmpty.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "916261cd8dc85d6654bd0bdbc1f65db975e4306f"
       }
     }
   ],

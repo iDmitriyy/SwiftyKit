@@ -19,9 +19,11 @@ let package = Package(
     .library(name: "SwiftyKitMacros", targets: ["Macros"]),
   ],
   dependencies: [
-    .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.2.1")),
     .package(url: "https://github.com/apple/swift-algorithms.git", .upToNextMajor(from: "1.2.1")),
-    .package(url: "https://github.com/pointfreeco/swift-nonempty.git", .upToNextMajor(from: "0.5.0")),
+    .package(url: "https://github.com/apple/swift-collections.git", .upToNextMajor(from: "1.2.1")),
+    //    .package(url: "https://github.com/pointfreeco/swift-nonempty.git", .upToNextMajor(from: "0.5.0")),
+    .package(url: "https://github.com/iDmitriyy/swift-nonempty.git", branch: "SwiftCollectionsAdditions"), // "0.5.0"
+    .package(url: "https://github.com/iDmitriyy/SwiftCollections-NonEmpty.git", branch: "main"),
     .package(url: "https://github.com/apple/swift-syntax.git", from: "601.0.1"),
   ],
   targets: [
@@ -78,7 +80,7 @@ let package = Package(
                                                     .target(name: "StdLibExtensions"),
                                                     .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax")]),
   ],
-  swiftLanguageModes: [.v6]
+  swiftLanguageModes: [.v6],
 )
 
 for target: PackageDescription.Target in package.targets {
