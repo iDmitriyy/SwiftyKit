@@ -6,7 +6,7 @@
 //
 
 @_exported public import Collections
-@_exported public import ErrorInfo
+//@_exported public import ErrorInfo
 @_exported public import FoundationExtensions
 @_exported public import IndependentDeclarations
 @_exported public import NonEmpty
