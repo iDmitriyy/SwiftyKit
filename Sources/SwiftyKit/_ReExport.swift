@@ -24,30 +24,30 @@
 /// - disable reflection
 
 //import Foundation
-import Macros
-
-let col1 = #colorValues(hex: "#0011AAFF")
-let col2 = #colorValues(hex: 0x0011_AAFF)
-//let url = #URL("https://github.com")
-
-@UpdatableCopy
-struct Product {
-  let name: String
-  let price: Double
-  let oldPrice: Double?
-  var discount: Double?
-  var unit: String {
-    willSet {}
-    didSet {}
-  }
-}
-
-//let dd = UpdatableCopyMacro.self
-
-func prod(product: Product) {
-  _ = product
-  product.copyUpdating(name: .takeValueFromSource)
-  product.copyUpdating(name: .new("Orange"))
-  product.copyUpdating(oldPrice: nil)
-//  product.copyUpdating()
-}
+//import Macros
+//
+//let col1 = #colorValues(hex: "#0011AAFF")
+//let col2 = #colorValues(hex: 0x0011_AAFF)
+////let url = #URL("https://github.com")
+//
+//@UpdatableCopy
+//struct Product {
+//  let name: String
+//  let price: Double
+//  let oldPrice: Double?
+//  var discount: Double?
+//  var unit: String {
+//    willSet {}
+//    didSet {}
+//  }
+//}
+//
+////let dd = UpdatableCopyMacro.self
+//
+//func prod(product: Product) {
+//  _ = product
+//  product.copyUpdating(name: .takeValueFromSource)
+//  product.copyUpdating(name: .new("Orange"))
+//  product.copyUpdating(oldPrice: nil)
+////  product.copyUpdating()
+//}

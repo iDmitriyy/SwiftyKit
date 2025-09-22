@@ -33,7 +33,7 @@ let package = Package(
                                               .target(name: "StdLibExtensions"),
                                               .target(name: "FoundationExtensions"),
 //                                              .target(name: "ErrorInfo"),
-                                              .target(name: "Macros"),
+//                                              .target(name: "Macros"),
                                               .product(name: "Collections", package: "swift-collections"),
                                               .product(name: "Algorithms", package: "swift-algorithms"),
                                               .product(name: "NonEmpty", package: "swift-nonempty")]),
