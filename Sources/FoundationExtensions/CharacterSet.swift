@@ -61,3 +61,13 @@ extension CharacterSet {
   /// phoneNumberSymbols + space
   public static let phoneNumberInputSymbols = phoneNumberSymbols.union(CharacterSet(charactersIn: " "))
 }
+
+// FIXME: these static lets pollute String namespace. May be introduce namespace for them or make private
+// The main goal was to allow to easily (NonEmptyString) get random chars from a clearly named chaaracters, like arabicNumeralsString
+
+// This might be not needed when `GraphemeClusterSet` will be done. Such a type will alllow to have:
+// - Non-empty variants for random element without optional unwrapping
+// - It will be a right namespace as currently CharacterSet is.
+
+// `GraphemeClusterSet` under the hood will contain 2 separate storages for single unicode svcalars and gra[heme clusters
+// that contain several scalars.
