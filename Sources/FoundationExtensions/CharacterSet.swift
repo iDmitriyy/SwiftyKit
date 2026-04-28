@@ -5,14 +5,12 @@
 //  Created by Dmitriy Ignatyev on 14.12.2024.
 //
 
-public import struct NonEmpty.NonEmptyString
-
 extension CharacterSet {
   /// "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-  public static let englishAlphabetUppercased = CharacterSet(charactersIn: String.englishAlphabetUppercasedString.rawValue)
+  public static let englishAlphabetUppercased = CharacterSet(charactersIn: String.englishAlphabetUppercasedString)
 
   /// "abcdefghijklmnopqrstuvwxyz"
-  public static let englishAlphabetLowercased = CharacterSet(charactersIn: String.englishAlphabetLowercasedString.rawValue)
+  public static let englishAlphabetLowercased = CharacterSet(charactersIn: String.englishAlphabetLowercasedString)
 
   /// "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
   public static let englishAlphabet = englishAlphabetUppercased.union(englishAlphabetLowercased)
@@ -20,10 +18,10 @@ extension CharacterSet {
 
 extension CharacterSet {
   /// "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
-  public static let russianAlphabetUppercased = CharacterSet(charactersIn: String.russianAlphabetUppercasedString.rawValue)
+  public static let russianAlphabetUppercased = CharacterSet(charactersIn: String.russianAlphabetUppercasedString)
 
   /// "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
-  public static let russianAlphabetLowercased = CharacterSet(charactersIn: String.russianAlphabetLowercasedString.rawValue)
+  public static let russianAlphabetLowercased = CharacterSet(charactersIn: String.russianAlphabetLowercasedString)
 
   /// "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯабвгдеёжзийклмнопрстуфхцчшщъыьэюя"
   public static let russianAlphabet = russianAlphabetUppercased.union(russianAlphabetLowercased)
@@ -39,19 +37,19 @@ extension CharacterSet {
 
 extension String {
   /// "0123456789"
-  public static let arabicNumeralsString = "0123456789"
+  fileprivate static let arabicNumeralsString = "0123456789"
   
   /// "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-  public static let englishAlphabetUppercasedString: NonEmptyString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+  fileprivate static let englishAlphabetUppercasedString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
   
   /// "abcdefghijklmnopqrstuvwxyz"
-  public static let englishAlphabetLowercasedString: NonEmptyString = "abcdefghijklmnopqrstuvwxyz"
+  fileprivate static let englishAlphabetLowercasedString = "abcdefghijklmnopqrstuvwxyz"
   
   /// "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
-  public static let russianAlphabetUppercasedString: NonEmptyString = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
+  fileprivate static let russianAlphabetUppercasedString = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
   
   /// "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
-  public static let russianAlphabetLowercasedString: NonEmptyString = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
+  fileprivate static let russianAlphabetLowercasedString = "абвгдеёжзийклмнопрстуфхцчшщъыьэюя"
 }
 
 extension CharacterSet {
@@ -62,12 +60,9 @@ extension CharacterSet {
   public static let phoneNumberInputSymbols = phoneNumberSymbols.union(CharacterSet(charactersIn: " "))
 }
 
-// FIXME: these static lets pollute String namespace. May be introduce namespace for them or make private
-// The main goal was to allow to easily (NonEmptyString) get random chars from a clearly named chaaracters, like arabicNumeralsString
-
 // This might be not needed when `GraphemeClusterSet` will be done. Such a type will alllow to have:
 // - Non-empty variants for random element without optional unwrapping
 // - It will be a right namespace as currently CharacterSet is.
 
-// `GraphemeClusterSet` under the hood will contain 2 separate storages for single unicode svcalars and gra[heme clusters
+// `GraphemeClusterSet` under the hood will contain 2 separate storages for single unicode scalars and grapheme clusters
 // that contain several scalars.

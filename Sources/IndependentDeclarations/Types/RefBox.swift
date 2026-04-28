@@ -28,7 +28,7 @@ public struct UnownedRef<E> {
 }
 
 public struct WeakExRef<T> {
-  private weak var instance: AnyObject?
+  private weak let instance: AnyObject?
   
   public var wrappedValue: T? {
     if let instance {
