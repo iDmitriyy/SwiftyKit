@@ -10,7 +10,7 @@
 @_exported public import StdLibExtensions
 
 /// Needed to silence compilation warning "'SwiftyKit.o' has no symbols" when SwiftyKit is imported.
-fileprivate enum Silence {}
+public var swiftykitdummysymbol: some Any { 0 }
 
 /// SPI:
 /// @_spi(SwiftyKitBuiltinTypes)
