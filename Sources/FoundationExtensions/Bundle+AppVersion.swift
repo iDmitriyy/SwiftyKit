@@ -83,17 +83,29 @@ public struct SemVerAppVersion: Sendable, LosslessStringConvertible {
       throw TextError(text: "Invalid version core: expected 3 components, got \(coreComponents.count) in \(versionString)")
     }
     
-    let major = try parseUInt16(coreComponents[0], name: "major")
-    let minor = try parseUInt16(coreComponents[1], name: "minor")
-    let patch = try parseUInt16(coreComponents[2], name: "patch")
+    let major = try parseUInt16(coreComponents[0], componentName: "major")
+    let minor = try parseUInt16(coreComponents[1], componentName: "minor")
+    let patch = try parseUInt16(coreComponents[2], componentName: "patch")
     
     return SemVerAppVersion(major: major, minor: minor, patch: patch, preRelease: preRelease, buildMetadata: buildMetadata)
   }
   
-  private static func parseUInt16(_ string: String, name: String) throws -> UInt16 {
+  private static func isASCIINumber(_ character: Character) -> Bool {
+    character.isASCII && character.isNumber
+  }
+  
+  private static func isASCIILetter(_ character: Character) -> Bool {
+    character.isASCII && character.isLetter
+  }
+  
+  private static func isASCIIAlphanumericOrHyphen(_ character: Character) -> Bool {
+    character.isASCII && (character.isLetter || character.isNumber || character == "-")
+  }
+  
+  private static func parseUInt16(_ string: String, componentName name: String) throws -> UInt16 {
     guard !string.isEmpty else { throw TextError(text: "Empty \(name) component") }
-    guard string.allSatisfy(\.isNumber) else { throw TextError(text: "Non-numeric \(name) component: \(string)") }
-    guard !string.hasPrefix("0") || string == "0" else { throw TextError(text: "Leading zeros in \(name) component: \(string)") }
+    guard string.allSatisfy(isASCIINumber) else { throw TextError(text: "Non-ASCII numeric \(name) component: \(string)") }
+    guard string.count == 1 || !string.hasPrefix("0") else { throw TextError(text: "Leading zeros in \(name) component: \(string)") }
     guard let value = UInt16(string) else { throw TextError(text: "\(name) component out of range: \(string)") }
     return value
   }
@@ -101,10 +113,10 @@ public struct SemVerAppVersion: Sendable, LosslessStringConvertible {
   private static func validateIdentifiers(_ identifiers: [String], context: String) throws {
     for identifier in identifiers {
       guard !identifier.isEmpty else { throw TextError(text: "Empty identifier in \(context)") }
-      guard identifier.allSatisfy({ $0.isLetter || $0.isNumber || $0 == "-" }) else {
+      guard identifier.allSatisfy(isASCIIAlphanumericOrHyphen) else {
         throw TextError(text: "Invalid character in \(context) identifier: \(identifier)")
       }
-      if identifier.allSatisfy(\.isNumber), identifier.count > 1, identifier.hasPrefix("0") {
+      if identifier.allSatisfy(isASCIINumber), identifier.count > 1, identifier.hasPrefix("0") {
         throw TextError(text: "Leading zeros in numeric \(context) identifier: \(identifier)")
       }
     }
@@ -143,8 +155,8 @@ extension SemVerAppVersion: Comparable {
     for i in 0..<count {
       let l = lhs[i]
       let r = rhs[i]
-      let lNumeric = l.allSatisfy(\.isNumber)
-      let rNumeric = r.allSatisfy(\.isNumber)
+      let lNumeric = l.allSatisfy(isASCIINumber)
+      let rNumeric = r.allSatisfy(isASCIINumber)
       
       if lNumeric && rNumeric {
         let lv = Int(l) ?? 0
