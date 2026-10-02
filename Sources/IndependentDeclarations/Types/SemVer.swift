@@ -25,8 +25,8 @@ public struct SemVer: Sendable, LosslessStringConvertible {
   }
   
   public init(major: UInt16, minor: UInt16, patch: UInt16, preRelease: [String], buildMetadata: [String]) throws {
-    if !preRelease.isEmpty { try Self.validateIdentifiers(preRelease, context: "pre-release") }
-    if !buildMetadata.isEmpty { try Self.validateIdentifiers(buildMetadata, context: "build metadata") }
+    if !preRelease.isEmpty { try Self.validateIdentifiers(preRelease, context: .preRelease) }
+    if !buildMetadata.isEmpty { try Self.validateIdentifiers(buildMetadata, context: .buildMetadata) }
     self.preRelease = preRelease
     self.buildMetadata = buildMetadata
     self.major = major
@@ -57,20 +57,20 @@ public struct SemVer: Sendable, LosslessStringConvertible {
     
     if let plusIndex = remaining.firstIndex(of: "+") {
       let buildPart = remaining[remaining.index(after: plusIndex)...]
-      buildMetadata = buildPart.split(separator: ".").map(String.init)
-      try validateIdentifiers(buildMetadata, context: "build metadata")
+      buildMetadata = buildPart.split(separator: ".", omittingEmptySubsequences: false).map(String.init)
+      try validateIdentifiers(buildMetadata, context: .buildMetadata)
       remaining = String(remaining[..<plusIndex])
     }
     
     var preRelease: [String] = []
     if let dashIndex = remaining.firstIndex(of: "-") {
       let prePart = remaining[remaining.index(after: dashIndex)...]
-      preRelease = prePart.split(separator: ".").map(String.init)
-      try validateIdentifiers(preRelease, context: "pre-release")
+      preRelease = prePart.split(separator: ".", omittingEmptySubsequences: false).map(String.init)
+      try validateIdentifiers(preRelease, context: .preRelease)
       remaining = String(remaining[..<dashIndex])
     }
     
-    let coreComponents = remaining.split(separator: ".").map(String.init)
+    let coreComponents = remaining.split(separator: ".", omittingEmptySubsequences: false)
     guard coreComponents.count == 3 else {
       throw TextError(text: "Invalid version core: expected 3 components, got \(coreComponents.count) in \(versionString)")
     }
@@ -94,7 +94,7 @@ public struct SemVer: Sendable, LosslessStringConvertible {
     character.isASCII && (character.isLetter || character.isNumber || character == "-")
   }
   
-  private static func parseUInt16(_ string: String, componentName name: String) throws -> UInt16 {
+  private static func parseUInt16(_ string: some StringProtocol, componentName name: String) throws -> UInt16 {
     guard !string.isEmpty else { throw TextError(text: "Empty \(name) component") }
     guard string.allSatisfy(isASCIINumber) else { throw TextError(text: "Non-ASCII numeric \(name) component: \(string)") }
     guard string.count == 1 || !string.hasPrefix("0") else {
@@ -104,16 +104,22 @@ public struct SemVer: Sendable, LosslessStringConvertible {
     return value
   }
   
-  private static func validateIdentifiers(_ identifiers: [String], context: String) throws {
+  private static func validateIdentifiers(_ identifiers: [String], context: IdentifiersKind) throws {
     for identifier in identifiers {
       guard !identifier.isEmpty else { throw TextError(text: "Empty identifier in \(context)") }
       guard identifier.allSatisfy(isASCIIAlphanumericOrHyphen) else {
         throw TextError(text: "Invalid character in \(context) identifier: \(identifier)")
       }
-      if identifier.allSatisfy(isASCIINumber), identifier.count > 1, identifier.hasPrefix("0") {
-        throw TextError(text: "Leading zeros in numeric \(context) identifier: \(identifier)")
+      // Leading zeros only forbidden for pre-release numeric identifiers (per SemVer spec)
+      if context == .preRelease, identifier.allSatisfy(isASCIINumber), identifier.count > 1, identifier.hasPrefix("0") {
+        throw TextError(text: "Leading zeros in numeric pre-release identifier: \(identifier)")
       }
     }
+  }
+  
+  private enum IdentifiersKind {
+    case preRelease
+    case buildMetadata
   }
 }
 
