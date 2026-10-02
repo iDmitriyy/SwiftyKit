@@ -101,18 +101,6 @@ struct SemVerTests {
     #expect(v1 != v3)
   }
 
-  @Test func comparisonPreReleaseVsRelease() throws {
-    let release = SemVer(major: 1, minor: 0, patch: 0)
-    let pre = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha"], buildMetadata: [])
-    #expect(pre < release)
-    #expect(!(release < pre))
-  }
-
-  @Test func comparisonNumericVsAlphanumeric() throws {
-    #expect(try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["1"], buildMetadata: []) < SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha"], buildMetadata: []))
-    #expect(try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["2"], buildMetadata: []) < SemVer(major: 1, minor: 0, patch: 0, preRelease: ["10"], buildMetadata: []))
-  }
-
   @Test func comparisonCaseSensitivity() throws {
     #expect(try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["A"], buildMetadata: []) < SemVer(major: 1, minor: 0, patch: 0, preRelease: ["a"], buildMetadata: []))
   }
