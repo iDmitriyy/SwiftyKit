@@ -14,19 +14,19 @@ public struct PreviousAndCurrent<T: ~Copyable>: ~Copyable {
     self.current = current
   }
   
-  public mutating func update(by newValue: consuming T) {
-    self = Self(previous: current, current: newValue)
+  public mutating func put(_ latest: consuming T) {
+    self = Self(previous: current, current: latest)
   }
   
-  public consuming func updated(by newValue: consuming T) -> Self {
-    self.update(by: newValue)
+  public consuming func putting(_ latest: consuming T) -> Self {
+    self.put(latest)
     return self
   }
 }
 
 extension PreviousAndCurrent: Copyable where T: Copyable {
-  public init(seed: consuming T) {
-    self.init(previous: copy seed, current: seed)
+  public init(initial: consuming T) {
+    self.init(previous: copy initial, current: initial)
   }
 }
 

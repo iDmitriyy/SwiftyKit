@@ -12,7 +12,7 @@ public struct UnownedRef<E> {
   
   public var instance: E { wrappedValue }
   
-  public init(_ instance: E, prove typeCastToAnyObject: (E) -> any AnyObject = { $0 }) {
+  public init(_ instance: E, prove typeCastToAnyObject: (E) -> any AnyObject = { $0 as any AnyObject }) {
     let typeCasted = typeCastToAnyObject(instance)
     // TODO: - ? builtin assert can be used
     // is it even needed?  'No exact matches in call to initializer ' so it won't compile
