@@ -5,23 +5,23 @@
 //  Created by Dmitriy Ignatyev on 02.10.2026.
 //
 
+import Foundation
 @testable import IndependentDeclarations
 import Testing
-import Foundation
 
 struct SemVerTests {
   @Test func initAndDescription() throws {
     let v010 = SemVer(major: 0, minor: 1, patch: 0)
     let v100 = SemVer(major: 1, minor: 0, patch: 0)
     let v123a = try SemVer(major: 1, minor: 2, patch: 3, preRelease: ["alpha"], buildMetadata: [])
-    let v100b = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["beta", "1"], buildMetadata: ["build", "123"])
-    
+    let v100b = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["beta-", "1"], buildMetadata: ["build", "123"])
+
     #expect(v010.description == "0.1.0")
     #expect(v100.description == "1.0.0")
     #expect(v123a.description == "1.2.3-alpha")
-    #expect(v100b.description == "1.0.0-beta.1+build.123")
+    #expect(v100b.description == "1.0.0-beta-.1+build.123")
   }
-  
+
   @Test func parsingFromStringRoundTrip() throws {
     // preRelease / buildMetaData
     let validSuffixes: [String] = [
@@ -34,7 +34,7 @@ struct SemVerTests {
       "-alpha-gamma.1--+build.123",
       "-beta.1+exp.sha.5114f85",
     ]
-    
+
     let numbers: [UInt8] = [0, 1, 2, 3, 7, 10, 11] // no need to spend time for checking full range 0...11
     for major in numbers {
       for minor in numbers {
@@ -42,7 +42,7 @@ struct SemVerTests {
           let versionCoreString = "\(major).\(minor).\(patch)"
           #expect(try SemVer._makeFromString(versionCoreString).description == versionCoreString,
                   "Description mismatch for: \(versionCoreString)")
-          
+
           for suffix in validSuffixes {
             let versionString = versionCoreString + suffix
             #expect(try SemVer._makeFromString(versionString).description == versionString,
@@ -55,26 +55,23 @@ struct SemVerTests {
 
   @Test func parsingInvalidStrings() throws {
     let invalid = ["", ".", "..", "...", "1", "1.", "1.2", "1.2.", "1.2.3.", "0.0.01", "1.2.3.4"]
-      + ["a.b.c", "1.0.0-", "1.0.0+", "1.0.0-.1", "1.0.0-01", "1.0.0-a..", "1.0.0+b..", "1.0.0-🤡", "1.0.0+🤡"]
-      + ["0.0.1--alpha.1", "0.0.1++build.123", "0.0.1-beta.1++exp.sha.5114f85"]
-    // "0.0.1--beta.1+exp.sha.5114f85",
+      + ["a.b.c", "1.0.0-", "1.0.0+", "1.0.0-.1", "1.0.0-a..", "1.0.0+b..", "1.0.0-🤡", "1.0.0+🤡"]
+      + ["01.0.0", "1.00.0", "1.0.01", "1.0.0-01"]
+      + ["0.0.1++build.123", "0.0.1-beta.1++exp.sha.5114f85"]
+
     for input in invalid {
       #expect(SemVer(input) == nil, "Should be nil for: \(input)")
       #expect(throws: (any Error).self) { try SemVer(description: input) }
     }
   }
 
-  @Test func validationRejectsLeadingZeros() throws {
-    // Pre-release numeric identifiers MUST NOT have leading zeros
-    #expect(throws: (any Error).self) { try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["01"], buildMetadata: []) }
-    #expect(throws: (any Error).self) { try SemVer(description: "1.0.0-01") }
-    #expect(throws: (any Error).self) { try SemVer(description: "01.0.0") }
-    
+  @Test func `build metadata allow leading zeros`() throws {
     // Build metadata CAN have leading zeros (per spec)
-    let v1 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: [], buildMetadata: ["01"])
-    #expect(v1.buildMetadata == ["01"])
-    let v2 = try SemVer(description: "1.0.0+01")
-    #expect(v2.buildMetadata == ["01"])
+    let va = try SemVer(major: 1, minor: 0, patch: 0, preRelease: [], buildMetadata: ["01"])
+    #expect(va.buildMetadata == ["01"])
+
+    let vb = try SemVer(description: "1.0.0+01")
+    #expect(vb.buildMetadata == ["01"])
   }
 
   @Test func validationRejectsInvalidChars() throws {
@@ -104,34 +101,11 @@ struct SemVerTests {
     #expect(v1 != v3)
   }
 
-  @Test func comparisonCoreVersions() throws {
-    #expect(try SemVer(major: 1, minor: 0, patch: 0) < SemVer(major: 2, minor: 0, patch: 0))
-    #expect(try SemVer(major: 2, minor: 1, patch: 0) < SemVer(major: 2, minor: 2, patch: 0))
-    #expect(try SemVer(major: 2, minor: 1, patch: 1) < SemVer(major: 2, minor: 1, patch: 2))
-  }
-
   @Test func comparisonPreReleaseVsRelease() throws {
-    let release = try SemVer(major: 1, minor: 0, patch: 0)
+    let release = SemVer(major: 1, minor: 0, patch: 0)
     let pre = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha"], buildMetadata: [])
     #expect(pre < release)
     #expect(!(release < pre))
-  }
-
-  @Test func comparisonPreReleaseIdentifiers() throws {
-    // From spec: 1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2 < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0
-    let cases: [(SemVer, SemVer)] = [
-      (try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha"], buildMetadata: []), try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha", "1"], buildMetadata: [])),
-      (try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha", "1"], buildMetadata: []), try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha", "beta"], buildMetadata: [])),
-      (try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha", "beta"], buildMetadata: []), try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["beta"], buildMetadata: [])),
-      (try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["beta"], buildMetadata: []), try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["beta", "2"], buildMetadata: [])),
-      (try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["beta", "2"], buildMetadata: []), try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["beta", "11"], buildMetadata: [])),
-      (try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["beta", "11"], buildMetadata: []), try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["rc", "1"], buildMetadata: [])),
-      (try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["rc", "1"], buildMetadata: []), try SemVer(major: 1, minor: 0, patch: 0)),
-    ]
-    for (less, greater) in cases {
-      #expect(less < greater, "\(less) should be < \(greater)")
-      #expect(!(greater < less))
-    }
   }
 
   @Test func comparisonNumericVsAlphanumeric() throws {
@@ -157,13 +131,6 @@ struct SemVerTests {
     #expect(decoded.description == original.description)
   }
 
-  @Test func failableInit() throws {
-    #expect(SemVer("1.0.0") != nil)
-    #expect(SemVer("1.0.0-alpha") != nil)
-    #expect(SemVer("invalid") == nil)
-    #expect(SemVer("1.0.0-01") == nil)
-  }
-
   @Test func specExamplesFromSite() throws {
     // Examples directly from semver.org spec
     let specExamples = [
@@ -184,24 +151,52 @@ struct SemVerTests {
       #expect(parsed.description == example, "Spec example round-trip failed: \(example)")
     }
   }
-  
-  func comparable() {
-    // 1.0.0 < 2.0.0 < 2.1.0 < 2.1.1 < 2.9.0 < 2.17.0
-    
-    
-    
-    
-    // Example: 1.0.0-alpha < 1.0.0-alpha.1 < 1.0.0-alpha.beta < 1.0.0-beta < 1.0.0-beta.2 < 1.0.0-beta.11 < 1.0.0-rc.1 < 1.0.0.
-  
+
+  @Test func comparisonCoreVersionChain() {
+    let sorted = [
+      SemVer(major: 0, minor: 0, patch: 0),
+      SemVer(major: 0, minor: 0, patch: 1),
+      SemVer(major: 0, minor: 1, patch: 0),
+      SemVer(major: 1, minor: 0, patch: 0),
+      SemVer(major: 2, minor: 0, patch: 0),
+      SemVer(major: 2, minor: 1, patch: 0),
+      SemVer(major: 2, minor: 1, patch: 1),
+      SemVer(major: 2, minor: 9, patch: 0),
+      SemVer(major: 2, minor: 17, patch: 0),
+    ]
+    for i in sorted.indices.dropLast() {
+      #expect(sorted[i] < sorted[i + 1])
+      #expect(sorted[i + 1] > sorted[i])
+    }
+  }
+
+  /// https://semver.org/#:~:text=equal.-,Example:%201.0.0%2Dalpha%20%3C,rc.1%20%3C%201.0.0.
+  @Test func comparisonPreReleaseFromSite() throws {
+    let sorted = try [
+      SemVer._makeFromString("1.0.0-alpha"),
+      SemVer._makeFromString("1.0.0-alpha.1"),
+      SemVer._makeFromString("1.0.0-alpha.beta"),
+      SemVer._makeFromString("1.0.0-beta"),
+      SemVer._makeFromString("1.0.0-beta.2"),
+      SemVer._makeFromString("1.0.0-beta.11"),
+      SemVer._makeFromString("1.0.0-rc.1"),
+      SemVer._makeFromString("1.0.0"),
+      SemVer._makeFromString("1.1.0-alpha"),
+    ]
+
+    for i in sorted.indices.dropLast() {
+      #expect(sorted[i] < sorted[i + 1])
+      #expect(sorted[i + 1] > sorted[i])
+    }
   }
 }
 
-extension SemVer {
+private extension SemVer {
   /// Uses both string initializers to test them together
-  fileprivate static func _makeFromString(_ description: String) throws -> Self {
+  static func _makeFromString(_ description: String) throws -> Self {
     let failableInitInstance = try #require(Self(description))
     let throwableInitInstance = try Self(description: description)
-    
+
     try #require(failableInitInstance == throwableInitInstance)
     try #require(failableInitInstance.description == throwableInitInstance.description)
     return Bool.random() ? failableInitInstance : throwableInitInstance

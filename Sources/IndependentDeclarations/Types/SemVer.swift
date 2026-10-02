@@ -43,8 +43,7 @@ public struct SemVer: Sendable, LosslessStringConvertible {
   }
   
   public init(description: String) throws {
-    let parsed = try SemVer.parse(description)
-    self = parsed
+    self = try SemVer.parse(description)
   }
   
   public init?(_ description: String) {
