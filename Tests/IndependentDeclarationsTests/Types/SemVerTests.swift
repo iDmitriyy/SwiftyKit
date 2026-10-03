@@ -98,15 +98,23 @@ struct SemVerTests {
     }
   }
   
-  private static func checkRoundTrip(semVerString: String, sourceLocation: SourceLocation = #_sourceLocation) throws {
-    let instance = try SemVer._makeFromString(semVerString)
+  // FIXME: - use checkRoundTrip
+  
+  // private static func testRoundTrip(semVer: SemVer, sourceLocation: SourceLocation = #_sourceLocation) throws {
+  
+  private static func testRoundTrip(semVerString: String, sourceLocation: SourceLocation = #_sourceLocation) throws {
+    let parsed = try SemVer._makeFromString(semVerString)
     
-    let instance2 = try SemVer(major: instance.major, minor: instance.minor, patch: instance.patch, preRelease: instance.preRelease, buildMetadata: instance.buildMetadata)
+    let reconstructed = try SemVer(major: parsed.major,
+                                   minor: parsed.minor,
+                                   patch: parsed.patch,
+                                   preRelease: parsed.preRelease,
+                                   buildMetadata: parsed.buildMetadata)
     
-    #expect(instance == instance2)
+    #expect(parsed == reconstructed)
     
-    #expect(instance.description == semVerString, "Description mismatch for: \(semVerString)")
-    #expect(instance2.description == semVerString, "Description mismatch for: \(semVerString)")
+    #expect(parsed.description == semVerString, "Description mismatch for: \(semVerString)")
+    #expect(reconstructed.description == semVerString, "Description mismatch for: \(semVerString)")
   }
 
   @Test func parsingInvalidStrings() throws {
@@ -161,7 +169,9 @@ struct SemVerTests {
   }
 
   @Test func comparisonCaseSensitivity() throws {
-    #expect(try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["A"], buildMetadata: []) < SemVer(major: 1, minor: 0, patch: 0, preRelease: ["a"], buildMetadata: []))
+    let vA = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["A"], buildMetadata: [])
+    let va = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["a"], buildMetadata: [])
+    #expect(vA < va)
   }
 
   @Test func comparisonBuildMetadataIgnored() throws {
@@ -203,6 +213,9 @@ struct SemVerTests {
       "1.0.0+20130313144700",
       "1.0.0-beta+exp.sha.5114f85",
       "1.0.0+21AF26D3----117B344092BD",
+      
+      // additional:
+      "1.0.0-1alpha", // starting with digit but having letters
     ]
     for example in specExamples {
       let parsed = try SemVer._makeFromString(example)
