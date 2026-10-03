@@ -9,6 +9,44 @@ import Foundation
 @testable import IndependentDeclarations
 import Testing
 
+/// SemVer 2.0.0 Spec Requirements
+///
+/// # Core Version (X.Y.Z)
+/// - ✅ Major, minor, patch as non-negative integers
+/// - ✅ No leading zeros (except "0" itself)
+/// - ✅ Exactly 3 components
+///
+/// # Pre-release
+/// - ✅ Hyphen-separated after patch
+/// - ✅ Dot-separated identifiers
+/// - ✅ Identifiers: ASCII alphanumerics + hyphen [0-9A-Za-z-]
+/// - ✅ Identifiers MUST NOT be empty
+/// - ✅ Numeric identifiers MUST NOT have leading zeros
+/// - ✅ Pre-release has lower precedence than release
+/// - ✅ Numeric identifiers compared numerically
+/// - ✅ Alphanumeric compared lexically in ASCII order
+/// - ✅ Numeric < Alphanumeric
+/// - ✅ More identifiers wins if prefix equal
+///
+/// # Build Metadata
+/// - ✅ Plus-separated after patch or pre-release
+/// - ✅ Dot-separated identifiers
+/// - ✅ Identifiers: ASCII alphanumerics + hyphen [0-9A-Za-z-]
+/// - ✅ Identifiers MUST NOT be empty
+/// - ✅ Leading zeros ALLOWED (unlike pre-release)
+/// - ✅ Build metadata IGNORED in precedence
+///
+/// # Precedence (Comparison)
+/// - ✅ Major > Minor > Patch numeric
+/// - ✅ Pre-release < Release when core equal
+/// - ✅ Pre-release identifiers left-to-right
+/// - ✅ Numeric < Alphanumeric
+/// - ✅ More identifiers wins if equal prefix
+/// - ✅ Build metadata ignored
+///
+/// # Special Cases
+/// - ✅ Version 0.y.z (initial development)
+/// - ✅ Version 1.0.0 (public API)
 struct SemVerTests {
   @Test func initAndDescription() throws {
     let v000 = SemVer(major: 0, minor: 0, patch: 0)
@@ -75,10 +113,11 @@ struct SemVerTests {
     let invalid = ["", ".", "..", "...", "1", "1.", "1.2", "1.2.", "0.0.01", "1.2.3.4"]
       + ["1.2.3.", "1.2.3.-", "1.2.3.+", "1.0.0..", "1.0.0..-", "1.0.0..+"]
       + ["a.b.c", "1.0.0-🤡", "1.0.0+🤡"]
-      + ["1.0.0-", "1.0.0-.", "1.0.0+", "1.0.0+.", "1.0.0-.1", "1.0.0-a..", "1.0.0+b..", "1.0.0-alpha+."]
+      + ["1.0.0-", "1.0.0-.", "1.0.0+", "1.0.0+.", "1.0.0-.1", "1.0.0-.alpha"]
+      + ["1.0.0-a..", "1.0.0+b..", "1.0.0-alpha+."]
       + ["01.0.0", "1.00.0", "1.0.01", "1.0.0-01"]
       + ["0.0.1++build.123", "0.0.1-beta.1++exp.sha.5114f85"]
-
+    
     for input in invalid {
       #expect(SemVer(input) == nil, "Should be nil for: \(input)")
       #expect(throws: (any Error).self) { try SemVer(description: input) }
