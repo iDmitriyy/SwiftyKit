@@ -26,7 +26,7 @@ import Testing
 /// - ✅ Numeric identifiers compared numerically
 /// - ✅ Alphanumeric compared lexically in ASCII order
 /// - ✅ Numeric < Alphanumeric
-/// - ✅ More identifiers wins if prefix equal
+/// - ✅ More identifiers is considered "greater than" if prefix equal
 ///
 /// # Build Metadata
 /// - ✅ Plus-separated after patch or pre-release
@@ -39,9 +39,9 @@ import Testing
 /// # Precedence (Comparison)
 /// - ✅ Major > Minor > Patch numeric
 /// - ✅ Pre-release < Release when core equal
-/// - ✅ Pre-release identifiers left-to-right
+/// - ✅ Pre-release identifiers compared left-to-right
 /// - ✅ Numeric < Alphanumeric
-/// - ✅ More identifiers wins if equal prefix
+/// - ✅ More identifiers is considered "greater than" if prefix equal
 /// - ✅ Build metadata ignored
 ///
 /// # Special Cases
@@ -239,12 +239,13 @@ struct SemVerTests {
       SemVer._makeFromString("1.0.0-alpha.beta+4"),
       SemVer._makeFromString("1.0.0-beta+10"),
       SemVer._makeFromString("1.0.0-beta.2+3"),
+      SemVer._makeFromString("1.0.0-beta.2.1+0"),
       SemVer._makeFromString("1.0.0-beta.11+5"),
       SemVer._makeFromString("1.0.0-rc.1+8"),
       SemVer._makeFromString("1.0.0+2"),
       SemVer._makeFromString("1.1.0-alpha+1"),
     ]
-
+    
     for i in sorted.indices.dropLast() {
       Self.expectIsLess(a: sorted[i], thanB: sorted[i + 1])
     }
