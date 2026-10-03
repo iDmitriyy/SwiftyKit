@@ -27,6 +27,7 @@ public struct SemVer: Sendable, LosslessStringConvertible {
   public init(major: UInt16, minor: UInt16, patch: UInt16, preRelease: [String], buildMetadata: [String]) throws {
     if !preRelease.isEmpty { try Self.validateIdentifiers(preRelease, context: .preRelease) }
     if !buildMetadata.isEmpty { try Self.validateIdentifiers(buildMetadata, context: .buildMetadata) }
+    
     self.preRelease = preRelease
     self.buildMetadata = buildMetadata
     self.major = major
