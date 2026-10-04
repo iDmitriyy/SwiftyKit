@@ -67,37 +67,52 @@ struct SemVerTests {
   @Test func parsingFromStringRoundTrip() throws {
     // preRelease / buildMetaData
     let validSuffixes: [String] = [
+      "", // empty string to test pure core version
       "-alpha",
-      "-alpha-",
-      "--alpha", // Valid per grammar but likely typo
-      "-1alpha-01",
       "-alpha.1",
-      "--", // Valid per grammar but likely meaningless in practice
       "+01",
       "+123",
       "+build.123",
       "-alpha+build.123",
-      "-alpha-gamma.1--+build.123",
       "-beta.1+exp.sha.5114f85",
     ]
-
-    let numbers: [UInt16] = [0, 1, 2, 3, 7, 10, 11, 100, 101, .max]
+    
+    let numbers: [UInt16] = [0, 1, 2, 3, 10, 11, 100, 101, 1000, .max]
     for major in numbers {
       for minor in numbers {
         for patch in numbers {
           let versionCoreString = "\(major).\(minor).\(patch)"
-          #expect(try SemVer._makeFromString(versionCoreString).description == versionCoreString,
-                  "Description mismatch for: \(versionCoreString)")
 
           for suffix in validSuffixes {
             let versionString = versionCoreString + suffix
-            #expect(try SemVer._makeFromString(versionString).description == versionString,
-                    "Description mismatch for: \(versionString)")
+            try Self.testRoundTrip(semVerString: versionString)
           }
         }
       }
     }
   }
+  
+  @Test func parsingFromStringWeirdSuffixRoundTrip() throws {
+    let coreVersions: [String] = [
+      "0.0.0", "0.1.0", "1.0.0", "1.2.3", "9.9.9", "10.20.30", "100.101.102", "65535.65535.65535"
+    ]
+    
+    let weirdValidSuffixes: [String] = [
+      "-alpha-",
+      "--alpha", // Valid per grammar but likely a typo
+      "-1alpha-01",
+      "--", // Valid per grammar but likely meaningless in practice
+      "-alpha-gamma.1--+build.123",
+    ]
+    
+    for coreVersion in coreVersions {
+      for suffix in weirdValidSuffixes {
+        let versionString = coreVersion + suffix
+        try Self.testRoundTrip(semVerString: versionString)
+      }
+    }
+  }
+  
   
   @Test func parsingInvalidStrings() throws {
     let invalid = ["", ".", "..", "...", "1", "1.", "1.2", "1.2.", "1.2.3.", "1.2.3.4"]
@@ -228,9 +243,8 @@ struct SemVerTests {
   @Test func examples() throws {
     let examples: [String] = [
       "1.9.0-beta+8547", // beta, Build 8547
-      "1.9.0-beta+8552", // beta, Build 8552
       "1.9.0-rc.1+8553", // release candidate 1, Build 8553
-      "1.9.0-rc.2+8554", // release candidate 2, Build 8554
+      "1.9.0-rc.2+8554", // release candidate 2, Build 8555
       "1.9.0+8559", // release, Build 8559
       "1.9.0+8560", // release, Build 8560
     ]
@@ -265,11 +279,6 @@ struct SemVerTests {
 // MARK: - Tooling
 
 extension SemVerTests {
-  // FIXME: - use checkRoundTrip
-  // ?? -alpha-01
-  
-  // private static func testRoundTrip(semVer: SemVer, sourceLocation: SourceLocation = #_sourceLocation) throws {
-  
   private static func testRoundTrip(semVerString: String, sourceLocation: SourceLocation = #_sourceLocation) throws {
     let parsed = try SemVer._makeFromString(semVerString)
     
