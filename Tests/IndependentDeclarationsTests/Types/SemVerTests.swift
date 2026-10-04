@@ -70,6 +70,7 @@ struct SemVerTests {
       "-alpha",
       "-alpha-",
       "--alpha", // Valid per grammar but likely typo
+      "-1alpha-01",
       "-alpha.1",
       "--", // Valid per grammar but likely meaningless in practice
       "+01",
@@ -180,8 +181,6 @@ struct SemVerTests {
     #expect(decoded.description == original.description)
   }
 
-  
-
   @Test func comparisonSortedCoreVersions() throws {
     let sorted = [
       SemVer(major: 0, minor: 0, patch: 0),
@@ -228,8 +227,17 @@ struct SemVerTests {
   
   @Test func examples() throws {
     let examples: [String] = [
-      
+      "1.9.0-beta+8547", // beta, Build 8547
+      "1.9.0-beta+8552", // beta, Build 8552
+      "1.9.0-rc.1+8553", // release candidate 1, Build 8553
+      "1.9.0-rc.2+8554", // release candidate 2, Build 8554
+      "1.9.0+8559", // release, Build 8559
+      "1.9.0+8560", // release, Build 8560
     ]
+    
+    for example in examples {
+      try Self.testRoundTrip(semVerString: example)
+    }
   }
   
   @Test func specExamplesFromSite() throws {
@@ -246,8 +254,6 @@ struct SemVerTests {
       "1.0.0+20130313144700",
       "1.0.0-beta+exp.sha.5114f85",
       "1.0.0+21AF26D3----117B344092BD",
-      
-      
     ]
     
     for example in specExamples {
