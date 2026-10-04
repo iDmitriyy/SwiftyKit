@@ -44,7 +44,7 @@ import Testing
 /// - ✅ More identifiers is considered "greater than" if prefix equal
 /// - ✅ Build metadata ignored
 struct SemVerTests {
-  @Test func initAndDescription() throws {
+  @Test func `Init And Hardcoded TestDescription`() throws {
     let v000 = SemVer(major: 0, minor: 0, patch: 0)
     let v010 = SemVer(major: 0, minor: 1, patch: 0)
     let v100 = SemVer(major: 1, minor: 0, patch: 0)
@@ -60,25 +60,53 @@ struct SemVerTests {
     #expect(vMaxA.description == "65535.65535.65535-alpha1.1")
   }
 
-  @Test func `String Parsing Core Version RoundTrip`() throws {
-    let suffixes: [String] = [
-      "", // empty string to test pure core version
-      "-1beta-1.--1+exp.sha-2--.5114f85",
-    ]
-    
+  @Test func `String Core Version RoundTrip`() throws {
     let numbers: [UInt16] = [0, 1, 2, 3, 10, 11, 100, 101, 1000, .max]
+    
+    var previous: SemVer?
     for major in numbers {
       for minor in numbers {
         for patch in numbers {
           let versionCoreString = "\(major).\(minor).\(patch)"
 
-          for suffix in suffixes {
-            let versionString = versionCoreString + suffix
-            try Self.testRoundTrip(semVerString: versionString)
+          let parsed = try Self.testRoundTrip(semVerString: versionCoreString)
+          let numericallyInited = SemVer(major: major, minor: minor, patch: patch)
+          let numericallyThrowableInited = try SemVer(major: major,
+                                                      minor: minor,
+                                                      patch: patch,
+                                                      preRelease: [],
+                                                      buildMetadata: [])
+          
+          try Self.testRoundTrip(semVer: numericallyInited)
+          try Self.testRoundTrip(semVer: numericallyThrowableInited)
+          
+          #expect(parsed.byThrowableInit == numericallyInited)
+          #expect(parsed.byFailableInit == numericallyInited)
+          
+          #expect(parsed.byThrowableInit == numericallyThrowableInited)
+          #expect(parsed.byFailableInit == numericallyThrowableInited)
+          
+          #expect(numericallyInited == numericallyThrowableInited)
+          
+          if let previous {
+            Self.expectIsLess(a: previous, thanB: parsed.byThrowableInit)
+            Self.expectIsLess(a: previous, thanB: parsed.byFailableInit)
+            
+            Self.expectIsLess(a: previous, thanB: numericallyInited)
+            Self.expectIsLess(a: previous, thanB: numericallyThrowableInited)
+          }
+          
+          previous = switch Int.random(in: 0...2) {
+          case 0: Bool.random() ? parsed.byThrowableInit : parsed.byFailableInit
+          case 1: numericallyInited
+          default: numericallyThrowableInited
           }
         }
       }
     }
+    
+    let last = try #require(previous)
+    Self.testEquality(last)
   }
   
   @Test func `String Parsing Valid Suffix RoundTrip`() throws {
@@ -186,27 +214,6 @@ struct SemVerTests {
     #expect(decoded.description == original.description)
   }
 
-  @Test func `Comparison Of CoreVersions`() throws {
-    let sorted = [
-      SemVer(major: 0, minor: 0, patch: 0),
-      SemVer(major: 0, minor: 0, patch: 1),
-      SemVer(major: 0, minor: 1, patch: 0),
-      SemVer(major: 1, minor: 0, patch: 0),
-      SemVer(major: 2, minor: 0, patch: 0),
-      SemVer(major: 2, minor: 1, patch: 0),
-      SemVer(major: 2, minor: 1, patch: 1),
-      SemVer(major: 2, minor: 9, patch: 0),
-      SemVer(major: 2, minor: 17, patch: 0),
-      SemVer(major: .max, minor: .max, patch: .max),
-    ]
-    for i in sorted.indices.dropLast() {
-      Self.expectIsLess(a: sorted[i], thanB: sorted[i + 1])
-    }
-
-    let last = try #require(sorted.last)
-    Self.expectIsEqual(last)
-  }
-
   /// https://semver.org/#:~:text=equal.-,Example:%201.0.0%2Dalpha%20%3C,rc.1%20%3C%201.0.0.
   @Test func `Comparison Of PreRelease Examples`() throws {
     let sorted = try [
@@ -232,18 +239,23 @@ struct SemVerTests {
       SemVer._makeFromString("2.0.0-9.0"),
       SemVer._makeFromString("2.0.0-17.0"),
       
-      // preRelease alpha-numeric `-17` must be less than `-9`:
-      // note that `-17` and `-9` are treated as alpha-numeric identifiers, not negative numbers.
+      // preRelease alpha-numeric "-17" must be less than "-9":
+      // note that "-17" and "-9" are treated as alpha-numeric string identifiers, not negative numbers.
       SemVer._makeFromString("2.0.0--17.0"),
       SemVer._makeFromString("2.0.0--9.0"),
     ]
     
     for i in sorted.indices.dropLast() {
-      Self.expectIsLess(a: sorted[i], thanB: sorted[i + 1])
+      let curentParsed = sorted[i]
+      let nextParsed = sorted[i + 1]
+      Self.expectIsLess(a: curentParsed.byThrowableInit, thanB: nextParsed.byThrowableInit)
+      Self.expectIsLess(a: curentParsed.byFailableInit, thanB: nextParsed.byFailableInit)
+      Self.expectIsLess(a: curentParsed.byThrowableInit, thanB: nextParsed.byFailableInit)
     }
 
-    let last = try #require(sorted.last)
-    Self.expectIsEqual(last)
+    let lastParsed = try #require(sorted.last)
+    Self.testEquality(lastParsed.byThrowableInit)
+    Self.testEquality(lastParsed.byFailableInit)
   }
   
   @Test func specExamplesFromSite() throws {
@@ -286,19 +298,58 @@ struct SemVerTests {
 // MARK: - Tooling
 
 extension SemVerTests {
-  private static func testRoundTrip(semVerString: String, sourceLocation: SourceLocation = #_sourceLocation) throws {
+  @discardableResult
+  private static func testRoundTrip(semVerString: String,
+                                    sourceLocation: SourceLocation = #_sourceLocation) throws
+  -> (byThrowableInit: SemVer, byFailableInit: SemVer) {
     let parsed = try SemVer._makeFromString(semVerString)
     
-    let reconstructed = try SemVer(major: parsed.major,
-                                   minor: parsed.minor,
-                                   patch: parsed.patch,
-                                   preRelease: parsed.preRelease,
-                                   buildMetadata: parsed.buildMetadata)
+    let parsedT = parsed.byThrowableInit
+    let parsedF = parsed.byFailableInit
     
-    #expect(parsed == reconstructed)
+    let reconstructedT = try SemVer(major: parsedT.major,
+                                    minor: parsedT.minor,
+                                    patch: parsedT.patch,
+                                    preRelease: parsedT.preRelease,
+                                    buildMetadata: parsedT.buildMetadata)
     
-    #expect(parsed.description == semVerString, "Description mismatch for: \(semVerString)")
-    #expect(reconstructed.description == semVerString, "Description mismatch for: \(semVerString)")
+    let reconstructedF = try SemVer(major: parsedF.major,
+                                    minor: parsedF.minor,
+                                    patch: parsedF.patch,
+                                    preRelease: parsedF.preRelease,
+                                    buildMetadata: parsedF.buildMetadata)
+    
+    #expect(parsedT == reconstructedT)
+    #expect(parsedF == reconstructedF)
+    #expect(reconstructedT == reconstructedF)
+    
+    #expect(parsedT.description == semVerString, "Description mismatch for: \(semVerString)")
+    #expect(reconstructedT.description == semVerString, "Description mismatch for: \(semVerString)")
+    #expect(reconstructedF.description == semVerString, "Description mismatch for: \(semVerString)")
+    
+    return parsed
+  }
+  
+  private static func testRoundTrip(semVer: SemVer,
+                                    sourceLocation: SourceLocation = #_sourceLocation) throws {
+    let reconstructed = try SemVer(major: semVer.major,
+                                   minor: semVer.minor,
+                                   patch: semVer.patch,
+                                   preRelease: semVer.preRelease,
+                                   buildMetadata: semVer.buildMetadata)
+    
+    #expect(semVer == reconstructed)
+    
+    let semVerDescription = semVer.description
+    #expect(semVerDescription == reconstructed.description, "Description mismatch for: \(semVer)")
+    
+    #expect(throws: Never.self) {
+      try SemVer._makeFromString(semVerDescription)
+    }
+    
+    #expect(throws: Never.self) {
+      try SemVer._makeFromString(reconstructed.description)
+    }
   }
   
   private static func expectIsLess(a: SemVer, thanB b: SemVer, sourceLocation: SourceLocation = #_sourceLocation) {
@@ -316,7 +367,7 @@ extension SemVerTests {
     #expect(a >= a)
   }
 
-  private static func expectIsEqual(_ element: SemVer, sourceLocation: SourceLocation = #_sourceLocation) {
+  private static func testEquality(_ element: SemVer, sourceLocation: SourceLocation = #_sourceLocation) {
     #expect(element <= element, sourceLocation: sourceLocation)
     #expect(element >= element, sourceLocation: sourceLocation)
     #expect(element == element, sourceLocation: sourceLocation)
@@ -325,12 +376,13 @@ extension SemVerTests {
 
 private extension SemVer {
   /// Uses both string initializers to test them together
-  static func _makeFromString(_ description: String) throws -> Self {
+  static func _makeFromString(_ description: String) throws
+    -> (byThrowableInit: Self, byFailableInit: Self) {
     let failableInitInstance = try #require(Self(description))
     let throwableInitInstance = try Self(description: description)
 
     try #require(failableInitInstance == throwableInitInstance)
     try #require(failableInitInstance.description == throwableInitInstance.description)
-    return Bool.random() ? failableInitInstance : throwableInitInstance
+    return (throwableInitInstance, failableInitInstance)
   }
 }
