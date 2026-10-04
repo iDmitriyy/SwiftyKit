@@ -24,7 +24,7 @@ import Testing
 /// - ✅ Numeric identifiers MUST NOT have leading zeros
 /// - ✅ Pre-release has lower precedence than release
 /// - ✅ Numeric identifiers compared numerically
-/// - ✅ Alphanumeric compared lexically in ASCII order
+/// - ✅ Alphanumeric compared lexicographically in ASCII order
 /// - ✅ Numeric < Alphanumeric
 /// - ✅ More identifiers is considered "greater than" if prefix equal
 ///
@@ -101,6 +101,8 @@ struct SemVerTests {
       "-0alpha-01",
       "--", // Valid per grammar but likely meaningless in practice
       "-alpha-gamma.1--+build.123",
+      "+-22342343",
+      "--1",
     ]
     
     for coreVersion in coreVersions {
@@ -171,7 +173,7 @@ struct SemVerTests {
 
     let preRelease = try #require(v100.preRelease.first)
     let buildMetadata = try #require(v100.buildMetadata.first)
-
+    
     #expect(preRelease.count == 257)
     #expect(buildMetadata.count == 257)
   }
@@ -220,6 +222,20 @@ struct SemVerTests {
       SemVer._makeFromString("1.0.0-rc.1+8"),
       SemVer._makeFromString("1.0.0+2"),
       SemVer._makeFromString("1.1.0-alpha+1"),
+      
+      // "1.17.0" is lexicographically less than "1.9.0",
+      // check that SemVer is compared numerically, not lexicographically:
+      SemVer._makeFromString("1.9.0"),
+      SemVer._makeFromString("1.17.0"),
+      
+      // preRelease numeric `9` identifier must be less than `17`:
+      SemVer._makeFromString("2.0.0-9.0"),
+      SemVer._makeFromString("2.0.0-17.0"),
+      
+      // preRelease alpha-numeric `-17` must be less than `-9`:
+      // note that `-17` and `-9` are treated as alpha-numeric identifiers, not negative numbers.
+      SemVer._makeFromString("2.0.0--17.0"),
+      SemVer._makeFromString("2.0.0--9.0"),
     ]
     
     for i in sorted.indices.dropLast() {

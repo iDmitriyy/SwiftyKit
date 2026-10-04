@@ -112,7 +112,7 @@ public struct SemVer: Sendable, LosslessStringConvertible {
         throw TextError(text: "Invalid character in \(context) identifier: \(identifier)")
       }
       // Leading zeros only forbidden for pre-release numeric identifiers (per SemVer spec)
-      if context == .preRelease, identifier.allSatisfy(isASCIINumber), identifier.count > 1, identifier.hasPrefix("0") {
+      if context == .preRelease, identifier.count > 1, identifier.hasPrefix("0"), identifier.allSatisfy(isASCIINumber) {
         throw TextError(text: "Leading zeros in numeric pre-release identifier: \(identifier)")
       }
     }
@@ -159,31 +159,42 @@ extension SemVer: Comparable {
   
   /// Compares two pre-release identifier arrays per SemVer spec §11.4:
   /// - Numeric identifiers compared numerically
-  /// - Alphanumeric compared lexically in ASCII order
+  /// - Alphanumeric compared lexicographically in ASCII order
   /// - Numeric < Alphanumeric
-  /// - More identifiers wins if prefix equal
+  /// - More identifiers is considered "greater than" if prefix equal
   private static func comparePreRelease(_ lhs: [String], _ rhs: [String]) -> Bool {
-    let count = min(lhs.count, rhs.count)
-    for i in 0..<count {
-      let l = lhs[i]
-      let r = rhs[i]
-      let lNumeric = l.allSatisfy(isASCIINumber)
-      let rNumeric = r.allSatisfy(isASCIINumber)
+    let minEndIndex = min(lhs.endIndex, rhs.endIndex)
+    
+    for i in 0..<minEndIndex {
+      let sLhs = lhs[i]
+      let sRhs = rhs[i]
       
-      if lNumeric && rNumeric {
-        // Both numeric: compare as integers
-        let lv = Int(l) ?? 0
-        let rv = Int(r) ?? 0
-        if lv != rv { return lv < rv }
-      } else if lNumeric != rNumeric {
+      let uLhs = UInt(sLhs)
+      let uRhs = UInt(sRhs)
+      
+      let isLhsNumeric = uLhs != nil
+      let isRhsNumeric = uRhs != nil
+      
+      if let uLhs, let uRhs { // Both numeric: compare as unsigned integers
+        if uLhs == uRhs {
+          continue
+        } else {
+          return uLhs < uRhs
+        }
+      } else if isLhsNumeric != isRhsNumeric { // exactly one is numeric
         // Numeric < Alphanumeric (per spec §11.4.2)
-        return lNumeric
+        return isLhsNumeric
       } else {
-        // Both alphanumeric: ASCII lexical comparison
-        if l != r { return l < r }
+        // Both alphanumeric: ASCII lexicographical comparison
+        if sLhs == sRhs {
+          continue
+        } else {
+          return sLhs < sRhs
+        }
       }
     }
-    // Prefix equal: more identifiers wins (per spec §11.4.3)
+    
+    // Prefix equal: more identifiers is considered "greater than" (per spec §11.4.3)
     return lhs.count < rhs.count
   }
 }
