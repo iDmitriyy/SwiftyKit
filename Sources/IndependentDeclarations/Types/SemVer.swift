@@ -144,15 +144,17 @@ extension SemVer: Comparable {
     let lhsIsRelease = lhs.preRelease.isEmpty
     let rhsIsRelease = rhs.preRelease.isEmpty
     
-    if lhsIsRelease != rhsIsRelease {
-      return !lhsIsRelease
+    switch (lhsIsRelease, rhsIsRelease) {
+    case (true, true):                 // both releases, equal
+        return false
+      
+    case (false, false):
+        // Both pre-releases: compare identifiers left-to-right (per spec §11.4)
+        return comparePreRelease(lhs.preRelease, rhs.preRelease)
+      
+    case (true, false), (false, true): // exactly one is a release
+        return !lhsIsRelease           // release is greater
     }
-    
-    // Both are releases → equal
-    if lhsIsRelease { return false }
-    
-    // 3. Both pre-releases: compare identifiers left-to-right (per spec §11.4)
-    return comparePreRelease(lhs.preRelease, rhs.preRelease)
   }
   
   /// Compares two pre-release identifier arrays per SemVer spec §11.4:
