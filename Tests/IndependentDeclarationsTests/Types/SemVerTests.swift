@@ -43,10 +43,6 @@ import Testing
 /// - ✅ Numeric < Alphanumeric
 /// - ✅ More identifiers is considered "greater than" if prefix equal
 /// - ✅ Build metadata ignored
-///
-/// # Special Cases
-/// - ✅ Version 0.y.z (initial development)
-/// - ✅ Version 1.0.0 (public API)
 struct SemVerTests {
   @Test func initAndDescription() throws {
     let v000 = SemVer(major: 0, minor: 0, patch: 0)
@@ -102,7 +98,7 @@ struct SemVerTests {
       // valid but weird:
       "-alpha-",
       "--alpha", // Valid per grammar but likely a typo
-      "-1alpha-01",
+      "-0alpha-01",
       "--", // Valid per grammar but likely meaningless in practice
       "-alpha-gamma.1--+build.123",
     ]
@@ -210,8 +206,10 @@ struct SemVerTests {
   }
 
   /// https://semver.org/#:~:text=equal.-,Example:%201.0.0%2Dalpha%20%3C,rc.1%20%3C%201.0.0.
-  @Test func `Comparison Of PreReleaseExamples From Site`() throws {
+  @Test func `Comparison Of PreRelease Examples`() throws {
     let sorted = try [
+      SemVer._makeFromString("1.0.0-22222+6"),
+      SemVer._makeFromString("1.0.0-22222.8+5"),
       SemVer._makeFromString("1.0.0-alpha+9"),
       SemVer._makeFromString("1.0.0-alpha.1+7"),
       SemVer._makeFromString("1.0.0-alpha.beta+4"),
