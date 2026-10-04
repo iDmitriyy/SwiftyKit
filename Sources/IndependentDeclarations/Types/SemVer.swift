@@ -5,7 +5,8 @@
 //  Created by Dmitriy Ignatyev on 01.10.2026.
 //
 
-/// https://semver.org/
+/// Semantic Versioning 2.0.0 implementation.
+/// See https://semver.org/spec/v2.0.0.html
 public struct SemVer: Sendable, LosslessStringConvertible {
   public let preRelease: [String]
   public let buildMetadata: [String]
@@ -134,10 +135,12 @@ extension SemVer: Equatable {
 
 extension SemVer: Comparable {
   public static func < (lhs: Self, rhs: Self) -> Bool {
+    // 1. Compare core version numerically: major > minor > patch
     if lhs.major != rhs.major { return lhs.major < rhs.major }
     if lhs.minor != rhs.minor { return lhs.minor < rhs.minor }
     if lhs.patch != rhs.patch { return lhs.patch < rhs.patch }
     
+    // 2. Pre-release has lower precedence than release (per spec §11.3)
     let lhsIsRelease = lhs.preRelease.isEmpty
     let rhsIsRelease = rhs.preRelease.isEmpty
     
@@ -145,11 +148,18 @@ extension SemVer: Comparable {
       return !lhsIsRelease
     }
     
+    // Both are releases → equal
     if lhsIsRelease { return false }
     
+    // 3. Both pre-releases: compare identifiers left-to-right (per spec §11.4)
     return comparePreRelease(lhs.preRelease, rhs.preRelease)
   }
   
+  /// Compares two pre-release identifier arrays per SemVer spec §11.4:
+  /// - Numeric identifiers compared numerically
+  /// - Alphanumeric compared lexically in ASCII order
+  /// - Numeric < Alphanumeric
+  /// - More identifiers wins if prefix equal
   private static func comparePreRelease(_ lhs: [String], _ rhs: [String]) -> Bool {
     let count = min(lhs.count, rhs.count)
     for i in 0..<count {
@@ -159,15 +169,19 @@ extension SemVer: Comparable {
       let rNumeric = r.allSatisfy(isASCIINumber)
       
       if lNumeric && rNumeric {
+        // Both numeric: compare as integers
         let lv = Int(l) ?? 0
         let rv = Int(r) ?? 0
         if lv != rv { return lv < rv }
       } else if lNumeric != rNumeric {
+        // Numeric < Alphanumeric (per spec §11.4.2)
         return lNumeric
       } else {
+        // Both alphanumeric: ASCII lexical comparison
         if l != r { return l < r }
       }
     }
+    // Prefix equal: more identifiers wins (per spec §11.4.3)
     return lhs.count < rhs.count
   }
 }
