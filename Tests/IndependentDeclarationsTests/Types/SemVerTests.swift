@@ -267,13 +267,14 @@ struct SemVerTests {
     }
   }
   
-  @Test func examples() throws {
+  @Test func `Typical RealWorld Examples`() throws {
     let examples: [String] = [
-      "1.9.0-beta+8547", // beta, Build 8547
-      "1.9.0-rc.1+8553", // release candidate 1, Build 8553
-      "1.9.0-rc.2+8554", // release candidate 2, Build 8554
-      "1.9.0+8559", // release, Build 8559
-      "1.9.0+8560", // release, Build 8560
+      "1.9.0-alpha+8503", // beta, Build 8503 (development)
+      "1.9.0-beta+8547", // beta, Build 8547 (QA testing)
+      "1.9.0-rc.1+8553", // release candidate 1, Build 8553 (regression founf)
+      "1.9.0-rc.2+8554", // release candidate 2, Build 8554 (final rc)
+      "1.9.0+8559", // release, Build 8559 (appStore rejected, changes needed)
+      "1.9.0+8560", // release, Build 8560 (appStore version)
     ]
     
     for example in examples {
