@@ -98,32 +98,13 @@ struct SemVerTests {
     }
   }
   
-  // FIXME: - use checkRoundTrip
-  
-  // private static func testRoundTrip(semVer: SemVer, sourceLocation: SourceLocation = #_sourceLocation) throws {
-  
-  private static func testRoundTrip(semVerString: String, sourceLocation: SourceLocation = #_sourceLocation) throws {
-    let parsed = try SemVer._makeFromString(semVerString)
-    
-    let reconstructed = try SemVer(major: parsed.major,
-                                   minor: parsed.minor,
-                                   patch: parsed.patch,
-                                   preRelease: parsed.preRelease,
-                                   buildMetadata: parsed.buildMetadata)
-    
-    #expect(parsed == reconstructed)
-    
-    #expect(parsed.description == semVerString, "Description mismatch for: \(semVerString)")
-    #expect(reconstructed.description == semVerString, "Description mismatch for: \(semVerString)")
-  }
-
   @Test func parsingInvalidStrings() throws {
-    let invalid = ["", ".", "..", "...", "1", "1.", "1.2", "1.2.", "0.0.01", "1.2.3.4"]
-      + ["1.2.3.", "1.2.3.-", "1.2.3.+", "1.0.0..", "1.0.0..-", "1.0.0..+"]
+    let invalid = ["", ".", "..", "...", "1", "1.", "1.2", "1.2.", "1.2.3.", "1.2.3.4"]
       + ["a.b.c", "1.0.0-🤡", "1.0.0+🤡"]
+      + ["1.2.3.-", "1.2.3.+", "1.0.0..", "1.0.0..-", "1.0.0..+"]
       + ["1.0.0-", "1.0.0-.", "1.0.0+", "1.0.0+.", "1.0.0-.1", "1.0.0-.alpha"]
       + ["1.0.0-a..", "1.0.0+b..", "1.0.0-alpha+."]
-      + ["01.0.0", "1.00.0", "1.0.01", "1.0.0-01"]
+      + ["01.0.0", "1.00.0", "1.0.01", "1.0.0-01", "1.0.0-alpha.01"]
       + ["0.0.1++build.123", "0.0.1-beta.1++exp.sha.5114f85"]
     
     for input in invalid {
@@ -149,10 +130,10 @@ struct SemVerTests {
   }
 
   @Test func validationAllowsHyphensInIdentifiers() throws {
-    let v1 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha-1"], buildMetadata: [])
-    #expect(v1.preRelease == ["alpha-1"])
-    let v2 = try SemVer(description: "1.0.0+build-123.sha-abc")
-    #expect(v2.buildMetadata == ["build-123", "sha-abc"])
+    let v1 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["1alpha-01"], buildMetadata: [])
+    #expect(v1.preRelease == ["1alpha-01"])
+    let v2 = try SemVer(description: "1.0.0+1build-123.sha-abc")
+    #expect(v2.buildMetadata == ["1build-123", "sha-abc"])
   }
 
   @Test func validationAllowsEmptyArraysInInit() throws {
@@ -161,8 +142,8 @@ struct SemVerTests {
   }
 
   @Test func equalityIgnoresBuildMetadata() throws {
-    let v1 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha"], buildMetadata: ["build1"])
-    let v2 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha"], buildMetadata: ["build2"])
+    let v1 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["1alpha-01"], buildMetadata: ["build1"])
+    let v2 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["1alpha-01"], buildMetadata: ["build2"])
     let v3 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["beta"], buildMetadata: ["build1"])
     #expect(v1 == v2)
     #expect(v1 != v3)
@@ -199,29 +180,7 @@ struct SemVerTests {
     #expect(decoded.description == original.description)
   }
 
-  @Test func specExamplesFromSite() throws {
-    // Examples directly from semver.org spec
-    let specExamples = [
-      // pre release
-      "1.0.0-alpha",
-      "1.0.0-alpha.1",
-      "1.0.0-0.3.7",
-      "1.0.0-x.7.z.92",
-      "1.0.0-x-y-z.--",
-      // build metadata
-      "1.0.0-alpha+001",
-      "1.0.0+20130313144700",
-      "1.0.0-beta+exp.sha.5114f85",
-      "1.0.0+21AF26D3----117B344092BD",
-      
-      // additional:
-      "1.0.0-1alpha", // starting with digit but having letters
-    ]
-    for example in specExamples {
-      let parsed = try SemVer._makeFromString(example)
-      #expect(parsed.description == example, "Spec example round-trip failed: \(example)")
-    }
-  }
+  
 
   @Test func comparisonSortedCoreVersions() throws {
     let sorted = [
@@ -266,7 +225,60 @@ struct SemVerTests {
     let last = try #require(sorted.last)
     Self.expectIsEqual(last)
   }
+  
+  @Test func examples() throws {
+    let examples: [String] = [
+      
+    ]
+  }
+  
+  @Test func specExamplesFromSite() throws {
+    // Examples directly from semver.org spec
+    let specExamples = [
+      // pre release
+      "1.0.0-alpha",
+      "1.0.0-alpha.1",
+      "1.0.0-0.3.7",
+      "1.0.0-x.7.z.92",
+      "1.0.0-x-y-z.--",
+      // build metadata
+      "1.0.0-alpha+001",
+      "1.0.0+20130313144700",
+      "1.0.0-beta+exp.sha.5114f85",
+      "1.0.0+21AF26D3----117B344092BD",
+      
+      
+    ]
+    
+    for example in specExamples {
+      try Self.testRoundTrip(semVerString: example)
+    }
+  }
+}
 
+// MARK: - Tooling
+
+extension SemVerTests {
+  // FIXME: - use checkRoundTrip
+  // ?? -alpha-01
+  
+  // private static func testRoundTrip(semVer: SemVer, sourceLocation: SourceLocation = #_sourceLocation) throws {
+  
+  private static func testRoundTrip(semVerString: String, sourceLocation: SourceLocation = #_sourceLocation) throws {
+    let parsed = try SemVer._makeFromString(semVerString)
+    
+    let reconstructed = try SemVer(major: parsed.major,
+                                   minor: parsed.minor,
+                                   patch: parsed.patch,
+                                   preRelease: parsed.preRelease,
+                                   buildMetadata: parsed.buildMetadata)
+    
+    #expect(parsed == reconstructed)
+    
+    #expect(parsed.description == semVerString, "Description mismatch for: \(semVerString)")
+    #expect(reconstructed.description == semVerString, "Description mismatch for: \(semVerString)")
+  }
+  
   private static func expectIsLess(a: SemVer, thanB b: SemVer, sourceLocation: SourceLocation = #_sourceLocation) {
     #expect(a < b, sourceLocation: sourceLocation)
     #expect(a <= b, sourceLocation: sourceLocation)
