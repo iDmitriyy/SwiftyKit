@@ -109,6 +109,53 @@ struct SemVerTests {
     Self.testEquality(last)
   }
   
+  /// If someone use dates, they should use SemVer in "yyyy.mm.dd"
+  @Test func `Date Core Version RoundTrip`() throws {
+    var previous: SemVer?
+    let major: UInt16 = 2026
+    let minors: ClosedRange<UInt16> = 1...12
+    let patches: ClosedRange<UInt16> = 1...31
+    
+    for minor in minors {
+      for patch in patches {
+        let versionCoreString = "\(major).\(minor).\(patch)"
+
+        let parsed = try Self.testRoundTrip(semVerString: versionCoreString)
+        let numericallyInited = SemVer(major: major, minor: minor, patch: patch)
+        let numericallyThrowableInited = try SemVer(major: major,
+                                                    minor: minor,
+                                                    patch: patch,
+                                                    preRelease: [],
+                                                    buildMetadata: [])
+        
+        try Self.testRoundTrip(semVer: numericallyInited)
+        try Self.testRoundTrip(semVer: numericallyThrowableInited)
+        
+        #expect(parsed.byThrowableInit == numericallyInited)
+        #expect(parsed.byFailableInit == numericallyInited)
+        
+        #expect(parsed.byThrowableInit == numericallyThrowableInited)
+        #expect(parsed.byFailableInit == numericallyThrowableInited)
+        
+        #expect(numericallyInited == numericallyThrowableInited)
+        
+        if let previous {
+          Self.expectIsLess(a: previous, thanB: parsed.byThrowableInit)
+          Self.expectIsLess(a: previous, thanB: parsed.byFailableInit)
+          
+          Self.expectIsLess(a: previous, thanB: numericallyInited)
+          Self.expectIsLess(a: previous, thanB: numericallyThrowableInited)
+        }
+        
+        previous = switch Int.random(in: 0...2) {
+        case 0: Bool.random() ? parsed.byThrowableInit : parsed.byFailableInit
+        case 1: numericallyInited
+        default: numericallyThrowableInited
+        }
+      }
+    }
+  }
+  
   @Test func `String Parsing Valid Suffix RoundTrip`() throws {
     let coreVersions: [String] = [
       "0.0.0", "0.1.0", "1.0.0", "1.2.3", "9.9.9", "10.20.30", "100.0.0", "0.0.100", "100.101.102", "65535.65535.65535"
