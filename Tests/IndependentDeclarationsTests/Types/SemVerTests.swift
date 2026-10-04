@@ -162,6 +162,7 @@ struct SemVerTests {
       "-alpha-",
       "--alpha", // Valid per grammar but likely a typo
       "-0alpha-01",
+      "-beta.-2",
       "--", // Valid per grammar but likely meaningless in practice
       "-alpha-gamma.1--+build.123",
       "+-22342343",
