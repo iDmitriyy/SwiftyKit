@@ -65,16 +65,9 @@ struct SemVerTests {
   }
 
   @Test func parsingFromStringRoundTrip() throws {
-    // preRelease / buildMetaData
-    let validSuffixes: [String] = [
+    let suffixes: [String] = [
       "", // empty string to test pure core version
-      "-alpha",
-      "-alpha.1",
-      "+01",
-      "+123",
-      "+build.123",
-      "-alpha+build.123",
-      "-beta.1+exp.sha.5114f85",
+      "-1beta-1.--1+exp.sha-2--.5114f85",
     ]
     
     let numbers: [UInt16] = [0, 1, 2, 3, 10, 11, 100, 101, 1000, .max]
@@ -83,7 +76,7 @@ struct SemVerTests {
         for patch in numbers {
           let versionCoreString = "\(major).\(minor).\(patch)"
 
-          for suffix in validSuffixes {
+          for suffix in suffixes {
             let versionString = versionCoreString + suffix
             try Self.testRoundTrip(semVerString: versionString)
           }
@@ -92,12 +85,21 @@ struct SemVerTests {
     }
   }
   
-  @Test func parsingFromStringWeirdSuffixRoundTrip() throws {
+  @Test func parsingFromStringValidSuffixRoundTrip() throws {
     let coreVersions: [String] = [
-      "0.0.0", "0.1.0", "1.0.0", "1.2.3", "9.9.9", "10.20.30", "100.101.102", "65535.65535.65535"
+      "0.0.0", "0.1.0", "1.0.0", "1.2.3", "9.9.9", "10.20.30", "100.0.0", "0.0.100", "100.101.102", "65535.65535.65535"
     ]
     
-    let weirdValidSuffixes: [String] = [
+    let validSuffixes: [String] = [
+      "-alpha",
+      "-alpha.1",
+      "+01",
+      "+123",
+      "+build.123",
+      "-alpha+build.123",
+      "-beta.1+exp.sha.5114f85",
+      
+      // valid but weird:
       "-alpha-",
       "--alpha", // Valid per grammar but likely a typo
       "-1alpha-01",
@@ -106,13 +108,12 @@ struct SemVerTests {
     ]
     
     for coreVersion in coreVersions {
-      for suffix in weirdValidSuffixes {
+      for suffix in validSuffixes {
         let versionString = coreVersion + suffix
         try Self.testRoundTrip(semVerString: versionString)
       }
     }
   }
-  
   
   @Test func parsingInvalidStrings() throws {
     let invalid = ["", ".", "..", "...", "1", "1.", "1.2", "1.2.", "1.2.3.", "1.2.3.4"]
@@ -127,15 +128,6 @@ struct SemVerTests {
       #expect(SemVer(input) == nil, "Should be nil for: \(input)")
       #expect(throws: (any Error).self) { try SemVer(description: input) }
     }
-  }
-
-  @Test func `build metadata allow leading zeros`() throws {
-    // Build metadata CAN have leading zeros (per spec)
-    let va = try SemVer(major: 1, minor: 0, patch: 0, preRelease: [], buildMetadata: ["01"])
-    #expect(va.buildMetadata == ["01"])
-
-    let vb = try SemVer(description: "1.0.0+01")
-    #expect(vb.buildMetadata == ["01"])
   }
 
   @Test func validationRejectsInvalidChars() throws {
@@ -157,6 +149,12 @@ struct SemVerTests {
     #expect(v.preRelease.isEmpty && v.buildMetadata.isEmpty)
   }
 
+  @Test func comparisonCaseSensitivity() throws {
+    let vA = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["A"], buildMetadata: [])
+    let va = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["a"], buildMetadata: [])
+    #expect(vA < va)
+  }
+  
   @Test func equalityIgnoresBuildMetadata() throws {
     let v1 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["1alpha-01"], buildMetadata: ["build1"])
     let v2 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["1alpha-01"], buildMetadata: ["build2"])
@@ -165,16 +163,10 @@ struct SemVerTests {
     #expect(v1 != v3)
   }
 
-  @Test func comparisonCaseSensitivity() throws {
-    let vA = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["A"], buildMetadata: [])
-    let va = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["a"], buildMetadata: [])
-    #expect(vA < va)
-  }
-
   @Test func comparisonBuildMetadataIgnored() throws {
     let v1 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha"], buildMetadata: ["aaa"])
     let v2 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha"], buildMetadata: ["zzz"])
-    #expect(!(v1 < v2) && !(v2 < v1))
+    #expect(!(v1 < v2) && !(v2 < v1) && v1 == v2)
   }
 
   @Test func longIdentifiers() throws {
@@ -301,9 +293,10 @@ extension SemVerTests {
     #expect(b >= a, sourceLocation: sourceLocation)
     #expect(!(b < a), sourceLocation: sourceLocation)
     #expect(!(b <= a), sourceLocation: sourceLocation)
-    #expect(!(a == b), sourceLocation: sourceLocation)
     #expect(a != b, sourceLocation: sourceLocation)
+    #expect(!(a == b), sourceLocation: sourceLocation)
 
+    #expect(a == a)
     #expect(a <= a)
     #expect(a >= a)
   }
