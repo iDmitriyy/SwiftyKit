@@ -64,7 +64,7 @@ struct SemVerTests {
     #expect(vMaxA.description == "65535.65535.65535-alpha1.1")
   }
 
-  @Test func parsingFromStringRoundTrip() throws {
+  @Test func `String Parsing Core Version RoundTrip`() throws {
     let suffixes: [String] = [
       "", // empty string to test pure core version
       "-1beta-1.--1+exp.sha-2--.5114f85",
@@ -85,7 +85,7 @@ struct SemVerTests {
     }
   }
   
-  @Test func parsingFromStringValidSuffixRoundTrip() throws {
+  @Test func `String Parsing Valid Suffix RoundTrip`() throws {
     let coreVersions: [String] = [
       "0.0.0", "0.1.0", "1.0.0", "1.2.3", "9.9.9", "10.20.30", "100.0.0", "0.0.100", "100.101.102", "65535.65535.65535"
     ]
@@ -115,7 +115,7 @@ struct SemVerTests {
     }
   }
   
-  @Test func parsingInvalidStrings() throws {
+  @Test func `String Parsing Invalid Strings Are Rejected`() throws {
     let invalid = ["", ".", "..", "...", "1", "1.", "1.2", "1.2.", "1.2.3.", "1.2.3.4"]
       + ["a.b.c", "1.0.0-🤡", "1.0.0+🤡"]
       + ["1.2.3.-", "1.2.3.+", "1.0.0..", "1.0.0..-", "1.0.0..+"]
@@ -130,32 +130,32 @@ struct SemVerTests {
     }
   }
 
-  @Test func validationRejectsInvalidChars() throws {
+  @Test func `validation Rejects Invalid Chars`() throws {
     #expect(throws: (any Error).self) { try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["a_b"], buildMetadata: []) }
     #expect(throws: (any Error).self) { try SemVer(major: 1, minor: 0, patch: 0, preRelease: [], buildMetadata: ["a b"]) }
     #expect(throws: (any Error).self) { try SemVer(description: "1.0.0-a_b") }
     #expect(throws: (any Error).self) { try SemVer(description: "1.0.0+a b") }
   }
 
-  @Test func validationAllowsHyphensInIdentifiers() throws {
+  @Test func `validation Allows Hyphens In Identifiers`() throws {
     let v1 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["1alpha-01"], buildMetadata: [])
     #expect(v1.preRelease == ["1alpha-01"])
     let v2 = try SemVer(description: "1.0.0+1build-123.sha-abc")
     #expect(v2.buildMetadata == ["1build-123", "sha-abc"])
   }
 
-  @Test func validationAllowsEmptyArraysInInit() throws {
+  @Test func `validation Allows Empty Arrays In Init`() throws {
     let v = try SemVer(major: 1, minor: 0, patch: 0, preRelease: [], buildMetadata: [])
     #expect(v.preRelease.isEmpty && v.buildMetadata.isEmpty)
   }
 
-  @Test func comparisonCaseSensitivity() throws {
+  @Test func `comparison Case Sensitivity`() throws {
     let vA = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["A"], buildMetadata: [])
     let va = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["a"], buildMetadata: [])
     #expect(vA < va)
   }
   
-  @Test func equalityIgnoresBuildMetadata() throws {
+  @Test func `equality Ignores BuildMetadata`() throws {
     let v1 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["1alpha-01"], buildMetadata: ["build1"])
     let v2 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["1alpha-01"], buildMetadata: ["build2"])
     let v3 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["beta"], buildMetadata: ["build1"])
@@ -163,13 +163,13 @@ struct SemVerTests {
     #expect(v1 != v3)
   }
 
-  @Test func comparisonBuildMetadataIgnored() throws {
+  @Test func `comparison Ignores BuildMetadata`() throws {
     let v1 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha"], buildMetadata: ["aaa"])
     let v2 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["alpha"], buildMetadata: ["zzz"])
     #expect(!(v1 < v2) && !(v2 < v1) && v1 == v2)
   }
 
-  @Test func longIdentifiers() throws {
+  @Test func `long Identifiers Supported`() throws {
     let long = String(repeating: "a", count: 257)
     let v100 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: [long], buildMetadata: [long])
 
@@ -180,7 +180,7 @@ struct SemVerTests {
     #expect(buildMetadata.count == 257)
   }
 
-  @Test func codableRoundTrip() throws {
+  @Test func `Codable RoundTrip`() throws {
     let original = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["beta", "1"], buildMetadata: ["build", "123"])
     let data = try JSONEncoder().encode(original)
     let decoded = try JSONDecoder().decode(SemVer.self, from: data)
@@ -188,7 +188,7 @@ struct SemVerTests {
     #expect(decoded.description == original.description)
   }
 
-  @Test func comparisonSortedCoreVersions() throws {
+  @Test func `Comparison Of CoreVersions`() throws {
     let sorted = [
       SemVer(major: 0, minor: 0, patch: 0),
       SemVer(major: 0, minor: 0, patch: 1),
@@ -210,7 +210,7 @@ struct SemVerTests {
   }
 
   /// https://semver.org/#:~:text=equal.-,Example:%201.0.0%2Dalpha%20%3C,rc.1%20%3C%201.0.0.
-  @Test func comparisonPreReleaseExamplesFromSite() throws {
+  @Test func `Comparison Of PreReleaseExamples From Site`() throws {
     let sorted = try [
       SemVer._makeFromString("1.0.0-alpha+9"),
       SemVer._makeFromString("1.0.0-alpha.1+7"),
@@ -232,22 +232,8 @@ struct SemVerTests {
     Self.expectIsEqual(last)
   }
   
-  @Test func examples() throws {
-    let examples: [String] = [
-      "1.9.0-beta+8547", // beta, Build 8547
-      "1.9.0-rc.1+8553", // release candidate 1, Build 8553
-      "1.9.0-rc.2+8554", // release candidate 2, Build 8555
-      "1.9.0+8559", // release, Build 8559
-      "1.9.0+8560", // release, Build 8560
-    ]
-    
-    for example in examples {
-      try Self.testRoundTrip(semVerString: example)
-    }
-  }
-  
   @Test func specExamplesFromSite() throws {
-    // Examples directly from semver.org spec
+    // Examples from semver.org spec
     let specExamples = [
       // pre release
       "1.0.0-alpha",
@@ -263,6 +249,20 @@ struct SemVerTests {
     ]
     
     for example in specExamples {
+      try Self.testRoundTrip(semVerString: example)
+    }
+  }
+  
+  @Test func examples() throws {
+    let examples: [String] = [
+      "1.9.0-beta+8547", // beta, Build 8547
+      "1.9.0-rc.1+8553", // release candidate 1, Build 8553
+      "1.9.0-rc.2+8554", // release candidate 2, Build 8554
+      "1.9.0+8559", // release, Build 8559
+      "1.9.0+8560", // release, Build 8560
+    ]
+    
+    for example in examples {
       try Self.testRoundTrip(semVerString: example)
     }
   }
