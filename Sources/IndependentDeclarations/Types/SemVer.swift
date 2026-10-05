@@ -8,8 +8,8 @@
 /// Semantic Versioning 2.0.0 implementation.
 /// See https://semver.org/spec/v2.0.0.html
 public struct SemVer: Sendable, Comparable, LosslessStringConvertible {
-  public let major: UInt32
-  public let minor: UInt32
+  public let major: UInt64
+  public let minor: UInt64
   public let patch: UInt64
   public let preRelease: [Identifier]
   public let buildMetadata: [Identifier]
@@ -25,15 +25,15 @@ public struct SemVer: Sendable, Comparable, LosslessStringConvertible {
     return result
   }
 
-  public init(major: UInt32, minor: UInt32, patch: UInt64, preRelease: [String], buildMetadata: [String]) throws {
+  public init(major: UInt64, minor: UInt64, patch: UInt64, preRelease: [String], buildMetadata: [String]) throws {
     self.preRelease = try preRelease.map { try Identifier($0, context: .preRelease) }
-    self.buildMetadata = try preRelease.map { try Identifier($0, context: .buildMetadata) }
+    self.buildMetadata = try buildMetadata.map { try Identifier($0, context: .buildMetadata) }
     self.major = major
     self.minor = minor
     self.patch = patch
   }
 
-  public init(major: UInt32, minor: UInt32, patch: UInt64) {
+  public init(major: UInt64, minor: UInt64, patch: UInt64) {
     preRelease = []
     buildMetadata = []
     self.major = major
@@ -75,8 +75,8 @@ public struct SemVer: Sendable, Comparable, LosslessStringConvertible {
       throw TextError(text: "Invalid version core: expected 3 components, got \(coreComponents.count) in \(versionString)")
     }
 
-    let major: UInt32 = try parseCoreVersionUInt(coreComponents[0], componentName: "major")
-    let minor: UInt32 = try parseCoreVersionUInt(coreComponents[1], componentName: "minor")
+    let major: UInt64 = try parseCoreVersionUInt(coreComponents[0], componentName: "major")
+    let minor: UInt64 = try parseCoreVersionUInt(coreComponents[1], componentName: "minor")
     let patch: UInt64 = try parseCoreVersionUInt(coreComponents[2], componentName: "patch")
 
     return try SemVer(major: major, minor: minor, patch: patch, preRelease: rawPreRelease, buildMetadata: rawBuildMetadata)

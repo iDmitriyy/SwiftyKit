@@ -51,17 +51,17 @@ struct SemVerTests {
     let v123a = try SemVer(major: 1, minor: 2, patch: 3, preRelease: ["alpha1", "1"], buildMetadata: [])
     let v100b = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["beta-", "1"], buildMetadata: ["build", "123"])
     let vMaxA = try SemVer(major: .max, minor: .max, patch: .max, preRelease: ["alpha1", "1"], buildMetadata: [])
-
+    
     #expect(v000.description == "0.0.0")
     #expect(v010.description == "0.1.0")
     #expect(v100.description == "1.0.0")
     #expect(v123a.description == "1.2.3-alpha1.1")
     #expect(v100b.description == "1.0.0-beta-.1+build.123")
-    #expect(vMaxA.description == "65535.65535.65535-alpha1.1")
+    #expect(vMaxA.description == "\(UInt64.max).\(UInt64.max).\(UInt64.max)-alpha1.1")
   }
 
   @Test func `String Core Version RoundTrip`() throws {
-    let numbers: [UInt16] = [0, 1, 2, 3, 10, 11, 100, 101, 1000, .max]
+    let numbers: [UInt64] = [0, 1, 2, 3, 10, 11, 100, 101, 1000, .max]
     
     var previous: SemVer?
     for major in numbers {
@@ -111,9 +111,9 @@ struct SemVerTests {
   
   /// If someone use dates, they should use SemVer in "yyyy.mm.dd" format
   @Test func `Date Core Version RoundTrip`() throws {
-    let year: UInt16 = 2026
-    let months: ClosedRange<UInt16> = 1...12
-    let days: ClosedRange<UInt16> = 1...31
+    let year: UInt64 = 2026
+    let months: ClosedRange<UInt64> = 1...12
+    let days: ClosedRange<UInt64> = 1...31
     
     var previous: SemVer?
     for month in months {
@@ -201,9 +201,9 @@ struct SemVerTests {
 
   @Test func `validation Allows Hyphens In Identifiers`() throws {
     let v1 = try SemVer(major: 1, minor: 0, patch: 0, preRelease: ["1alpha-01"], buildMetadata: [])
-    #expect(v1.preRelease == ["1alpha-01"])
+    #expect(v1.preRelease.map { $0.description } == ["1alpha-01"])
     let v2 = try SemVer(description: "1.0.0+1build-123.sha-abc")
-    #expect(v2.buildMetadata == ["1build-123", "sha-abc"])
+    #expect(v2.buildMetadata.map { $0.description } == ["1build-123", "sha-abc"])
   }
 
   @Test func `validation Allows Empty Arrays In Init`() throws {
@@ -250,8 +250,8 @@ struct SemVerTests {
     let preRelease = try #require(v100.preRelease.first)
     let buildMetadata = try #require(v100.buildMetadata.first)
     
-    #expect(preRelease.count == 257)
-    #expect(buildMetadata.count == 257)
+    #expect(preRelease.description.count == 257)
+    #expect(buildMetadata.description.count == 257)
   }
 
   @Test func `Codable RoundTrip`() throws {
@@ -408,14 +408,14 @@ extension SemVerTests {
     let reconstructedT = try SemVer(major: parsedT.major,
                                     minor: parsedT.minor,
                                     patch: parsedT.patch,
-                                    preRelease: parsedT.preRelease,
-                                    buildMetadata: parsedT.buildMetadata)
+                                    preRelease: parsedT.preRelease.map { $0.description },
+                                    buildMetadata: parsedT.buildMetadata.map { $0.description })
     
     let reconstructedF = try SemVer(major: parsedF.major,
                                     minor: parsedF.minor,
                                     patch: parsedF.patch,
-                                    preRelease: parsedF.preRelease,
-                                    buildMetadata: parsedF.buildMetadata)
+                                    preRelease: parsedF.preRelease.map { $0.description },
+                                    buildMetadata: parsedF.buildMetadata.map { $0.description })
     
     #expect(parsedT == reconstructedT)
     #expect(parsedF == reconstructedF)
@@ -433,8 +433,8 @@ extension SemVerTests {
     let reconstructed = try SemVer(major: semVer.major,
                                    minor: semVer.minor,
                                    patch: semVer.patch,
-                                   preRelease: semVer.preRelease,
-                                   buildMetadata: semVer.buildMetadata)
+                                   preRelease: semVer.preRelease.map { $0.description },
+                                   buildMetadata: semVer.buildMetadata.map { $0.description })
     
     #expect(semVer == reconstructed)
     
