@@ -26,11 +26,16 @@ public struct SemVer: Sendable, Comparable, LosslessStringConvertible {
   }
 
   public init(major: UInt64, minor: UInt64, patch: UInt64, preRelease: [String], buildMetadata: [String]) throws {
+    try self.init(_major: major, _minor: minor, _patch: patch, preRelease: preRelease, buildMetadata: buildMetadata)
+  }
+  
+  private init<S>(_major: UInt64, _minor: UInt64, _patch: UInt64, preRelease: [S], buildMetadata: [S]) throws
+    where S: StringProtocol {
     self.preRelease = try preRelease.map { try Identifier($0, context: .preRelease) }
     self.buildMetadata = try buildMetadata.map { try Identifier($0, context: .buildMetadata) }
-    self.major = major
-    self.minor = minor
-    self.patch = patch
+    self.major = _major
+    self.minor = _minor
+    self.patch = _patch
   }
 
   public init(major: UInt64, minor: UInt64, patch: UInt64) {
@@ -50,22 +55,22 @@ public struct SemVer: Sendable, Comparable, LosslessStringConvertible {
   }
 
   private static func parse(_ versionString: String) throws -> SemVer {
-    var remaining = versionString
+    var remaining = Substring(versionString)
     
-    let rawBuildMetadata: [String]
+    let rawBuildMetadata: [Substring]
     if let plusIndex = remaining.firstIndex(of: "+") {
       let buildPart = remaining[remaining.index(after: plusIndex)...]
-      rawBuildMetadata = buildPart.split(separator: ".", omittingEmptySubsequences: false).map(String.init)
-      remaining = String(remaining[..<plusIndex])
+      rawBuildMetadata = buildPart.split(separator: ".", omittingEmptySubsequences: false)
+      remaining = remaining[..<plusIndex]
     } else {
       rawBuildMetadata = []
     }
-
-    let rawPreRelease: [String]
+    // FIXME: - remaining = String(remaining[..<plusIndex]) – non need to reinit String, just use Substring
+    let rawPreRelease: [Substring]
     if let dashIndex = remaining.firstIndex(of: "-") {
       let prePart = remaining[remaining.index(after: dashIndex)...]
-      rawPreRelease = prePart.split(separator: ".", omittingEmptySubsequences: false).map(String.init)
-      remaining = String(remaining[..<dashIndex])
+      rawPreRelease = prePart.split(separator: ".", omittingEmptySubsequences: false)
+      remaining = remaining[..<dashIndex]
     } else {
       rawPreRelease = []
     }
@@ -74,12 +79,12 @@ public struct SemVer: Sendable, Comparable, LosslessStringConvertible {
     guard coreComponents.count == 3 else {
       throw TextError(text: "Invalid version core: expected 3 components, got \(coreComponents.count) in \(versionString)")
     }
-
-    let major: UInt64 = try parseCoreVersionUInt(coreComponents[0], componentName: "major")
-    let minor: UInt64 = try parseCoreVersionUInt(coreComponents[1], componentName: "minor")
-    let patch: UInt64 = try parseCoreVersionUInt(coreComponents[2], componentName: "patch")
-
-    return try SemVer(major: major, minor: minor, patch: patch, preRelease: rawPreRelease, buildMetadata: rawBuildMetadata)
+    
+    return try SemVer(_major: try parseCoreVersionUInt(coreComponents[0], componentName: "major"),
+                      _minor: try parseCoreVersionUInt(coreComponents[1], componentName: "minor"),
+                      _patch: try parseCoreVersionUInt(coreComponents[2], componentName: "patch"),
+                      preRelease: rawPreRelease,
+                      buildMetadata: rawBuildMetadata)
   }
 
   private static func parseCoreVersionUInt<U: FixedWidthInteger>(_ string: Substring,
